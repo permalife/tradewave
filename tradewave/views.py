@@ -42,4 +42,16 @@ class TransactionConfirmedView(generic.ListView):
     model = User
     template_name = 'tradewave/transaction-confirmed.html'
 
+class CreateUserView(generic.ListView):
+    model = User
+    template_name = 'tradewave/create-user.html'
+	
+class CreateVendorView(generic.ListView):
+    model = User
+    template_name = 'tradewave/create-vendor.html'
+	
+class LoadDdipView(generic.ListView):
+    model = User
+    template_name = 'tradewave/load-ddip.html'
+
 # Create your views here.
