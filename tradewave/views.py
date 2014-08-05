@@ -53,5 +53,40 @@ class CreateVendorView(generic.ListView):
 class LoadDdipView(generic.ListView):
     model = User
     template_name = 'tradewave/load-ddip.html'
+	
+class MarketplaceInitial(generic.ListView):
+    model = User
+    template_name = 'tradewave/marketplace-initial.html'
 
+class MarketplaceHome(generic.ListView):
+    model = User
+    template_name = 'tradewave/marketplace-home.html'
+
+class MarketplaceIssue(generic.ListView):
+    model = User
+    template_name = 'tradewave/marketplace-issue.html'
+
+class MarketplaceSend(generic.ListView):
+    model = User
+    template_name = 'tradewave/marketplace-send.html'	
+
+class VendorChoosePayment(generic.ListView):
+    model = User
+    template_name = 'tradewave/vendor-choose-payment.html'	
+
+class VendorCustLogin(generic.ListView):
+    model = User
+    template_name = 'tradewave/vendor-cust-login.html'	
+	
+class VendorHome(generic.ListView):
+    model = User
+    template_name = 'tradewave/vendor-home.html'	
+
+class VendorInitial(generic.ListView):
+    model = User
+    template_name = 'tradewave/vendor-initial.html'
+	
+class VendorTransaction(generic.ListView):
+    model = User
+    template_name = 'tradewave/vendor-transaction.html'
 # Create your views here.
