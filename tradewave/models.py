@@ -111,7 +111,7 @@ class TransactionLog(models.Model):
                          self.credit.name + "'s",
                          "credits from",
                          self.wallet_send.user.username,
-                         "to",
+                         "sent to",
                          self.wallet_receive.user.username]) 
 
 # vendor venue table (can map vendors to venues, even
