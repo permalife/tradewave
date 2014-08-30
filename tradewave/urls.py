@@ -21,6 +21,7 @@ urlpatterns = patterns('',
     url(r'^vendor-cust-login/$', views.VendorCustLogin.as_view(), name='vendor-cust-login'),
     url(r'^vendor-choose-payment/$', views.VendorChoosePayment.as_view(), name='vendor-choose-payment'),
     url(r'^vendor-home/$', views.VendorHome.as_view(), name='vendor-home'),
-    url(r'^vendor-transaction/$', views.VendorTransaction.as_view(), name='vendor-transaction')
+    url(r'^vendor-transaction/$', views.VendorTransaction.as_view(), name='vendor-transaction'),
+    url(r'^record_venue/(?P<venue_id>\d+)/$', views.record_venue, name='record_venue')
 )
 
