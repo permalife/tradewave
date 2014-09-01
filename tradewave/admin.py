@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from tradewave.models import Credit, UserProperty, VendorProperty, VendorAdmin, VendorManager, Wallet, City, Venue, TransactionLog, VendorVenue, Marketplace, MarketplaceAdmin, MarketplaceManager, MarketplaceVenue, MarketplaceVendor
+from tradewave.models import Credit, UserProperty, VendorProperty, MarketplaceProperty, VendorAdmin, VendorManager, Wallet, City, Venue, TransactionLog, VendorVenue, Marketplace, MarketplaceAdmin, MarketplaceManager, MarketplaceVenue, MarketplaceVendor
 
 admin.site.register(Credit)
 admin.site.register(UserProperty)
@@ -14,6 +14,7 @@ admin.site.register(Venue)
 admin.site.register(TransactionLog)
 admin.site.register(VendorVenue)
 admin.site.register(Marketplace)
+admin.site.register(MarketplaceProperty)
 admin.site.register(MarketplaceAdmin)
 admin.site.register(MarketplaceManager)
 admin.site.register(MarketplaceVenue)
