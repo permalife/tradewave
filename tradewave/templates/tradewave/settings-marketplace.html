@@ -84,55 +84,68 @@
 				</div>
 			</div>
 		<!-- /Header Wrapper -->
-		
+
 		<!-- Intro Wrapper -->
-		<div id="intro-wrapper" class="wrapper wrapper-style1">
-			<div class="title">Create Vendor</div>
-			<div class="container">
-				<div class="row">
-					<div class="12u">
+			<div id="intro-wrapper" class="wrapper wrapper-style1">
+				<div class="title">Vendor Settings</div>
+				<div class="container">
+					<div class="row">
+						<div class="12u">
 						
-						<!-- User Form -->
-						<form method="post" action="#">
-							<div>
-								<div class="row half">
-									<div class="6u">
-									<p>Name</p>
-									<input type="text" class="text" name="name" id="vendor-name" placeholder="Vendor Name" />
+						<!-- Settings Form -->
+							<form method="post" action="#">
+								<div>
+									<div class="row half">
+										<div class="12u">
+										<h2>Marketplace</h2>
+										</div>
+										<div class="12u">
+											<input type="text" class="text" name="name" id="vendor-name" placeholder="Marketplace Name" />
+										</div>
 									</div>
-									<div class="6u">
-									<p>Category</p>
-									<input type="text" class="text" name="name" id="vendor-category" placeholder="Vendor Category" />									
-									</div>
+									<div class="row half">
+									<div class="12u"><h2>Locations</h2></div>
 									<div class="12u">
-									<p>Address</p>
-									</div>																	
+										 <input type="text" class="text" name="name" id="mplace-venue1" placeholder="North" />											
+										 <input type="text" class="text" name="name" id="mplace-venue2" placeholder="South" />
+										 <!-- These controls should allow you to add additional Venues-->
+										 <ul class="actions">
+											 <li><a href="#" class="button button-style3 button">+</a></li>
+											 <li><a href="#" class="button button-style3 button">-</a></li>
+										 </ul>
+									</div>
+									</div>
+				
 									<div class="12u">
-										<input type="text" class="text" name="address" id="vendor-address" placeholder="Address" />
+									<h2>Admins and Managers</h2>
 									</div>
-									<div class="6u">
-										<input type="text" class="text" name="city" id="vendor-city" placeholder="City" />
+									<div class="row half">
+									<div class="12u">
+										 <input type="email" class="text" name="name" id="vendor-admin" placeholder="Admin" />											
+										 <input type="email" class="text" name="name" id="manager-1" placeholder="Manager" />
+										 <!-- These controls should allow you to add additional Managers-->
+										 <ul class="actions">
+											 <li><a href="#" class="button button-style3 button">+</a></li>
+											 <li><a href="#" class="button button-style3 button">-</a></li>
+										 </ul>
 									</div>
-									<div class="3u">
-										<input type="text" class="text" name="state" id="vendor-region" placeholder="State" />
 									</div>
-									<div class="3u">
-										<input type="text" class="text" name="zip" id="vendor-zip" placeholder="Zip Code" />
+
+									<div class="row">
+										<div class="12u">
+											<input type="submit" class="button button-style3 button-big" value="Save Changes" /></li>
+										</div>
 									</div>
 								</div>
-								<div class="row">
-									<div class="12u">
-										<input type="submit" class="button button-style3 button-big" value="Create" /></li>
-									</div>
-								</div>
-							</div>
-						</form>
-						<!-- /User Form -->
+							</form>
+						<!-- /settings Form -->								
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-												
+		<!-- /Intro Wrapper -->
+		
+
 		<!-- Footer Wrapper -->
 			<div id="footer-wrapper" class="wrapper">
 				<div class="title">Our Mission</div>

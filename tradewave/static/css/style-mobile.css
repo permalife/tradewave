@@ -97,6 +97,11 @@
 		margin: 2em 0 0 0;
 	}
 
+	.actions ul
+	{
+		list-style-type: none;
+	}
+
 		form .actions
 		{
 			margin: 1em 0 0 0;
