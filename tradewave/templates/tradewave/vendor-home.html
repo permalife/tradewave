@@ -96,6 +96,12 @@
                             {% if selected_venue %}                            
                             <p class="style1">Logged into <strong> {{ selected_venue.name }} </strong></p>
                             {% endif %}
+                                    <p class="style1">You have {{ amount }} total in:</p>
+                                    <ul class="actions">
+                                        {% for credit in credits %}
+                                        <li>{{ credit }} </li>
+                                        {% endfor %}
+                                    </ul>
                                     <li><a href="#" class="button button-style3 button-big">New Purchase</a></li>
                                     <li><a href="#" class="button button-style3 button-big">View Dashboard</a></li>
                                 </ul>
