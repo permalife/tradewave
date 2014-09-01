@@ -18,12 +18,13 @@ class Credit(models.Model):
 
 # user properties table
 # *** we intend to use Django's user object
-# this uses a reference to django's built in user model
+# this uses a reference to django's built-in user model
 class UserProperty(models.Model):
     user = models.OneToOneField(User, primary_key=True)     
     date_created = models.DateTimeField('date joined') 
     date_active = models.DateTimeField('date last active') 
     is_vendor = models.BooleanField() # boolean flag to indicate is the user is a vendor
+    is_marketplace = models.BooleanField() # boolean flag to indicate is the user is a marketplace
     pin = models.IntegerField() # personal id number
     total_amount = models.FloatField() # total amount in USD of credits held
  
@@ -32,7 +33,7 @@ class UserProperty(models.Model):
                          "user properties"])
 
 # vendor properties table
-# this uses a reference to django's built in user model
+# this uses a reference to django's built-in user model
 class VendorProperty(models.Model):
     user = models.OneToOneField(User, primary_key=True) 
     name = models.CharField(max_length=100) # vendor's name
@@ -134,7 +135,18 @@ class Marketplace(models.Model):
     def __unicode__(self):
         return ' '.join(["Marketplace:", self.name]) 
 
-# marketplace table
+# marketplace properties table
+# this uses a reference to django's built-in user model
+class MarketplaceProperty(models.Model):
+    user = models.OneToOneField(User, primary_key=True) 
+    name = models.CharField(max_length=100) # marketplace's name
+    marketplace_rating = models.FloatField() # average over credit ratings issued by marketplace
+    credit_ceiling = models.FloatField() # maximum total amount across unredeemed credits
+
+    def __unicode__(self):
+        return ' '.join([self.user.username + "'s",
+                         "marketplace properties"])
+
 # marketplace admin table (maps admins to marketplaces)
 class MarketplaceAdmin(models.Model):
     user = models.ForeignKey(User)
