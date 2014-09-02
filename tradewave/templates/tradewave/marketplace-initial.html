@@ -94,11 +94,11 @@
                         
                         <section id="intro">
                             <h1>Choose Location</h1>
-                                <ul class="actions">
-                                    {% for featured_venue in featured_venues %}
-                                    <li><a href="/record_venue/{{ featured_venue.id }}" class="button button-style3 button-big">{{ featured_venue.name }}  </a></li>
-                                    {% endfor %}
-                                </ul>
+                                {% for featured_venue in featured_venues %}
+								<div class="4u">
+									<a href="/record_venue/{{ featured_venue.id }}" class="button button-style3 button-big">{{ featured_venue.name }}  </a>
+								</div>
+                                {% endfor %}
                         </section>
                         
                     </div>
