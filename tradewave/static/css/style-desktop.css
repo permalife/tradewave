@@ -94,7 +94,6 @@
 		.actions li
 		{
 			display: inline-block;
-			margin: 1em 0.75em 1em 0.75em;
 		}
 		
 		.actions li:first-child

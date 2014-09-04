@@ -331,7 +331,7 @@
 
 		.button-style1
 		{
-			background: #e97770 url('images/overlay.png');
+			background: #387A36 url('images/overlay.png');
 			color: #fff;
 		}
 
@@ -432,7 +432,7 @@
 
 		.feature-list h3
 		{
-			color: #e97770 !important;
+			color: #387A36 !important;
 		}
 		
 			.feature-list h3:before
@@ -940,7 +940,7 @@
 	
 	#footer-wrapper
 	{
-		background: #282b34 url('images/overlay.png');
+		background: #1E311D url('images/overlay.png');
 		color: #eee;
 		color: rgba(255,255,255,0.5);
 	}
@@ -1002,7 +1002,7 @@
 
 		#footer-wrapper .title
 		{
-			background: #282b34 url('images/overlay.png');
+			background: #1E311D url('images/overlay.png');
 			color: #eee;
 		}
 		
@@ -1041,14 +1041,14 @@
 	
 	.wrapper-style1
 	{
-		background: #e97770 url('images/overlay.png');
+		background: #387A36 url('images/overlay.png');
 		color: #eee;
 		color: rgba(255,255,255,0.75);
 	}
 	
 		.wrapper-style1 .title
 		{
-			background: #e97770 url('images/overlay.png');
+			background: #387A36 url('images/overlay.png');
 			color: #fff;
 		}
 	
@@ -1159,7 +1159,7 @@
 		
 			#highlights .highlight h3
 			{
-				color: #e97770;
+				color: #387A36;
 			}
 
 /*********************************************************************************/
