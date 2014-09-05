@@ -31,7 +31,7 @@
 	h1,h2,h3,h4,h5,h6
 	{
 		font-weight: 700;
-		color: #484d55;
+		color: #303030;
 	}
 	
 	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a
@@ -59,7 +59,7 @@
 	strong, b
 	{
 		font-weight: 700;
-		color: #484d55;
+		color: #303030;
 	}
 	
 	blockquote
@@ -123,7 +123,7 @@
 		
 			table.style1 thead
 			{
-				background: #484d55;
+				background: #303030;
 				color: #fff;
 			}
 			
@@ -143,7 +143,7 @@
 		form label
 		{
 			display: block;
-			color: #484d55;
+			color: #303030;
 		}
 	
 		form input.text,
@@ -337,12 +337,12 @@
 
 			.button-style1:hover
 			{
-				background-color: #f98780;
+				background-color: #678F65;
 			}
 			
 			.button-style1:active
 			{
-				background-color: #d96760;
+				background-color: #507A4E;
 			}
 
 		.button-style2
@@ -1073,7 +1073,7 @@
 		.wrapper-style2 .title
 		{
 			background: #fff;
-			color: #484d55;
+			color: #303030;
 		}
 	
 	.wrapper-style3
@@ -1084,7 +1084,7 @@
 		.wrapper-style3 .title
 		{
 			background: #f3f3f3 url('images/overlay.png');
-			color: #484d55;
+			color: #303030;
 		}
 		
 		.wrapper-style3 .image
