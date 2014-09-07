@@ -31,7 +31,7 @@
 	h1,h2,h3,h4,h5,h6
 	{
 		font-weight: 700;
-		color: #484d55;
+		color: #303030;
 	}
 	
 	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a
@@ -59,7 +59,7 @@
 	strong, b
 	{
 		font-weight: 700;
-		color: #484d55;
+		color: #303030;
 	}
 	
 	blockquote
@@ -123,7 +123,7 @@
 		
 			table.style1 thead
 			{
-				background: #484d55;
+				background: #303030;
 				color: #fff;
 			}
 			
@@ -143,7 +143,7 @@
 		form label
 		{
 			display: block;
-			color: #484d55;
+			color: #303030;
 		}
 	
 		form input.text,
@@ -331,18 +331,18 @@
 
 		.button-style1
 		{
-			background: #e97770 url('images/overlay.png');
+			background: #387A36 url('images/overlay.png');
 			color: #fff;
 		}
 
 			.button-style1:hover
 			{
-				background-color: #f98780;
+				background-color: #678F65;
 			}
 			
 			.button-style1:active
 			{
-				background-color: #d96760;
+				background-color: #507A4E;
 			}
 
 		.button-style2
@@ -432,7 +432,7 @@
 
 		.feature-list h3
 		{
-			color: #e97770 !important;
+			color: #387A36 !important;
 		}
 		
 			.feature-list h3:before
@@ -940,7 +940,7 @@
 	
 	#footer-wrapper
 	{
-		background: #282b34 url('images/overlay.png');
+		background: #1E311D url('images/overlay.png');
 		color: #eee;
 		color: rgba(255,255,255,0.5);
 	}
@@ -1002,7 +1002,7 @@
 
 		#footer-wrapper .title
 		{
-			background: #282b34 url('images/overlay.png');
+			background: #1E311D url('images/overlay.png');
 			color: #eee;
 		}
 		
@@ -1041,14 +1041,14 @@
 	
 	.wrapper-style1
 	{
-		background: #e97770 url('images/overlay.png');
+		background: #387A36 url('images/overlay.png');
 		color: #eee;
 		color: rgba(255,255,255,0.75);
 	}
 	
 		.wrapper-style1 .title
 		{
-			background: #e97770 url('images/overlay.png');
+			background: #387A36 url('images/overlay.png');
 			color: #fff;
 		}
 	
@@ -1073,7 +1073,7 @@
 		.wrapper-style2 .title
 		{
 			background: #fff;
-			color: #484d55;
+			color: #303030;
 		}
 	
 	.wrapper-style3
@@ -1084,7 +1084,7 @@
 		.wrapper-style3 .title
 		{
 			background: #f3f3f3 url('images/overlay.png');
-			color: #484d55;
+			color: #303030;
 		}
 		
 		.wrapper-style3 .image
@@ -1159,7 +1159,7 @@
 		
 			#highlights .highlight h3
 			{
-				color: #e97770;
+				color: #387A36;
 			}
 
 /*********************************************************************************/
