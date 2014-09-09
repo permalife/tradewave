@@ -365,6 +365,7 @@
 		.button-style3
 		{
 			background: #2f333b url('images/overlay.png');
+			margin-bottom: 20px;
 			color: #fff;
 		}
 
