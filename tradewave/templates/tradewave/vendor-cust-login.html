@@ -22,6 +22,7 @@
 		<script src="{% static "js/config.js" %}"></script>
 		<script src="{% static "js/skel.min.js" %}"></script>
 		<script src="{% static "js/skel-panels.min.js" %}"></script>
+		<script src="{% static "js/html5-qrcode.min.js" %}"></script>
 		<noscript>
 		<link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
 		<link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
@@ -30,7 +31,60 @@
 	</head>
 	<body class="homepage">
 
-		{% include "tradewave/header.html" %}
+		<!-- Header Wrapper -->
+			<div id="header-wrapper" class="wrapper">
+				<div class="container">
+					<div class="row">
+						<div class="12u">
+						
+							<!-- Header -->
+								<div id="header">
+									
+									<!-- Logo -->
+										<div id="logo">
+											<h1><a href="#">Trade Wave</a></h1>
+											<span class="byline">Creating a Sustainable Economy</span>
+										</div>
+									<!-- /Logo -->
+									
+									<!-- Nav -->
+										<nav id="nav">
+											<ul>
+												<li class="current_page_item"><a href="index.html">Home</a></li>
+												<li>
+													<span>My Account</span>
+													<ul>
+														<li><a href="#">Offers</a></li>
+														<li><a href="#">Wants</a></li>
+														<li><a href="#">Wallet</a></li>
+														<li>
+															<span>Profile</span>
+															<ul>
+																<li><a href="#">Name</a></li>
+																<li><a href="#">Photo</a></li>
+																<li><a href="#">Security</a></li>
+																<li><a href="#">Settings</a></li>
+
+															</ul>
+														</li>
+														<li><a href="#">Vendor Options</a></li>
+													</ul>
+												</li>
+												<li><a href="#">Offers</a></li>
+												<li><a href="#">Open Trades</a></li>
+												<li><a href="#">Groups</a></li>
+											</ul>
+										</nav>
+									<!-- /Nav -->
+
+								</div>
+							<!-- /Header -->
+
+						</div>
+					</div>
+				</div>
+			</div>
+		<!-- /Header Wrapper -->
 		
 		<!-- Intro Wrapper -->
 		<div id="intro-wrapper" class="wrapper wrapper-style1">
@@ -70,7 +124,10 @@
 				</div>
 			</div>
 		</div>
-												
+ <div id="reader" style="width:300px;height:250px">
+ </div>												
+<span id="read" class="center">Nothing so far</span>
+
 		<!-- Footer Wrapper -->
 			<div id="footer-wrapper" class="wrapper">
 				<div class="title">Our Mission</div>
@@ -108,6 +165,20 @@
 				</div>
 			</div>
 		<!-- /Footer Wrapper -->
-
+		<script type="text/javascript">
+	  		 $('#reader').html5_qrcode(function(data){
+                          // do something when code is read
+                         document.getElementById("read").innerHTML="QR Code read: " + data;
+                         window.alert("QR Code read: " + data)
+                 },
+                 function(error){
+                         //show read errors 
+                         // window.alert("Read error")
+                 }, function(videoError){
+                         //the video stream could be opened
+                         window.alert("Video error")
+                 }
+);
+		</script>
 	</body>
 </html>
