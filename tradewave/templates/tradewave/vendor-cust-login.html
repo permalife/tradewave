@@ -22,6 +22,7 @@
 		<script src="{% static "js/config.js" %}"></script>
 		<script src="{% static "js/skel.min.js" %}"></script>
 		<script src="{% static "js/skel-panels.min.js" %}"></script>
+		<script src="{% static "js/html5-qrcode.min.js" %}"></script>
 		<noscript>
 		<link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
 		<link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
@@ -70,7 +71,10 @@
 				</div>
 			</div>
 		</div>
-												
+ <div id="reader" style="width:300px;height:250px">
+ </div>												
+<span id="read" class="center">Nothing so far</span>
+
 		<!-- Footer Wrapper -->
 			<div id="footer-wrapper" class="wrapper">
 				<div class="title">Our Mission</div>
@@ -108,6 +112,20 @@
 				</div>
 			</div>
 		<!-- /Footer Wrapper -->
-
+		<script type="text/javascript">
+	  		 $('#reader').html5_qrcode(function(data){
+                          // do something when code is read
+                         document.getElementById("read").innerHTML="QR Code read: " + data;
+                         window.alert("QR Code read: " + data)
+                 },
+                 function(error){
+                         //show read errors 
+                         // window.alert("Read error")
+                 }, function(videoError){
+                         //the video stream could be opened
+                         window.alert("Video error")
+                 }
+);
+		</script>
 	</body>
 </html>
