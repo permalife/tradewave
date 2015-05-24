@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 # producer credit table
 class Credit(models.Model):
     name = models.CharField(max_length=100) # credit name as per Vendor's choosing
-    issuer = models.ForeignKey(User) # issuer id
+    issuer = models.ForeignKey(Entity) # Credits are tied to new Entities class rather than users.
     amount_issued = models.FloatField() # total amount issued in USD
     amount_redeemed = models.FloatField() # total amount redeemed to date in USD
     series = models.IntegerField() # current credit generation (i.e. 6th time issued)
@@ -23,44 +23,70 @@ class UserProperty(models.Model):
     user = models.OneToOneField(User, primary_key=True)     
     date_created = models.DateTimeField('date joined') 
     date_active = models.DateTimeField('date last active') 
-    is_vendor = models.BooleanField() # boolean flag to indicate is the user is a vendor
-    is_marketplace = models.BooleanField() # boolean flag to indicate is the user is a marketplace
     pin = models.IntegerField() # personal id number
     total_amount = models.FloatField() # total amount in USD of credits held
+	favorites = ManyToManyField(Entity) # Represents a passive relationship with an entity. Like, Follow, etc.
  
     def __unicode__(self):
         return ' '.join([self.user.username + "'s",
                          "user properties"])
 
+# Entities are objects that can create and distribute credits. 
+# For now this is only markets and vendors, but this could change in the future
+class Entity(models.Model):
+    name = models.CharField(max_length=100)
+    date_created = models.DateTimeField()
+    date_active = models.DateTimeField()
+	users = ManyToManyField(User, through='Permissions') # Represents a working relationship with a User. Admin, Manager, etc.	
+	
+    class Meta:
+        abstract = True
+
+# Data about working User-Entity relationships. Determines the level of access a User has to an Entity
+class Permissions(models.Model):
+    user = models.ForeignKey(User)
+    entity = models.ForeignKey(Entity)
+    date_granted = models.DateField()
+    access_level = models.CharField(max_length=64) # Admin, Manager, Employee, etc. Should this be another class?
+# class AccessLevel(models.Model)
+	
+# vendor table
+# expands the Entity class
+class Vendor(Entity):
+	industry = models.ForeignKey(Industry) # Type of business. (Food, Construction, Law, Medical, Etc.)    
+
+
+class Industry(models.Model):
+	name = models.CharField(max_length=64)
+
 # vendor properties table
-# this uses a reference to django's built-in user model
 class VendorProperty(models.Model):
-    user = models.OneToOneField(User, primary_key=True) 
     name = models.CharField(max_length=100) # vendor's name
     vendor_rating = models.FloatField() # average over credit ratings issued by vendor
     credit_ceiling = models.FloatField() # maximum total amount across unredeemed credits
 
-    def __unicode__(self):
-        return ' '.join([self.user.username + "'s",
-                         "vendor properties"])
 
-# vendor admin table (maps admins to vendors)
-class VendorAdmin(models.Model):
-    user = models.ForeignKey(User, related_name="vendor_admin")
-    admin_for = models.ForeignKey(User, related_name="vendor_administered")
+# marketplace table
+# expands the Entity class
+class Marketplace(Entity):
+    city = models.ForeignKey(City) # Marketplaces are location based, but Vendors are not.
+    vendors = ManyToManyField(Vendor, through='Relationship') # Vendors that operate within the marketplace
 
     def __unicode__(self):
-        return ' '.join([self.user.username,
-                         "(%s's admin)" % self.admin_for.username])
+        return ' '.join(["Marketplace:", self.name])
 
-# vendor manager table (maps managers to vendors)
-class VendorManager(models.Model):
-    user = models.ForeignKey(User, related_name="vendor_manager")
-    manager_for = models.ForeignKey(User, related_name="vendor_managed")
-    
-    def __unicode__(self):
-        return ' '.join([self.user.username,
-                         "(%s's manager)" % self.manager_for.username])
+# Describes the relationship between a Vendor and Marketplace
+class Relationship(models.Model):
+	marketplace = models.ForeignKey(Marketplace)
+	vendor = models.ForeignKey(Vendor)
+	date_joined: models.DateField()
+
+# marketplace properties table
+class MarketplaceProperty(models.Model):
+    marketplace_rating = models.FloatField() # average over credit ratings issued by marketplace
+    credit_ceiling = models.FloatField() # maximum total amount across unredeemed credits
+
+# Manager/Admin relationships handled by Permissions
 
 # wallet table (maps credits to credit holders and specifies amounts)
 class Wallet(models.Model):
@@ -124,46 +150,7 @@ class VendorVenue(models.Model):
     def __unicode__(self):
         return ' '.join([self.vendor.username, "at", self.venue.name]) 
 
-# marketplace table
-class Marketplace(models.Model):
-    name = models.CharField(max_length=100)
-    city = models.ForeignKey(City)
-    date_created = models.DateTimeField()
-    date_active = models.DateTimeField()
-    num_members = models.IntegerField("number of members") # total number of vendors in the marketplace
-
-    def __unicode__(self):
-        return ' '.join(["Marketplace:", self.name]) 
-
-# marketplace properties table
-# this uses a reference to django's built-in user model
-class MarketplaceProperty(models.Model):
-    user = models.OneToOneField(User, primary_key=True) 
-    name = models.CharField(max_length=100) # marketplace's name
-    marketplace_rating = models.FloatField() # average over credit ratings issued by marketplace
-    credit_ceiling = models.FloatField() # maximum total amount across unredeemed credits
-
-    def __unicode__(self):
-        return ' '.join([self.user.username + "'s",
-                         "marketplace properties"])
-
-# marketplace admin table (maps admins to marketplaces)
-class MarketplaceAdmin(models.Model):
-    user = models.ForeignKey(User)
-    admin_for = models.ForeignKey(Marketplace)
-
-    def __unicode__(self):
-        return ' '.join([self.user.username,
-                         "(%s's admin)" % self.admin_for.name])
-
-# marketplace manager table (maps managers to marketplaces)
-class MarketplaceManager(models.Model):
-    user = models.ForeignKey(User)
-    manager_for = models.ForeignKey(Marketplace)
-
-    def __unicode__(self):
-        return ' '.join([self.user.username,
-                         "(%s's manager)" % self.manager_for.name])
+# Admin/Manager data handled by Permissions
 
 # marketplace venue table (maps venues to marketplaces)
 class MarketplaceVenue(models.Model):
@@ -173,14 +160,4 @@ class MarketplaceVenue(models.Model):
     def __unicode__(self):
         return ' '.join([self.venue.name, 
                          "member of", 
-                         self.marketplace.name]) 
-
-# marketplace vendor table (maps vendors to marketplaces)
-class MarketplaceVendor(models.Model):
-    vendor = models.ForeignKey(User)
-    marketplace = models.ForeignKey(Marketplace)
-
-    def __unicode__(self):
-        return ' '.join([self.vendor.username, 
-                         "member of", 
-                         self.marketplace.name]) 
+                         self.marketplace.name])
