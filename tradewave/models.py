@@ -61,7 +61,7 @@ class Industry(models.Model):
 
 # vendor properties table
 class VendorProperty(models.Model):
-    name = models.CharField(max_length=100) # vendor's name
+	vendor = models.OneToOneField(Vendor) # Related Vendor
     vendor_rating = models.FloatField() # average over credit ratings issued by vendor
     credit_ceiling = models.FloatField() # maximum total amount across unredeemed credits
 
@@ -83,6 +83,7 @@ class Relationship(models.Model):
 
 # marketplace properties table
 class MarketplaceProperty(models.Model):
+	marketplace = models.OneToOneField(Marketplace) # Related Marketplace
     marketplace_rating = models.FloatField() # average over credit ratings issued by marketplace
     credit_ceiling = models.FloatField() # maximum total amount across unredeemed credits
 
