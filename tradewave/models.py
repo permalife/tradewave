@@ -2,24 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class AccountHolder(Entity):
-    # total amount in USD of credits held
-    total_amount = models.FloatField()
-
-    # maximum amount of credits to issue
-    max_credit_issued = models.FloatField()
-
-    # maximum amount of credits that cam be held in account 
-    max_credit_held = models.FloatField()
-
-    class Meta:
-        permissions = (
-            ("credits_issue", "Can issue credits"),
-            ("credits_transact", "Can transact in credits"),
-        )    
-
-
-# producer credit table
 class Credit(models.Model):
     # unique user identifier
     credit_id = models.UUIDField(primary_key=True)
@@ -57,6 +39,27 @@ class Credit(models.Model):
         ])
 
 
+class AccountHolder(Entity):
+    # total amount in USD of credits held
+    total_amount = models.FloatField()
+
+    # maximum amount of credits to issue
+    max_credit_issued = models.FloatField()
+
+    # maximum amount of credits that cam be held in account 
+    max_credit_held = models.FloatField()
+
+    # account holder's wallet
+    wallet = models.ManyToManyField(Credit, through=CreditMap)
+
+    class Meta:
+        permissions = (
+            ("credits_issue", "Can issue credits"),
+            ("credits_transact", "Can transact in credits"),
+        )    
+
+
+# producer credit table
 # user properties table
 # we want to use Django's user object for authentication
 class UserProperty(models.Model):
