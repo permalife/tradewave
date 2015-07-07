@@ -1,79 +1,173 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# producer credit table
+
 class Credit(models.Model):
-    name = models.CharField(max_length=100) # credit name as per Vendor's choosing
-    issuer = models.ForeignKey(User) # issuer id
-    amount_issued = models.FloatField() # total amount issued in USD
-    amount_redeemed = models.FloatField() # total amount redeemed to date in USD
-    series = models.IntegerField() # current credit generation (i.e. 6th time issued)
-    credit_rating = models.FloatField() # redeemed / issued over all generations
-    date_created = models.DateTimeField('date created') # date credit was created
-    date_expire = models.DateTimeField('date to expire') # date credit set to expire
+    # unique user identifier
+    credit_id = models.UUIDField(primary_key=True)
+
+    # credit name as per issuer's choosing
+    name = models.CharField(max_length=100)
+
+    # credits are tied to entities
+    issuer = models.ForeignKey(AccountHolder)
+ 
+    # current credit generation (i.e. 6th time issued) 
+    series = models.IntegerField()
+
+    # total amount issued in USD 
+    amount_issued = models.FloatField()
+
+    # total amount redeemed to date in USD
+    amount_redeemed = models.FloatField()
+   
+    # redeemed / issued (meaningful for comleted credit series)
+    credit_rating = models.FloatField() 
+
+    date_issued = models.DateTimeField('date issued')
+    date_expire = models.DateTimeField('date to expire')
     date_lastspent = models.DateTimeField('date last transaction') 
 
     def __unicode__(self):
-       return ' '.join(['Credit:', self.name])
+        return ' '.join([
+            "credit",
+            self.name,
+            "series #",
+            self.series,
+            "issued by",
+            self.issuer.name,
+        ])
 
+
+class AccountHolder(Entity):
+    # total amount in USD of credits held
+    total_amount = models.FloatField()
+
+    # maximum amount of credits to issue
+    max_credit_issued = models.FloatField()
+
+    # maximum amount of credits that cam be held in account 
+    max_credit_held = models.FloatField()
+
+    # account holder's wallet
+    wallet = models.ManyToManyField(Credit, through=CreditMap)
+
+    class Meta:
+        permissions = (
+            ("credits_issue", "Can issue credits"),
+            ("credits_transact", "Can transact in credits"),
+        )    
+
+
+# producer credit table
 # user properties table
-# *** we intend to use Django's user object
-# this uses a reference to django's built-in user model
+# we want to use Django's user object for authentication
 class UserProperty(models.Model):
-    user = models.OneToOneField(User, primary_key=True)     
+    # unique user identifier
+    userid = models.UUIDField(primary_key=True)
+ 
+    # reference to django's user object      
+    user = models.OneToOneField(User, unique=True) 
     date_created = models.DateTimeField('date joined') 
     date_active = models.DateTimeField('date last active') 
-    is_vendor = models.BooleanField() # boolean flag to indicate is the user is a vendor
-    is_marketplace = models.BooleanField() # boolean flag to indicate is the user is a marketplace
-    pin = models.IntegerField() # personal id number
-    total_amount = models.FloatField() # total amount in USD of credits held
+
+    # personal id number
+    pin = models.IntegerField()
+
+    # represents a passive relationship with an entity
+    # ('like', 'follow', etc) 
+    favorites = models.ManyToManyField(Entity, through=Relationship)
  
     def __unicode__(self):
-        return ' '.join([self.user.username + "'s",
-                         "user properties"])
+        return ' '.join([
+            "user properties of",
+            self.user.username,
+        ])
 
-# vendor properties table
-# this uses a reference to django's built-in user model
-class VendorProperty(models.Model):
-    user = models.OneToOneField(User, primary_key=True) 
-    name = models.CharField(max_length=100) # vendor's name
-    vendor_rating = models.FloatField() # average over credit ratings issued by vendor
-    credit_ceiling = models.FloatField() # maximum total amount across unredeemed credits
+
+# passive relationships ("like", "follow", etc)
+class Relationship(models.Model):
+    name = models.CharField(unique=True)
+    user = models.ForeignKey(UserProperty)
+    entity = models.ForeignKey(Entity)
+ 
+    # date relationship commenced
+    date_started = models.DateField()
+
+
+# Entities are objects that can create and distribute credits. 
+# For now this is only markets and vendors, but this could change in the future
+class Entity(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    date_created = models.DateTimeField()
+    date_active = models.DateTimeField()
+    venues = models.ManyToManyField(Venue, through=VenueMap)
+
+    # entity reputation
+    rating = models.FloatField()
+
+    class Meta:
+        abstract = True
+
+        permissions = (
+            ("entity_admin", "Can administer entity"),
+            ("entity_manager", "Can manage entity"),
+            ("entity_employee", "Is entity employee"),
+        )    
+
+
+# vendor table
+class Vendor(Entity):
+    industry = models.ForeignKey(Industry)
+
+    # does vendor has a CSA
+    is_csa = models.BooleanField()
+
+
+# Type of business. (Food, Construction, Law, Medical, Etc.)    
+class Industry(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+
+
+# marketplace table
+class Marketplace(Entity):
+    # marketplaces are assigned to cities, but vendors are not
+    city = models.ForeignKey(City) 
+
+    # vendors that operate within the marketplace 
+    vendors = models.ManyToManyField(Vendor, through='Affiliation') 
 
     def __unicode__(self):
-        return ' '.join([self.user.username + "'s",
-                         "vendor properties"])
+        return ' '.join([
+            "marketplace:",
+            self.name,
+            "in",
+            self.city.name
+        ])
 
-# vendor admin table (maps admins to vendors)
-class VendorAdmin(models.Model):
-    user = models.ForeignKey(User, related_name="vendor_admin")
-    admin_for = models.ForeignKey(User, related_name="vendor_administered")
 
-    def __unicode__(self):
-        return ' '.join([self.user.username,
-                         "(%s's admin)" % self.admin_for.username])
+# table that specifies the affiliation between a vendor and marketplace
+class Affiliation(models.Model):
+    marketplace = models.ForeignKey(Marketplace)
+    vendor = models.ForeignKey(Vendor)
+    date_started = models.DateField() # date affiliation began
 
-# vendor manager table (maps managers to vendors)
-class VendorManager(models.Model):
-    user = models.ForeignKey(User, related_name="vendor_manager")
-    manager_for = models.ForeignKey(User, related_name="vendor_managed")
-    
-    def __unicode__(self):
-        return ' '.join([self.user.username,
-                         "(%s's manager)" % self.manager_for.username])
 
-# wallet table (maps credits to credit holders and specifies amounts)
-class Wallet(models.Model):
-    user = models.ForeignKey(User)
+# table that specifes amount of various credits held by account holders
+class CreditMap(models.Model):
+    holder = models.ForeignKey(AccountHolder)
     credit = models.ForeignKey(Credit)
     amount = models.FloatField()
 
     def __unicode__(self):
-        return ' '.join([ str(self.amount),
-                          "of",
-                          self.user.username + "'s", 
-                          self.credit.name,
-                          "credits"]) 
+        return ' '.join([
+            str(self.amount),
+            "of",
+            self.credit.name,
+            "credits held by",
+            self.holder.name,
+        ]) 
+
 
 # city (municipality) table
 class City(models.Model):
@@ -81,106 +175,69 @@ class City(models.Model):
     state = models.CharField(max_length=30)
     country = models.CharField(max_length=30)     
 
+    class Meta:
+        unique_together = ('name', 'state', 'country')
+
     def __unicode__(self):
         return ' '.join(['City:', self.name]) 
+
 
 # venue table
 class Venue(models.Model):
     name = models.CharField(max_length=100)
     address = models.CharField(max_length=200)
-    zipcode = models.CharField(max_length=10)
+    zipcode = models.CharField(max_length=5)
     city = models.ForeignKey(City)
     date_created = models.DateTimeField()
     date_active = models.DateTimeField()
 
     def __unicode__(self):
-        return ' '.join(['Venue:', self.name]) 
+        return ' '.join([
+            'Venue:',
+            self.name,
+            'at',
+            self.city.name,
+        ]) 
 
-# transaction log table (record of transactions using wallet references)  
+
+# transaction log table (record of all transactions)
 class TransactionLog(models.Model):
     timestamp = models.DateTimeField("transaction timestamp")
-    wallet_send = models.ForeignKey(Wallet, related_name="sender")
-    wallet_receive = models.ForeignKey(Wallet, related_name="receiver")
-    credit = models.ForeignKey(Credit)
+    transact_from = models.ForeignKey(
+        CreditMap,
+        related_name="sender"
+    )
+    transact_to = models.ForeignKey(
+        CreditMap,
+        related_name="receiver"
+    )
     amount = models.FloatField()
     venue = models.ForeignKey(Venue)
-    redeemed = models.BooleanField() # boolean flag to indicate whether the credit was
-                                     # extinguished as a result of the transaction
-    def __unicode__(self):
-        return ' '.join(['Transaction:', 
-                         str(self.amount),
-                         self.credit.name + "'s",
-                         "credits from",
-                         self.wallet_send.user.username,
-                         "sent to",
-                         self.wallet_receive.user.username]) 
 
-# vendor venue table (can map vendors to venues, even
-# if they are not part of a marketplace)
-class VendorVenue(models.Model):
-    vendor = models.ForeignKey(User)
+    # boolean flag to indicate whether the credit was
+    # extinguished as a result of the transaction
+    redeemed = models.BooleanField() 
+
+    def __unicode__(self):
+        return ' '.join([
+            'Transaction:', 
+            str(self.amount),
+            self.transact_from.credit.name + "'s",
+            "credits from",
+            self.transact_from.holder.name,
+            "sent to",
+            self.transact_to.holder.name
+        ]) 
+
+
+# table that maps entities to venues
+class VenueMap(models.Model):
+    entity = models.ForeignKey(Entity)
     venue = models.ForeignKey(Venue)
 
     def __unicode__(self):
-        return ' '.join([self.vendor.username, "at", self.venue.name]) 
-
-# marketplace table
-class Marketplace(models.Model):
-    name = models.CharField(max_length=100)
-    city = models.ForeignKey(City)
-    date_created = models.DateTimeField()
-    date_active = models.DateTimeField()
-    num_members = models.IntegerField("number of members") # total number of vendors in the marketplace
-
-    def __unicode__(self):
-        return ' '.join(["Marketplace:", self.name]) 
-
-# marketplace properties table
-# this uses a reference to django's built-in user model
-class MarketplaceProperty(models.Model):
-    user = models.OneToOneField(User, primary_key=True) 
-    name = models.CharField(max_length=100) # marketplace's name
-    marketplace_rating = models.FloatField() # average over credit ratings issued by marketplace
-    credit_ceiling = models.FloatField() # maximum total amount across unredeemed credits
-
-    def __unicode__(self):
-        return ' '.join([self.user.username + "'s",
-                         "marketplace properties"])
-
-# marketplace admin table (maps admins to marketplaces)
-class MarketplaceAdmin(models.Model):
-    user = models.ForeignKey(User)
-    admin_for = models.ForeignKey(Marketplace)
-
-    def __unicode__(self):
-        return ' '.join([self.user.username,
-                         "(%s's admin)" % self.admin_for.name])
-
-# marketplace manager table (maps managers to marketplaces)
-class MarketplaceManager(models.Model):
-    user = models.ForeignKey(User)
-    manager_for = models.ForeignKey(Marketplace)
-
-    def __unicode__(self):
-        return ' '.join([self.user.username,
-                         "(%s's manager)" % self.manager_for.name])
-
-# marketplace venue table (maps venues to marketplaces)
-class MarketplaceVenue(models.Model):
-    venue = models.ForeignKey(Venue)
-    marketplace = models.ForeignKey(Marketplace)
-
-    def __unicode__(self):
-        return ' '.join([self.venue.name, 
-                         "member of", 
-                         self.marketplace.name]) 
-
-# marketplace vendor table (maps vendors to marketplaces)
-class MarketplaceVendor(models.Model):
-    vendor = models.ForeignKey(User)
-    marketplace = models.ForeignKey(Marketplace)
-
-    def __unicode__(self):
-        return ' '.join([self.vendor.username, 
-                         "member of", 
-                         self.marketplace.name]) 
+        return ' '.join([
+            self.entity.name,
+            "at",
+            self.venue.name
+        ])
