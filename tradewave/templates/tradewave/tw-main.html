@@ -43,14 +43,18 @@
 
         <!-- Contents Wrapper -->
         <div id="intro-wrapper" class="wrapper wrapper-style1">
-            {% block title-page %}
-            <div class="title"> Tradewave page title </div>
-            {% endblock title-page %}
+            <div class="title">
+            {% block page-title %}
+            <!-- default title - have templates override it -->
+            <p> Tradewave page title </p>
+            {% endblock page-title %}
+            </div>
 
             <div class="container">
-            {% block contents-page %}
+            {% block page-contents %}
+            <!-- default contents - have templates override it -->
             <p> Tradewave page contents </p>            
-            {% endblock contents-page %}
+            {% endblock page-contents %}
             </div>
         </div>
         <!-- Contents Wrapper -->
