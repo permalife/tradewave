@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<!--
+    Escape Velocity 2.5 by HTML5 UP
+    html5up.net | @n33co
+    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+
+<!-- *** main tradewave template stub *** -->
+
+{% load staticfiles %}
+<html>
+    <head>
+        {% block app-meta %}
+        <title>Trade Wave</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="description" content="" />
+        <meta name="keywords" content="" />
+        {% endblock app-meta %}
+        
+        <!-- Global Variable for js -->
+        {% block js-common %}
+        <script language="javascript">var STATIC_URL = "{{ STATIC_URL|escapejs }}";</script>
+        
+        <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900" rel="stylesheet" />
+        <!--[if lte IE 8]><script src="js/html5shiv.js"></script><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+        <script src="{% static "js/jquery.min.js" %}"></script>
+        <script src="{% static "js/jquery.dropotron.min.js" %}"></script>
+        <script src="{% static "js/config.js" %}"></script>
+        <script src="{% static "js/skel.min.js" %}"></script>
+        <script src="{% static "js/skel-panels.min.js" %}"></script>
+        <noscript>
+        <link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
+        </noscript>
+        {% endblock js-common %}
+    </head>
+    <body class="homepage">
+
+        {% block header %}
+        {% include "tradewave/tw-main-header.html" %}
+        {% endblock header %}
+
+        <!-- Contents Wrapper -->
+        <div id="intro-wrapper" class="wrapper wrapper-style1">
+            <div class="title">
+            {% block page-title %}
+            <!-- default title - have templates override it -->
+            <p> Tradewave page title </p>
+            {% endblock page-title %}
+            </div>
+
+            <div class="container">
+            {% block page-contents %}
+            <!-- default contents - have templates override it -->
+            <p> Tradewave page contents </p>            
+            {% endblock page-contents %}
+            </div>
+        </div>
+        <!-- Contents Wrapper -->
+
+        <!-- Footer Wrapper -->
+        {% block footer %}
+        {% include "tradewave/tw-main-footer.html" %}
+        {% endblock footer %}
+        <!-- /Footer Wrapper -->
+
+    </body>
+</html>
