@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-# city (municipality) table
+# defines city (municipality)
 class City(models.Model):
     name = models.CharField(max_length=30)
     state = models.CharField(max_length=30)
@@ -15,7 +15,7 @@ class City(models.Model):
         return ' '.join(['City:', self.name])
 
 
-# venue table
+# defines venue
 class Venue(models.Model):
     name = models.CharField(max_length=100)
     address = models.CharField(max_length=200)
@@ -33,8 +33,12 @@ class Venue(models.Model):
         ])
 
 
-# Entities are objects that can create and distribute credits.
-# For now this is only markets and vendors, but this can change in the future
+# defines entity
+# notes:
+#   Entities are objects that can be either personal, vendors or marketplaces
+#   A personal entity is tied to user's personal account. It can not issue credits.
+#   A vendor or marketplace entity have their own accounts that multiple users can manage.
+#   A vendor or marketplace accounts are capable of issuing credits.
 class Entity(models.Model):
     name = models.CharField(max_length=100, unique=True)
     date_created = models.DateTimeField()
@@ -57,7 +61,7 @@ class Entity(models.Model):
         return self.name
 
 
-# table that maps entities to venues
+# maps entities to venues
 class VenueMap(models.Model):
     entity = models.ForeignKey(Entity)
     venue = models.ForeignKey(Venue)
@@ -70,6 +74,7 @@ class VenueMap(models.Model):
         ])
 
 
+# defines the types of credits issued
 class Credit(models.Model):
     # unique user identifier
     credit_id = models.UUIDField(primary_key=True)
@@ -107,6 +112,7 @@ class Credit(models.Model):
         ])
 
 
+# defines account(s) associated with an entity
 class Account(models.Model):
     # total amount in USD of credits held
     total_amount = models.FloatField()
@@ -132,7 +138,8 @@ class Account(models.Model):
     def __unicode__(self):
         return self.entity.name + '\'s account'
 
-# table that specifes amount of various credits held by account holders
+
+# maps credits to accounts
 class CreditMap(models.Model):
     holder = models.ForeignKey(Account)
     credit = models.ForeignKey(Credit)
@@ -148,12 +155,13 @@ class CreditMap(models.Model):
         ])
 
 
-# Type of business. (Food, Construction, Law, Medical, Etc.)
+# define industry type
+# (e.g. Food, Construction, Law, Medical, Etc.)
 class Industry(models.Model):
     name = models.CharField(max_length=64, unique=True)
 
 
-# vendor table
+# define vendor
 class Vendor(Entity):
     industry = models.ForeignKey(Industry)
 
@@ -161,15 +169,13 @@ class Vendor(Entity):
     is_csa = models.BooleanField()
 
 
-# marketplace table
+# define marketplace
 class Marketplace(Entity):
     # marketplaces are assigned to cities, but vendors are not
     city = models.ForeignKey(City)
 
     # vendors that operate within the marketplace
     vendors = models.ManyToManyField(Vendor, through='Affiliation')
-
-    #
 
     def __unicode__(self):
         return ' '.join([
@@ -180,8 +186,10 @@ class Marketplace(Entity):
         ])
 
 
-# user properties table
-# we want to use Django's user object for authentication
+# maps to registered users and define various user properties
+# notes:
+#   We use Django's built-in user object for authentication.
+#   A user has a personal account and can be affiliated with vendors and/or marketplaces
 class UserProperty(models.Model):
     # unique user identifier
     userid = models.UUIDField(primary_key=True)
@@ -217,7 +225,8 @@ class UserProperty(models.Model):
         ])
 
 
-# passive relationships ("like", "follow", etc)
+# define relationships
+# (e.g. "like", "follow", etc)
 class Relationship(models.Model):
     user = models.ForeignKey(UserProperty)
     entity = models.ForeignKey(Entity)
@@ -227,14 +236,16 @@ class Relationship(models.Model):
     date_started = models.DateField()
 
 
-# table that specifies the affiliation between a vendor and marketplace
+# maps affiliations between a vendor and marketplace
 class Affiliation(models.Model):
     marketplace = models.ForeignKey(Marketplace)
     vendor = models.ForeignKey(Vendor)
-    date_started = models.DateField() # date affiliation began
+
+    # date affiliation began
+    date_started = models.DateField()
 
 
-# transaction log table (record of all transactions)
+# defines transaction log (record of all transactions)
 class TransactionLog(models.Model):
     timestamp = models.DateTimeField("transaction timestamp")
     transact_from = models.ForeignKey(
