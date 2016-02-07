@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext, loader
 from django.views import generic
 from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
-    AccountHolder, CreditMap, UserProperty, Relationship, Industry, Vendor, \
+    Account, CreditMap, UserProperty, Relationship, Industry, Vendor, \
     Marketplace, Affiliation, TransactionLog
 import time
 import logging
@@ -129,8 +129,10 @@ def process_login(request):
             logger.info('Logged in [%s]', user.username)
             user_property = UserProperty.objects.get(user=user.pk)
 
-            # sesssion-wide var: amount
-            request.session['amount'] = user_property.total_amount
+            # sesssion-wide variable user role (default to personal):
+            request.session['user_role'] = 'personal'
+
+            #user_property.
 
             # determine user type & render appropriate url
             if user_property.is_vendor:

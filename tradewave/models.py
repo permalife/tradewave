@@ -43,7 +43,6 @@ class Entity(models.Model):
     # entity reputation
     rating = models.FloatField()
 
-
     # venues the marketplace is registered for
     venues = models.ManyToManyField(Venue, through='VenueMap')
 
@@ -53,6 +52,9 @@ class Entity(models.Model):
             ("entity_manager", "Can manage entity"),
             ("entity_employee", "Is entity employee"),
         )
+
+    def __unicode__(self):
+        return self.name
 
 
 # table that maps entities to venues
@@ -76,7 +78,7 @@ class Credit(models.Model):
     name = models.CharField(max_length=100)
 
     # credits are tied to entities
-    issuer = models.ForeignKey('AccountHolder')
+    issuer = models.ForeignKey('Account')
 
     # current credit generation (i.e. 6th time issued)
     series = models.IntegerField()
@@ -105,7 +107,7 @@ class Credit(models.Model):
         ])
 
 
-class AccountHolder(Entity):
+class Account(models.Model):
     # total amount in USD of credits held
     total_amount = models.FloatField()
 
@@ -118,16 +120,21 @@ class AccountHolder(Entity):
     # account holder's wallet
     wallet = models.ManyToManyField(Credit, through='CreditMap')
 
+    # entity that owns the account
+    entity = models.ForeignKey(Entity)
+
     class Meta:
         permissions = (
             ("credits_issue", "Can issue credits"),
             ("credits_transact", "Can transact in credits"),
         )
 
+    def __unicode__(self):
+        return self.entity.name + '\'s account'
 
 # table that specifes amount of various credits held by account holders
 class CreditMap(models.Model):
-    holder = models.ForeignKey(AccountHolder)
+    holder = models.ForeignKey(Account)
     credit = models.ForeignKey(Credit)
     amount = models.FloatField()
 
@@ -162,6 +169,8 @@ class Marketplace(Entity):
     # vendors that operate within the marketplace
     vendors = models.ManyToManyField(Vendor, through='Affiliation')
 
+    #
+
     def __unicode__(self):
         return ' '.join([
             "marketplace:",
@@ -186,16 +195,16 @@ class UserProperty(models.Model):
     pin = models.IntegerField()
 
     # vendor affiliation
-    vendors = models.ManyToManyField(Vendor, related_name='vendor')
+    vendors = models.ManyToManyField(Vendor, related_name='vendor', blank=True)
 
     # marketplace affiliation
-    marketplaces = models.ManyToManyField(Marketplace, related_name='marketplace')
+    marketplaces = models.ManyToManyField(Marketplace, related_name='marketplace', blank=True)
 
     # link to a personal account
     # for regular users (with no affiliations), this will be their only account
     # if a user is affiliated with a vendor and/or marketplace, they will have access
     # to additional accounts through these affiliations
-    account_holder = models.ForeignKey(AccountHolder, related_name='account_holder')
+    account_holder = models.ForeignKey(Account, related_name='account_holder')
 
     # represents a passive relationship with an entity
     # ('like', 'follow', etc)
