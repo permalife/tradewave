@@ -36,9 +36,9 @@ class Venue(models.Model):
 # defines entity
 # notes:
 #   Entities are objects that can be either personal, vendors or marketplaces
-#   A personal entity is tied to user's personal account. It can not issue credits.
-#   A vendor or marketplace entity have their own accounts that multiple users can manage.
-#   A vendor or marketplace accounts are capable of issuing credits.
+#   A personal entity is tied to user's personal credit account. It can not issue credits.
+#   A vendor or marketplace entity have their own credit account(s) that multiple users can manage.
+#   A vendor or marketplace are capable of issuing credits on their accounts.
 class Entity(models.Model):
     name = models.CharField(max_length=100, unique=True)
     date_created = models.DateTimeField()
