@@ -219,7 +219,7 @@ class Account(models.Model):
     # account's wallet (collection of credits)
     wallet = models.ManyToManyField(Credit, through='CreditMap')
 
-    # total amount credits held across all credits (in USD)
+    # total amount held in all credits (in USD)
     amount_total = models.DecimalField(decimal_places=2)
 
     # create / update timestamps
