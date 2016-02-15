@@ -2,12 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
+from uuid import uuid4
 
 
 # defines city (municipality)
 class City(models.Model):
-    name = models.CharField(max_length=30)
-    state = models.CharField(max_length=30)
+    name = models.CharField(max_length=50)
+    state = models.CharField(max_length=2)
     country = models.CharField(max_length=30)
 
     class Meta:
@@ -64,9 +65,9 @@ class Entity(models.Model):
     #   to user's personal credit Account
     #   If this is a vendor / marketplace entity, this will link to
     #   vendor's / markplace's credit account
-    account = models.ForeignKey('Account')
+    #account = models.ForeignKey('Account', related_name='holder')
 
-    # can or cant not issue credits
+    # allowed to issue credits
     can_issue = models.BooleanField(default=False)
 
     # venues the entity is affiliated with
@@ -100,7 +101,7 @@ class Vendor(Entity):
     # maximum amount of credits to issue (in USD)
     # can be used as a way to limit vendor's credit issuing ability
     # for now default is not to allow the vendors to issue credits
-    max_credits_to_issue = models.DecimalField(decimal_places=2, default=0)
+    max_credits_to_issue = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
 
 # define marketplace
@@ -116,7 +117,8 @@ class Marketplace(Entity):
             'Marketplace',
             self.name,
             'located in',
-            self.city.name
+            self.city.name + ',',
+            self.city.state
         ])
 
 
@@ -127,7 +129,7 @@ class Marketplace(Entity):
 #   A user can be affiliated with a number of vendors and/or marketplaces
 class TradewaveUser(models.Model):
     # unique user identifier in Tradewave system
-    uuid = models.UUIDField(primary_key=True)
+    uuid = models.UUIDField(primary_key=True, default=uuid4)
 
     # reference to django's built-in user object
     user = models.OneToOneField(User, unique=True)
@@ -139,7 +141,7 @@ class TradewaveUser(models.Model):
     qr_image = models.ImageField(upload_to='qr')
 
     # user's personal entity
-    entity_personal = models.OneToOneField(Entity)
+    user_entity = models.OneToOneField(Entity)
 
     # vendor affiliation(s)
     vendors = models.ManyToManyField(Vendor, related_name='users', blank=True)
@@ -149,7 +151,12 @@ class TradewaveUser(models.Model):
 
     # represents a passive relationship with an entity
     # ('like', 'follow', etc)
-    favorites = models.ManyToManyField(Entity, through='Relationship')
+    favorites = models.ManyToManyField(
+        Entity,
+        related_name='favorites',
+        through='Relationship',
+        blank=True
+    )
 
     # create / update timestamps
     date_created = models.DateTimeField('date joined', auto_now_add=True)
@@ -167,10 +174,13 @@ class TradewaveUser(models.Model):
         ])
 
 
+def one_year_from_now():
+    return timezone.now() + timedelta(days=365)
+
 # defines the credits issued
 class Credit(models.Model):
     # unique credit identifier
-    uuid = models.UUIDField(primary_key=True)
+    uuid = models.UUIDField(primary_key=True, default=uuid4)
 
     # credits are issued by entities
     issuer = models.ForeignKey(Entity)
@@ -179,29 +189,26 @@ class Credit(models.Model):
     name = models.CharField(max_length=100)
 
     # current credit generation (i.e. 6th time issued)
-    series = models.PositiveSmallIntegerField()
+    series = models.PositiveSmallIntegerField(default=1)
 
     # total amount issued (in USD)
-    amount_issued = models.DecimalField(decimal_places=2)
+    amount_issued = models.DecimalField(max_digits=12, decimal_places=2)
 
     # total amount redeemed to date (in USD)
-    amount_redeemed = models.DecimalField(decimal_places=2)
+    amount_redeemed = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     # credit rating (e.g. redeemed / issued)
-    credit_rating = models.FloatField()
+    credit_rating = models.FloatField(default=100)
 
     # various timestamps relevant to the issued credit
     date_created = models.DateTimeField('date issued', auto_now_add=True)
     date_updated = models.DateTimeField('date last updated', auto_now=True)
 
-    def one_year_from_now():
-        return timezone.now() + timedelta(days=365)
-
     # date of credit expiration (default is to expire in 1 year)
     date_expire = models.DateTimeField('date to expire', default=one_year_from_now)
 
     # date of last transaction using credit
-    date_last_transacted = models.DateTimeField('date of last transaction')
+    date_last_transacted = models.DateTimeField('date of last transaction', null=True, blank=True)
 
     def __unicode__(self):
         return ' '.join([
@@ -209,8 +216,7 @@ class Credit(models.Model):
             self.name,
             'issued by',
             self.issuer.name,
-            '(series #',
-            self.series + ')'
+            '(series #%d)' % self.series
         ])
 
 
@@ -219,8 +225,11 @@ class Account(models.Model):
     # account's wallet (collection of credits)
     wallet = models.ManyToManyField(Credit, through='CreditMap')
 
+    # credits are issued by entities
+    entity = models.ForeignKey(Entity)
+
     # total amount held in all credits (in USD)
-    amount_total = models.DecimalField(decimal_places=2)
+    amount_total = models.DecimalField(max_digits=12, decimal_places=2)
 
     # create / update timestamps
     date_created = models.DateTimeField('date created', auto_now_add=True)
@@ -237,7 +246,7 @@ class Account(models.Model):
 class CreditMap(models.Model):
     account = models.ForeignKey(Account)
     credit = models.ForeignKey(Credit)
-    amount = models.DecimalField(decimal_places=2)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
 
     def __unicode__(self):
         return ' '.join([
@@ -264,7 +273,7 @@ class TransactionLog(models.Model):
     credit = models.ForeignKey(Credit)
 
     # transaction amount (in USD)
-    amount = models.DecimalField(decimal_places=2)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
 
     # venue where transaction took place
     venue = models.ForeignKey(Venue)
@@ -283,9 +292,9 @@ class TransactionLog(models.Model):
             'in credit',
             self.credit.name,
             'from',
-            self.transact_from.account.name,
+            self.transact_from.entity.name,
             'to',
-            self.transact_to.account.name
+            self.transact_to.entity.name
         ])
 
 
@@ -308,18 +317,25 @@ class VenueMap(models.Model):
 class Industry(models.Model):
     name = models.CharField(max_length=64, unique=True)
 
+    def __unicode__(self):
+        return ' '.join([
+            'Industry',
+            self.name
+        ])
 
 # define relationships
 # (e.g. 'like', 'follow', etc)
 class Relationship(models.Model):
     user = models.ForeignKey(TradewaveUser)
     entity = models.ForeignKey(Entity)
-    name = models.CharField(unique=True, max_length=50)
+    relationship = models.CharField(max_length=50)
 
     # create / update timestamps
     date_created = models.DateField(auto_now_add=True)
     date_updated = models.DateField(auto_now=True)
 
+    class Meta:
+        unique_together = ('user', 'entity', 'relationship')
 
 # maps affiliations between a vendor and marketplace
 class Affiliation(models.Model):
@@ -329,3 +345,10 @@ class Affiliation(models.Model):
     # create / update timestamps
     date_created = models.DateField(auto_now_add=True)
     date_updated = models.DateField(auto_now=True)
+
+    def __unicode__(self):
+        return ' '.join([
+            self.vendor.name,
+            'is a vendor at marketplace',
+            self.marketplace.name
+        ])
