@@ -6,7 +6,9 @@ from django.core.urlresolvers import reverse
 #from zaplings.models import FeaturedIdea, Love, Offer, Need, UserLove, NewUserEmail
 from django.template import RequestContext, loader
 from django.views import generic
-from tradewave.models import UserProperty, VendorProperty, MarketplaceProperty, Venue, Wallet
+from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
+    Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
+    Marketplace, Affiliation, TransactionLog
 import time
 import logging
 
@@ -46,15 +48,15 @@ class TransactionConfirmedView(generic.ListView):
 class CreateUserView(generic.ListView):
     model = User
     template_name = 'tradewave/create-user.html'
-	
+
 class CreateVendorView(generic.ListView):
     model = User
     template_name = 'tradewave/create-vendor.html'
-	
+
 class LoadDdipView(generic.ListView):
     model = User
     template_name = 'tradewave/load-ddip.html'
-	
+
 class MarketplaceInitial(generic.ListView):
     template_name = 'tradewave/marketplace-initial.html'
     context_object_name = 'featured_venues'
@@ -73,19 +75,19 @@ class MarketplaceIssue(generic.ListView):
 
 class MarketplaceSend(generic.ListView):
     model = User
-    template_name = 'tradewave/marketplace-send.html'	
+    template_name = 'tradewave/marketplace-send.html'
 
 class VendorChoosePayment(generic.ListView):
     model = User
-    template_name = 'tradewave/vendor-choose-payment.html'	
+    template_name = 'tradewave/vendor-choose-payment.html'
 
 class VendorCustLogin(generic.ListView):
     model = User
-    template_name = 'tradewave/vendor-cust-login.html'	
-	
+    template_name = 'tradewave/vendor-cust-login.html'
+
 class VendorHome(generic.ListView):
     model = User
-    template_name = 'tradewave/vendor-home.html'	
+    template_name = 'tradewave/vendor-home.html'
 
 class VendorInitial(generic.ListView):
     template_name = 'tradewave/vendor-initial.html'
@@ -94,7 +96,7 @@ class VendorInitial(generic.ListView):
     def get_queryset(self):
         """Return the featured venues."""
         return Venue.objects.all()[:3]
-	
+
 class VendorTransaction(generic.ListView):
     model = User
     template_name = 'tradewave/vendor-transaction.html'
@@ -114,76 +116,59 @@ class SettingsMarketplace(generic.ListView):
 # *** handlers [process] ***
 def process_login(request):
     try:
+        # TO-DO: use django forms
         user_name = request.POST.get('user_name')
         user_password = request.POST.get('user_password')
-        user = authenticate( username=user_name, 
-                             password=user_password )
+        user = authenticate(
+            username=user_name,
+            password=user_password
+        )
+
+        # is existing user?
         if user is not None and user.is_active:
             login(request, user)
-            logger.info('Logged in [%s]', user.username)
-            user_property = UserProperty.objects.get(user=user.pk)
+            logger.info('Logged in as user [%s]', user.username)
+            user_tradewave = TradewaveUser.objects.get(user=user.pk)
 
-            # sesssion-wide var: amount
-            request.session['amount'] = user_property.total_amount
+            # sesssion-wide variable user role (default to personal):
+            request.session['user_role'] = 'personal'
 
-            # determine user type & render appropriate url
-            if user_property.is_vendor:
-                request.session['user_type'] = 'vendor'
-                template_prefix = 'vendor'
-                name = VendorProperty.objects.get(user=user.pk).name
-                if not name:
-                    name = user.username
-            elif user_property.is_marketplace:
-                request.session['user_type'] = 'marketplace'
-                template_prefix = 'marketplace'
-                name = MarketplaceProperty.objects.get(user=user.pk).name
-                if not name:
-                    name = user.username
-            else:
-                request.session['user_type'] = 'user'
-                template_prefix = 'user'
-                name = user.username
-
-            # sesssion-wide var: name
-            request.session['name'] = name
-
-            # session-wide var: list of credits
-            wallet = Wallet.objects.filter(user=user.pk)
-            request.session['credits'] = \
-               [' of '.join([str(item.amount), item.credit.name]) 
-                 for item in wallet]
+            # list of credits
+            user_name = user.username
+            user_entity = user_tradewave.user_entity
+            user_account = user_entity.account.wallet
+            user_amount_total = user_entity.account.amount_total
 
             # generate the render link
-            template_handle = 'tradewave/%s-%s.html' % \
-                               (template_prefix,
-                                'home' if template_prefix == 'user' \
-                                       else 'initial')
+            template_prefix = 'user'
+            template_handle = 'tradewave/%s-home.html' % template_prefix
             logger.info('redirecting to %s', template_handle)
-            request_obj = { 'featured_venues': Venue.objects.all()[:3],
-                            'name': name,
-                            'amount': request.session['amount'],
-                            'credits': request.session['credits']}
- 
+            request_obj = {
+                'featured_venues': Venue.objects.all()[:3],
+                'name': user_name,
+                'amount': user_amount_total,
+                #'credits': request.session['credits']
+            }
+
             return render(request, template_handle, request_obj)
         else:
             request_obj = { 'status_msg': 'Invalid credentials'}
-            return render(request, 'tradewave/login.html', request_obj) 
+            return render(request, 'tradewave/login.html', request_obj)
     except Exception as e:
-            logger.error("Error: %s", e)
+            logger.error("Server error: %s", e)
             request_obj = { 'status_msg': 'Error logging in: %s' % e }
-            return render(request, 'tradewave/login.html', request_obj) 
+            return render(request, 'tradewave/login.html', request_obj)
 
 # *** handlers [record] ***
-def record_venue(request, venue_id): 
-    logger.info("venue is [%s]", venue_id) 
+def record_venue(request, venue_id):
+    logger.info("venue is [%s]", venue_id)
     request.session['venue'] = venue_id
-    venue = Venue.objects.get(id=venue_id) 
-    #logger.info("request.session: %s", str(request.session.items())) 
+    venue = Venue.objects.get(id=venue_id)
+    #logger.info("request.session: %s", str(request.session.items()))
     request_obj = { 'selected_venue':  venue,
                     'name': request.session['name'],
                     'amount': request.session['amount'],
                     'credits': request.session['credits'] }
-    return render(request, 
-                  'tradewave/%s-home.html' % request.session['user_type'], 
-                  request_obj)  
-
+    return render(request,
+                  'tradewave/%s-home.html' % request.session['user_type'],
+                  request_obj)
