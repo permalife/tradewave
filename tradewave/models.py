@@ -169,7 +169,7 @@ class TradewaveUser(models.Model):
 
     def __unicode__(self):
         return ' '.join([
-            'User properties of',
+            'Tradewave user',
             self.user.username,
         ])
 
