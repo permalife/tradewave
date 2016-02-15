@@ -26,6 +26,6 @@ urlpatterns = patterns('',
     url(r'^settings-vendor/$', views.SettingsVendor.as_view(), name='settings-vendor'),
     url(r'^settings-marketplace/$', views.SettingsMarketplace.as_view(), name='settings-marketplace'),
     url(r'^process_login/$', views.process_login, name='process_login'),
-    #url(r'^process_cust_login/$', views.process_cust_login, name='process_cust_login'),
+    url(r'^process_logout/$', views.process_logout, name='process_logout'),
     url(r'^record_venue/(?P<venue_id>\d+)/$', views.record_venue, name='record_venue')
 )

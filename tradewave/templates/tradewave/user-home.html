@@ -11,10 +11,10 @@
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <meta name="description" content="" />
         <meta name="keywords" content="" />
-        
+
         <!-- Global Variable for js -->
         <script language="javascript">var STATIC_URL = "{{ STATIC_URL|escapejs }}";</script>
-        
+
         <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900" rel="stylesheet" />
         <!--[if lte IE 8]><script src="js/html5shiv.js"></script><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
         <script src="{% static "js/jquery.min.js" %}"></script>
@@ -22,11 +22,11 @@
         <script src="{% static "js/config.js" %}"></script>
         <script src="{% static "js/skel.min.js" %}"></script>
         <script src="{% static "js/skel-panels.min.js" %}"></script>
-        <noscript>
+        <!--noscript-->
         <link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
-        </noscript>
+        <!--/noscript-->
     </head>
     <body class="homepage">
 
@@ -38,14 +38,14 @@
                 <div class="container">
                     <div class="row">
                         <div class="12u">
-                            
+
                             <!-- Intro -->
                                 <section id="intro">
                                     <p class="style1">Use TradeWave to make purchases from your favorite vendors.</p>
-                                    <p class="style1">You have {{ amount }} total in:</p>
-                                    <ul class="actions">
-                                        {% for credit in credits %}
-                                        <li>{{ credit }} </li>
+                                    <p class="style1">You have ${{ amount }} total in these credits:</p>
+                                    <ul>
+                                        {% for name, amount in credits.items %}
+                                          <li>{{ name }}: ${{amount}} </li>
                                         {% endfor %}
                                     </ul>
                                         <ul class="actions">
@@ -53,13 +53,13 @@
                                             <li><a href="#" class="button button-style3 button-big">Find Offers</a></li>
                                         </ul>
                                 </section>
-                            <!-- /Intro -->                            
+                            <!-- /Intro -->
                         </div>
                     </div>
                 </div>
             </div>
         <!-- /Intro Wrapper -->
-        
+
 
         <!-- Footer Wrapper -->
             <div id="footer-wrapper" class="wrapper">
@@ -79,7 +79,7 @@
                                         <p class="style3"><br/>
                                         Trade Wave is working to bring about an <strong>economic revolution</strong>;<br/>
                                          a way of doing business that works for <strong>people</strong> and the <strong>planet</strong> and not just <strong>profit</strong>.<br/>
-                                         The first step is to create a platform of commerce that promotes abundance<br/> 
+                                         The first step is to create a platform of commerce that promotes abundance<br/>
                                          and connects people rather than rewarding greed and scarcity.</p>
                                     </header>
                                     <hr />
@@ -92,7 +92,7 @@
                                     </span>
                                 </div>
                             <!-- /Copyright -->
-                        
+
                         </div>
                     </div>
                 </div>

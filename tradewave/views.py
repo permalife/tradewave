@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, render
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
@@ -133,11 +133,19 @@ def process_login(request):
             # sesssion-wide variable user role (default to personal):
             request.session['user_role'] = 'personal'
 
-            # list of credits
             user_name = user.username
-            user_entity = user_tradewave.user_entity
-            user_account = user_entity.account.wallet
-            user_amount_total = user_entity.account.amount_total
+
+            # user's personal entity
+            user_entity = user.tradewaveuser.user_entity
+
+            # generate the list of credits
+            # we limit to a single account for simplicity for now
+            user_account = user_entity.account_set.first()
+            user_amount_total = user_account.amount_total
+            user_wallet = CreditMap.objects.filter(account=user_account)
+            user_credits = dict([
+                (entry.credit.name, entry.amount) for entry in user_wallet
+            ])
 
             # generate the render link
             template_prefix = 'user'
@@ -145,9 +153,9 @@ def process_login(request):
             logger.info('redirecting to %s', template_handle)
             request_obj = {
                 'featured_venues': Venue.objects.all()[:3],
-                'name': user_name,
+                'username': user_name,
                 'amount': user_amount_total,
-                #'credits': request.session['credits']
+                'credits': user_credits,
             }
 
             return render(request, template_handle, request_obj)
@@ -155,9 +163,19 @@ def process_login(request):
             request_obj = { 'status_msg': 'Invalid credentials'}
             return render(request, 'tradewave/login.html', request_obj)
     except Exception as e:
-            logger.error("Server error: %s", e)
-            request_obj = { 'status_msg': 'Error logging in: %s' % e }
-            return render(request, 'tradewave/login.html', request_obj)
+        logger.error("Server error: %s", e)
+        request_obj = { 'status_msg': 'Error logging in: %s' % e }
+        return render(request, 'tradewave/login.html', request_obj)
+
+# *** handlers [process] ***
+def process_logout(request):
+    try:
+        logout(request)
+    except Exception as e:
+        logger.error("Server error: %s", e)
+    finally:
+        request_obj = { 'status_msg': 'Please login to your account'}
+        return render(request, 'tradewave/login.html', request_obj)
 
 # *** handlers [record] ***
 def record_venue(request, venue_id):
