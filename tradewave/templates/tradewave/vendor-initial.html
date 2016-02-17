@@ -11,10 +11,10 @@
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <meta name="description" content="" />
         <meta name="keywords" content="" />
-        
+
         <!-- Global Variable for js -->
         <script language="javascript">var STATIC_URL = "{{ STATIC_URL|escapejs }}";</script>
-        
+
         <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900" rel="stylesheet" />
         <!--[if lte IE 8]><script src="js/html5shiv.js"></script><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
         <script src="{% static "js/jquery.min.js" %}"></script>
@@ -22,76 +22,40 @@
         <script src="{% static "js/config.js" %}"></script>
         <script src="{% static "js/skel.min.js" %}"></script>
         <script src="{% static "js/skel-panels.min.js" %}"></script>
-        <noscript>
+        <!--noscript-->
         <link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
-        </noscript>
+        <!--/noscript-->
     </head>
     <body class="homepage">
 
 		{% include "tradewave/header.html" %}
-        
-        <!-- Intro Wrapper -->
-        <div id="intro-wrapper" class="wrapper wrapper-style1">
-            <div class="title">{{ name }}</div>
-            <div class="container">
-                <div class="row">
-                    <div class="12u">
-                        
-                        <section id="intro">
-                            <h1>Choose Location</h1>
-							<div class="row half">
-								{% for featured_venue in featured_venues %}
-								<div class="4u">
-									<a href="/record_venue/{{ featured_venue.id }}" class="button button-style3 button-big">{{ featured_venue.name }}  </a>
-								</div>
-								{% endfor %}
-							</div>
-                        </section>
-                        
-                    </div>
+
+    <!-- Intro Wrapper -->
+    <div id="intro-wrapper" class="wrapper wrapper-style1">
+        <div class="title">Vendor {{ name }}</div>
+        <div class="container">
+            <div class="row">
+                <div class="12u">
+
+                    <section id="intro">
+                        <h1>Choose Location</h1>
+                  					<div class="row half">
+                  						{% for featured_venue in featured_venues %}
+                  						<div class="4u">
+                  							<a href="/record_venue/{{ featured_venue.id }}" class="button button-style3 button-big">{{ featured_venue.name }}  </a>
+                  						</div>
+                  						{% endfor %}
+                  					</div>
+                    </section>
+
                 </div>
             </div>
         </div>
-                                                
-        <!-- Footer Wrapper -->
-            <div id="footer-wrapper" class="wrapper">
-                <div class="title">Our Mission</div>
-                <div class="container">
-                    <div class="row">
-                        <div class="12u">
+    </div>
 
-                            <!-- Footer -->
-                                <div id="footer">
-                                    <header class="style1">
-                                        <h2>An Economy of Abundance</h2>
-                                        <p class="byline">
-                                            Right now there are 23 homes on the market for every homeless person.<br />
-                                            Just one example of an economy gone awry.
-                                        </p>
-                                        <p class="style3"><br/>
-                                        Trade Wave is working to bring about an <strong>economic revolution</strong>;<br/>
-                                         a way of doing business that works for <strong>people</strong> and the <strong>planet</strong> and not just <strong>profit</strong>.<br/>
-                                         The first step is to create a platform of commerce that promotes abundance<br/> 
-                                         and connects people rather than rewarding greed and scarcity.</p>
-                                    </header>
-                                    <hr />
-                            <!-- /Footer -->
-
-                            <!-- Copyright -->
-                                <div id="copyright">
-                                    <span>
-                                        &copy; Endeavor Marketing Solutions 2014. Design by <a href="http://html5up.net/">HTML5 UP</a>.
-                                    </span>
-                                </div>
-                            <!-- /Copyright -->
-                        
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <!-- /Footer Wrapper -->
+    {% include "tradewave/footer.html" %}
 
     </body>
 </html>

@@ -1,47 +1,51 @@
 <!-- Header Wrapper -->
-    <div id="header-wrapper" class="wrapper">
-        <div class="container">
-            <div class="row">
-                <div class="12u">
+<div id="header-wrapper" class="wrapper">
+    <div class="container">
+        <div class="row">
+            <div class="12u">
 
-                    <!-- Header -->
-                        <div id="header">
+                <!-- Header -->
+                <div id="header">
 
-                            <!-- Logo -->
-                                <div id="logo">
-                                    <h1><a href="#">Trade Wave</a></h1>
-                                    <span class="byline">Creating a Sustainable Economy</span>
-                                </div>
-                            <!-- /Logo -->
+                    <!-- Logo -->
+                    <div id="logo">
+                        <h1><a href="#">Trade Wave</a></h1>
+                        <span class="byline">Creating a Sustainable Economy</span>
+                        {% if status_msg %}
+                          <br/>
+                          <p class="style1">{{ status_msg }}</p>
+                        {% endif %}
+                    </div>
+                    <!-- /Logo -->
 
-                            <!-- Nav -->
-                                <nav id="nav">
-                                    <ul>
-                                        <li class="current_page_item"><a href="/">Home</a></li>
-                                        {% if username %}
-                                          <li>
-                                              <span>My Accounts</span>
-                                              <ul>
-                                                  <li><a href="#">Personal</a></li>
-                                                  <li><a href="#">Vendor</a></li>
-                                                  <li><a href="#">Marketplace</a></li>
-                                              </ul>
-  								                        </li>
-  								                        <li><a href="#">Settings</a></li>
-                                          <li><a href="#">Dashboard</a></li>
-                                          <li><a href="/process_logout">Logout</a></li>
-                                        {% else %}
-                                          <li><a href="/login">Login</a></li>
-                                        {% endif %}
-                                    </ul>
-                                </nav>
-                            <!-- /Nav -->
-
-                        </div>
-                    <!-- /Header -->
+                    <!-- Nav -->
+                    <nav id="nav">
+                        <ul>
+                            <li class="current_page_item"><a href="/">Home</a></li>
+                            {% if name %}
+                              <li>
+                                  <span>My Accounts</span>
+                                  <ul>
+                                      <li><a href="/redirect_to_personal/">Personal</a></li>
+                                      <li><a href="/redirect_to_vendor/">Vendor</a></li>
+                                      <li><a href="/redirect_to_marketplace/">Marketplace</a></li>
+                                  </ul>
+			                        </li>
+			                        <li><a href="#">Settings</a></li>
+                              <li><a href="#">Dashboard</a></li>
+                              <li><a href="/process_logout">Logout</a></li>
+                            {% else %}
+                              <li><a href="/login">Login</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    <!-- /Nav -->
 
                 </div>
+                <!-- /Header -->
+
             </div>
         </div>
     </div>
+</div>
 <!-- /Header Wrapper -->
