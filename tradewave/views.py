@@ -3,7 +3,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
-#from zaplings.models import FeaturedIdea, Love, Offer, Need, UserLove, NewUserEmail
 from django.template import RequestContext, loader
 from django.views import generic
 from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
@@ -130,36 +129,55 @@ def process_login(request):
             logger.info('Logged in as user [%s]', user.username)
             user_tradewave = TradewaveUser.objects.get(user=user.pk)
             user_name = user.username
+            request.session['name'] = user_name
 
             # user's personal entity
-            user_entity = user.tradewaveuser.user_entity
+            user_personal_entity = user.tradewaveuser.user_entity
 
             # session-wide variable user personal entity
-            request.session['entity_personal'] = user_entity.name
-            logger.info('personal entity name: %s', user_entity.name)
+            # (save it user_name for now because we use it for page title)
+            request.session['entity_personal'] = user_name
+            logger.info('personal entity name: %s', user_personal_entity.name)
 
-            # session-wide variable vendor entity
-            if user_tradewave.vendors.exists():
-                request.session['entity_vendor'] = user_tradewave.vendors.first().name
-                logger.info('vendor entity name: %s', user_tradewave.vendors.first().name)
-
-            # session-wide variable user marketplace entity
-            if user_tradewave.marketplaces.exists():
-                request.session['entity_marketplace'] = user_tradewave.marketplaces.first().name
-                logger.info('marketplace entity name: %s', user_tradewave.marketplaces.first().name)
-
-            # generate the list of credits
+            # generate the list of user personal credits
             # we limit to a single account for simplicity for now
-            user_account = user_entity.account_set.first()
+            user_account = user_personal_entity.account_set.first()
             user_amount_total = user_account.amount_total
             user_wallet = CreditMap.objects.filter(account=user_account)
             user_credits = dict([
                 (entry.credit.name, '%.2f' % entry.amount) for entry in user_wallet
             ])
+            request.session['total'] = '%.2f' % user_amount_total
+            request.session['credits'] = user_credits
+
+            # session-wide variable vendor entity
+            # for simplicity only handle one-to-one user to vendor association
+            if user_tradewave.vendors.exists():
+                user_entity = user_tradewave.vendors.first()
+                request.session['entity_vendor'] = user_entity.name
+                logger.info('vendor entity name: %s', user_entity.name)
+
+            # session-wide variable user marketplace entity
+            # for simplicity only handle one-to-one user to marketplace association
+            if user_tradewave.marketplaces.exists():
+                user_entity = user_tradewave.marketplaces.first()
+                request.session['entity_marketplace'] = user_entity.name
+                logger.info('marketplace entity name: %s', user_entity.name)
+
+            # generate the list of vendor / entity entity credits
+            # we limit to a single account for simplicity for now
+            if user_tradewave.vendors.exists() or user_tradewave.marketplaces.exists():
+                entity_account = user_entity.account_set.first()
+                entity_amount_total = entity_account.amount_total
+                entity_wallet = CreditMap.objects.filter(account=entity_account)
+                entity_credits = dict([
+                    (entry.credit.name, '%.2f' % entry.amount) for entry in entity_wallet
+                ])
+                request.session['entity_total'] = '%.2f' % entity_amount_total
+                request.session['entity_credits'] = entity_credits
 
             # generate the render link
-            template_prefix = 'user'
-            template_handle = 'tradewave/%s-home.html' % template_prefix
+            template_handle = 'tradewave/user-home.html'
             logger.info('redirecting to %s', template_handle)
 
             # standard request object to the user page
@@ -169,9 +187,6 @@ def process_login(request):
                 'total': user_amount_total,
                 'credits': user_credits,
             }
-            request.session['name'] = user_name
-            request.session['total'] = '%.2f' % user_amount_total
-            request.session['credits'] = user_credits
 
             return render(request, template_handle, request_obj)
         else:
@@ -221,11 +236,25 @@ def redirect_to_vendor(request):
     try:
         if request.session.has_key('entity_vendor'):
             logger.info('user has a vendor association')
-            request_obj = {
-                'name': request.session['entity_vendor'],
-                'featured_venues': Venue.objects.all()[:3],
-            }
-            return render(request, 'tradewave/vendor-initial.html', request_obj)
+            if request.session.has_key('selected_venue'):
+                logger.info(
+                    'user has already chosen a venue: %s',
+                    request.session['selected_venue']
+                )
+                template_name = 'tradewave/vendor-home.html'
+                request_obj = {
+                    'selected_venue': request.session['selected_venue'],
+                    'name': request.session['entity_vendor'],
+                    'total': request.session['entity_total'],
+                    'credits': request.session['entity_credits']
+                }
+            else:
+                logger.info('user has not chosen a venue')
+                template_name = 'tradewave/vendor-initial.html'
+                request_obj = {
+                    'name': request.session['entity_vendor'],
+                    'featured_venues': Venue.objects.all()[:3]
+                }
         else:
             logger.info('user has no vendor associations')
             request_obj = {
@@ -234,7 +263,9 @@ def redirect_to_vendor(request):
                 'credits': request.session['credits'],
                 'status_msg': 'Your account is not associated with any vendor'
             }
-            return render(request, 'tradewave/user-home.html', request_obj)
+            template_name = 'tradewave/user-home.html'
+
+        return render(request, template_name, request_obj)
 
     except Exception as e:
         logger.error("Server error: %s", e)
@@ -249,11 +280,25 @@ def redirect_to_marketplace(request):
     try:
         if request.session.has_key('entity_marketplace'):
             logger.info('user has a marketplace association')
-            request_obj = {
-                'name': request.session['entity_marketplace'],
-                'featured_venues': Venue.objects.all()[:3]
-            }
-            return render(request, 'tradewave/marketplace-initial.html', request_obj)
+            if request.session.has_key('selected_venue'):
+                logger.info(
+                    'user has already chosen a venue: %s',
+                    request.session['selected_venue']
+                )
+                template_name = 'tradewave/marketplace-home.html'
+                request_obj = {
+                    'selected_venue': request.session['selected_venue'],
+                    'name': request.session['entity_marketplace'],
+                    'total': request.session['entity_total'],
+                    'credits': request.session['entity_credits']
+                }
+            else:
+                logger.info('user has not chosen a venue')
+                template_name = 'tradewave/marketplace-initial.html'
+                request_obj = {
+                    'name': request.session['entity_marketplace'],
+                    'featured_venues': Venue.objects.all()[:3]
+                }
         else:
             logger.info('user has no marketplace associations')
             request_obj = {
@@ -262,7 +307,9 @@ def redirect_to_marketplace(request):
                 'credits': request.session['credits'],
                 'status_msg': 'Your account is not associated with any marketplace'
             }
-            return render(request, 'tradewave/user-home.html', request_obj)
+            template_name = 'tradewave/user-home.html'
+
+        return render(request, template_name, request_obj)
 
     except Exception as e:
         logger.error("Server error: %s", e)
@@ -274,14 +321,28 @@ def redirect_to_marketplace(request):
 
 # *** handlers [record] ***
 def record_venue(request, venue_id):
-    logger.info("venue is [%s]", venue_id)
-    request.session['venue'] = venue_id
+    logger.info("Selected venue id is [%s]", venue_id)
+    request.session['venue_id'] = venue_id
     venue = Venue.objects.get(id=venue_id)
+    request.session['selected_venue'] = venue.name
     #logger.info("request.session: %s", str(request.session.items()))
-    request_obj = { 'selected_venue':  venue,
-                    'name': request.session['name'],
-                    'amount': request.session['amount'],
-                    'credits': request.session['credits'] }
-    return render(request,
-                  'tradewave/%s-home.html' % request.session['user_type'],
-                  request_obj)
+
+    request_obj = {
+        'selected_venue': request.session['selected_venue'],
+        'total': request.session['entity_total'],
+        'credits': request.session['entity_credits']
+    }
+
+    # determine the destination template
+    if request.session.has_key('entity_vendor'):
+        template_name = 'tradewave/vendor-home.html'
+        request_obj['name'] = request.session['entity_vendor']
+    elif request.session.has_key('entity_marketplace'):
+        template_name = 'tradewave/marketplace-home.html'
+        request_obj['name'] = request.session['entity_marketplace']
+    else:
+        # possibly the session has expired, have the user re-login
+        template_name = 'tradewave/login.html'
+        request_obj = {'status_msg': 'Your session has expired'}
+
+    return render(request, template_name, request_obj)
