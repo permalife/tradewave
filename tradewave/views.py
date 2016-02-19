@@ -11,6 +11,9 @@ from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
 import time
 import logging
 
+from operator import attrgetter
+from collections import OrderedDict
+
 logging.basicConfig(level=logging.DEBUG, filename="log/views.log")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -115,7 +118,7 @@ class SettingsMarketplace(generic.ListView):
 # *** handler to process user login ***
 def process_login(request):
     try:
-        # TO-DO: use django forms
+        # TODO: use django forms
         user_name = request.POST.get('user_name')
         user_password = request.POST.get('user_password')
         user = authenticate(
@@ -144,11 +147,13 @@ def process_login(request):
             user_account = user_personal_entity.account_set.first()
             user_amount_total = user_account.amount_total
             user_wallet = CreditMap.objects.filter(account=user_account)
-            user_credits = dict([
-                (entry.credit.name, '%.2f' % entry.amount) for entry in user_wallet
+            user_credits = OrderedDict([
+                (entry.credit.name, '%.2f' % entry.amount)
+                for entry in sorted(user_wallet, key=attrgetter('amount'), reverse=True)
             ])
-            request.session['total'] = '%.2f' % user_amount_total
-            request.session['credits'] = user_credits
+            logger.info(user_credits)
+            request.session['user_total'] = '%.2f' % user_amount_total
+            request.session['user_credits'] = user_credits
 
             # session-wide variable vendor entity
             # for simplicity only handle one-to-one user to vendor association
@@ -170,8 +175,9 @@ def process_login(request):
                 entity_account = user_entity.account_set.first()
                 entity_amount_total = entity_account.amount_total
                 entity_wallet = CreditMap.objects.filter(account=entity_account)
-                entity_credits = dict([
-                    (entry.credit.name, '%.2f' % entry.amount) for entry in entity_wallet
+                entity_credits = OrderedDict([
+                    (entry.credit.name, '%.2f' % entry.amount)
+                    for entry in sorted(entity_wallet, key=attrgetter('amount'), reverse=True)
                 ])
                 request.session['entity_total'] = '%.2f' % entity_amount_total
                 request.session['entity_credits'] = entity_credits
@@ -184,8 +190,8 @@ def process_login(request):
             request_obj = {
                 #'featured_venues': Venue.objects.all()[:3],
                 'name': user_name,
-                'total': user_amount_total,
-                'credits': user_credits,
+                'user_total': user_amount_total,
+                'user_credits': user_credits,
             }
 
             return render(request, template_handle, request_obj)
@@ -212,14 +218,36 @@ def process_logout(request):
         return render(request, 'tradewave/login.html', request_obj)
 
 
+# *** handler for vendor transaction screen ***
+def process_vendor_transaction(request):
+    try:
+        # TODO'S:
+        #   use django forms
+        #   track product categories
+        product_category = request.POST.get('product_category')
+        product_amount = request.POST.get('product_amount')
+        request_obj = {
+            'selected_venue': request.session['selected_venue'],
+            'name': request.session['entity_vendor'],
+            'user_total': request.session['user_total'],
+            'user_credits': request.session['user_credits'],
+            'product_amount': product_amount
+        }
+        return render(request, 'tradewave/vendor-choose-payment.html', request_obj)
+
+    except Exception as e:
+        logger.error("Server error: %s", e)
+        request_obj = {'status_msg': e.message}
+        return render(request, 'tradewave/login.html', request_obj)
+
+
 # *** handler to redirect to the personal page ***
 def redirect_to_personal(request):
     try:
         request_obj = {
             'name': request.session['entity_personal'],
-            'total': request.session['total'],
-            'credits': request.session['credits'],
-            #'featured_venues': Venue.objects.all()[:3]
+            'user_total': request.session['user_total'],
+            'user_credits': request.session['user_credits'],
         }
         return render(request, 'tradewave/user-home.html', request_obj)
 

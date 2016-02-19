@@ -42,13 +42,13 @@
                     <!-- Intro -->
                     <section id="intro">
                         <p class="style1">Use TradeWave to make purchases from your favorite vendors.</p>
-                        <p class="style1">You have ${{ total }} total in:</p>
+                        <p class="style1">You have ${{ user_total }} total in:</p>
                         <ul>
-                            {% for credit, amount in credits.items %}
+                            {% for credit, amount in user_credits.items %}
                               <li>{{ credit }}: ${{amount}} </li>
                             {% endfor %}
                         </ul>
-                        
+
                         <ul class="actions">
                             <li><a href="/send/" class="button button-style3 button-big">Make a Purchase</a></li>
                             <li><a href="#" class="button button-style3 button-big">Find Offers</a></li>

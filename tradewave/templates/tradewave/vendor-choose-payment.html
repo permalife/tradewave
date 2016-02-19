@@ -11,10 +11,10 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="description" content="" />
 		<meta name="keywords" content="" />
-		
+
 		<!-- Global Variable for js -->
 		<script language="javascript">var STATIC_URL = "{{ STATIC_URL|escapejs }}";</script>
-		
+
 		<link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900" rel="stylesheet" />
 		<!--[if lte IE 8]><script src="js/html5shiv.js"></script><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
 		<script src="{% static "js/jquery.min.js" %}"></script>
@@ -22,106 +22,83 @@
 		<script src="{% static "js/config.js" %}"></script>
 		<script src="{% static "js/skel.min.js" %}"></script>
 		<script src="{% static "js/skel-panels.min.js" %}"></script>
-		<noscript>
+		<!--noscript-->
 		<link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
 		<link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
 		<link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
-		</noscript>
+		<!--/noscript-->
 	</head>
 	<body class="homepage">
 
 		{% include "tradewave/header.html" %}
-		
+
 		<!-- Intro Wrapper -->
 		<div id="intro-wrapper" class="wrapper wrapper-style1">
-			<div class="title">Current Vendor</div>
+			<div class="title">Vendor {{ name }}</div>
 			<div class="container">
 				<div class="row">
 					<div class="12u">
-						
-						<section id="intro">
-							<p class="style1">Paying <strong>$$$</strong> to <strong>Current Vendor</strong>.</p>
 
-								<!-- Credit Form  This should Auto-populate with recommended credits-->		
+						<section id="intro">
+							<p class="style1">Transaction total: <strong>{{product_amount}}</strong></p>
+
+								<!-- Credit Form  This should Auto-populate with recommended credits-->
 								<form method="post" action="{% url "tradewave:transaction-confirmed" %}">
-        {% csrf_token %}								
-	<div>
+        					{% csrf_token %}
+									<div>
 										<div class="row half">
-											<div class="6u">
-												<input type="text" class="text" name="Vendor" id="scredit-vendor" placeholder="Credit" />
-											</div>
-											<div class="6u">
-												<input type="number" class="text" name="Value" id="scredit-value" placeholder="$$$" />
-											</div>
-										<div>
-										
-										<div class="row half">
-											<div class="12u">
-											<!-- These controls should allow you to add additional types of credits-->
-												<ul class="actions">
-													<li><a href="#" class="button button-style3 button">+</a></li>
-													<li><a href="#" class="button button-style3 button">-</a></li>
-												</ul>
-											</div>
+											<!--input type="text" class="text" name="Vendor" id="scredit-vendor" placeholder="Credit" /-->
+											<!--select class="text"-->
+											{% for credit, amount in user_credits.items %}
+												<div class="6u">
+													<input type="text" class="text" name="{{ credit }}" value="{{ credit }}" readonly>
+												</div>
+												<div class="6u">
+													<input type="number" min="0.00" step="0.01" max="{{ amount }}" class="text" name="{{ credit }}" id="product-amount" placeholder="{{ product_amount }}">
+												</div>
+											{% endfor %}
+											<!--/select-->
 										</div>
-										
-										<div class="row">
+
+										<div class="row half">
 											<div class="12u">
-												<ul class="actions">
-												<!-- Be sure to verify that the correct amount has been sent -->
-													<li><input type="submit" url="{% url "tradewave:transaction-confirmed" %}" class="button button-style3 button-big" value="Complete" /></li>
-													<li><input type="reset" class="button button-style2 button-big" value="Reset" /></li>
-												</ul>
-											</div>
+												<input type="hidden" class="text" name="{{ product_amount }}" id="product-amount" value="{{ product_amount }}" readonly>
+										</div>
+										<!--div class="6u"-->
+										<!--/div-->
+									</div>
+
+									<div class="row half">
+										<div class="12u">
+										<!-- These controls should allow you to add additional types of credits-->
+											<ul class="actions">
+												<li><a href="#" class="button button-style3 button">+</a></li>
+												<li><a href="#" class="button button-style3 button">-</a></li>
+											</ul>
 										</div>
 									</div>
-								</form>
-								<!-- /Credit Form -->	
+
+									<div class="row">
+										<div class="12u">
+											<ul class="actions">
+											<!-- Be sure to verify that the correct amount has been sent -->
+												<li><input type="submit" url="{% url "tradewave:transaction-confirmed" %}" class="button button-style3 button-big" value="Complete" /></li>
+												<li><input type="reset" class="button button-style2 button-big" value="Reset" /></li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</form>
+							<!-- /Credit Form -->
 
 						</section>
-						
+
 					</div>
 				</div>
 			</div>
 		</div>
-												
-		<!-- Footer Wrapper -->
-			<div id="footer-wrapper" class="wrapper">
-				<div class="title">Our Mission</div>
-				<div class="container">
-					<div class="row">
-						<div class="12u">
 
-							<!-- Footer -->
-								<div id="footer">
-									<header class="style1">
-										<h2>An Economy of Abundance</h2>
-										<p class="byline">
-											Right now there are 23 homes on the market for every homeless person.<br />
-											Just one example of an economy gone awry.
-										</p>
-										<p class="style3"><br/>
-										Trade Wave is working to bring about an <strong>economic revolution</strong>;<br/>
-										 a way of doing business that works for <strong>people</strong> and the <strong>planet</strong> and not just <strong>profit</strong>.<br/>
-										 The first step is to create a platform of commerce that promotes abundance<br/> 
-										 and connects people rather than rewarding greed and scarcity.</p>
-									</header>
-									<hr />
-							<!-- /Footer -->
-
-							<!-- Copyright -->
-								<div id="copyright">
-									<span>
-										&copy; Endeavor Marketing Solutions 2014. Design by <a href="http://html5up.net/">HTML5 UP</a>.
-									</span>
-								</div>
-							<!-- /Copyright -->
-						
-						</div>
-					</div>
-				</div>
-			</div>
-		<!-- /Footer Wrapper -->
+		{% include "tradewave/footer.html" %}
 
 	</body>
 </html>
