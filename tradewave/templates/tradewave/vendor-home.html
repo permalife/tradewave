@@ -44,15 +44,15 @@
                         <p class="style1">Selected venue: <strong> {{ selected_venue }} </strong></p>
                         {% endif %}
 
-                        <p class="style1">{{ name }} has {{ total }} total in:</p>
+                        <p class="style1">{{ name }} has {{ total|floatformat:2 }} total in:</p>
                         <ul>
                             {% for credit, amount in credits.items %}
-                              <li>{{ credit }}: ${{ amount }} </li>
+                              <li>{{ credit }}: ${{ amount|floatformat:2 }} </li>
                             {% endfor %}
                         </ul>
 
                         <ul class="actions">
-                            <li><a href="#" class="button button-style3 button-big">New Purchase</a></li>
+                            <li><a href="{% url "tradewave:vendor-transaction" %}" class="button button-style3 button-big">New Purchase</a></li>
                             <li><a href="#" class="button button-style3 button-big">View Dashboard</a></li>
                         </ul>
                     </section>

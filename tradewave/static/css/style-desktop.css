@@ -42,7 +42,7 @@
 			letter-spacing: 0.075em;
 			line-height: 1.5em;
 		}
-		
+
 		header.style1 .byline
 		{
 			display: block;
@@ -55,7 +55,7 @@
 	form
 	{
 	}
-	
+
 		form label
 		{
 			margin: 0.25em 0 0.25em 0;
@@ -69,7 +69,7 @@
 		height: 4em;
 		line-height: 4em;
 	}
-	
+
 		.button-big
 		{
 			font-size: 1em;
@@ -80,37 +80,37 @@
 	{
 		margin: 3em 0 0 0;
 	}
-	
+
 	.actions ul
 	{
 		list-style-type: none;
 	}
-	
+
 		form .actions
 		{
 			margin-top: 1em;
 		}
-	
+
 		.actions li
 		{
 			display: inline-block;
 		}
-		
+
 		.actions li:first-child
 		{
 			margin-left: 0;
 		}
-		
+
 		.actions li:last-child
 		{
 			margin-right: 0;
 		}
-		
+
 		.actions-centered
 		{
 			text-align: center;
 		}
-		
+
 	.feature-list
 	{
 	}
@@ -124,11 +124,11 @@
 		.feature-list .row
 		{
 		}
-	
+
 			.feature-list .row:first-child
 			{
 			}
-			
+
 				.feature-list .row:first-child section
 				{
 					padding-top: 0;
@@ -152,20 +152,20 @@
 				font-size: 32px;
 				top: 0.2em;
 			}
-	
+
 		.feature-list p
 		{
 			margin: 0 0 0 5em;
 		}
-		
+
 		.feature-list-small
 		{
 		}
-		
+
 			.feature-list-small h3
 			{
 			}
-		
+
 				.feature-list-small h3:before
 				{
 					font-size: 24px;
@@ -174,7 +174,7 @@
 					height: 45px;
 					margin-right: 1em;
 				}
-				
+
 			.feature-list-small p
 			{
 				margin: 0 0 0 4em;
@@ -183,7 +183,7 @@
 	.is
 	{
 	}
-	
+
 		.is header
 		{
 			margin: 0 0 1.5em 0;
@@ -220,18 +220,18 @@
 	{
 		padding-left: 1.5em;
 	}
-	
+
 	.is-triple-one
 	{
 		padding-right: 1.5em;
 	}
-	
+
 	.is-triple-two
 	{
 		padding-left: 0.75em;
 		padding-right: 0.75em;
 	}
-	
+
 	.is-triple-three
 	{
 		padding-left: 1.5em;
@@ -240,20 +240,20 @@
 	.is-post-excerpt
 	{
 	}
-	
+
 		.is-post-excerpt .image-left
 		{
 			position: relative;
 			top: 0.5em;
 			width: 5em;
 		}
-		
+
 		.is-post-excerpt h3,
 		.is-post-excerpt p
 		{
 			margin-left: 7em;
 		}
-		
+
 /*********************************************************************************/
 /* Wrappers                                                                      */
 /*********************************************************************************/
@@ -278,12 +278,12 @@
 	#header-wrapper
 	{
 		padding: 0;
-		height: 400px;
+		height: 250px;
 	}
 
 		.homepage #header-wrapper
 		{
-			height: 573px;
+			height: 423px;
 		}
 
 	#intro-wrapper
@@ -298,12 +298,12 @@
 	#header
 	{
 		position: relative;
-		height: 400px;
+		height: 250px;
 	}
 
 		.homepage #header
 		{
-			height: 573px;
+			height: 423px;
 		}
 
 /*********************************************************************************/
@@ -331,7 +331,7 @@
 			font-size: 2em;
 			letter-spacing: 0.25em;
 		}
-		
+
 		#logo .byline
 		{
 			margin: 1.25em 0 0 0;
@@ -373,7 +373,7 @@
 			text-align: center;
 			padding: 0 1.5em 0 1.5em;
 		}
-		
+
 			#nav > ul > li > a,
 			#nav > ul > li > span
 			{
@@ -393,7 +393,7 @@
 				transition: all .25s ease-in-out;
 				outline: 0;
 			}
-			
+
 			#nav > ul > li:hover > a,
 			#nav > ul > li.active > a,
 			#nav > ul > li.active > span
@@ -411,14 +411,14 @@
 		min-width: 12em;
 		text-align: left;
 	}
-	
+
 		.dropotron.level-0
 		{
 			margin-top: -1px;
 			border-top-left-radius: 0;
 			border-top-right-radius: 0;
 		}
-	
+
 		.dropotron a,
 		.dropotron span
 		{
@@ -437,13 +437,13 @@
 			-ms-transition: all .25s ease-in-out;
 			transition: all .25s ease-in-out;
 		}
-		
+
 		.dropotron li:first-child a,
 		.dropotron li:first-child span
 		{
 			border-top: 0;
 		}
-		
+
 		.dropotron li:hover > a,
 		.dropotron li:hover > span
 		{
@@ -463,8 +463,8 @@
 		{
 			font-size: 1.5em;
 			letter-spacing: 0.075em;
-		}	
-		
+		}
+
 		#intro .style2
 		{
 			font-size: 2.75em;
@@ -473,7 +473,7 @@
 			padding: 1em 0 1em 0;
 			margin-bottom: 1em;
 		}
-		
+
 		#intro .style3
 		{
 			font-size: 1.1em;
@@ -494,7 +494,7 @@
 		{
 			padding-bottom: 5em;
 		}
-		
+
 		#features .actions
 		{
 			margin-top: 5em;
@@ -523,12 +523,12 @@
 		{
 			padding-right: 2em;
 		}
-		
+
 		#highlights .highlight-two
 		{
 			padding: 0 1em 0 1em;
 		}
-		
+
 		#highlights .highlight-three
 		{
 			padding-left: 2em;
@@ -596,7 +596,7 @@
 		{
 			padding-right: 1.5em;
 		}
-		
+
 		#footer .footer-two
 		{
 			padding-left: 1.5em;
@@ -610,7 +610,7 @@
 	{
 		margin: 6em 0 0 0;
 	}
-	
+
 		#copyright span
 		{
 			padding: 1.5em 4em 1.5em 4em;

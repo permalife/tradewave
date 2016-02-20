@@ -32,77 +32,43 @@
 
 		{% include "tradewave/header.html" %}
 
-        <!-- Intro Wrapper -->
-            <div id="intro-wrapper" class="wrapper wrapper-style1">
-                <div class="title">Please Login</div>
-                <div class="container">
-                    <div class="row">
-                        <div class="12u">
+    <!-- Intro Wrapper -->
+    <div id="intro-wrapper" class="wrapper wrapper-style1">
+        <div class="title">Please Login</div>
+        <div class="container">
+            <div class="row">
+                <div class="12u">
 
-                            <!-- Login Form -->
-                            <form method="post" action="{% url "tradewave:process_login" %}">
-                                {% csrf_token %}
-                                <div>
-                                    <div class="row half">
-                                        <div class="6u">
-                                            <input type="text" class="text" name="user_name" id="user-email" placeholder="Email / Username" />
-                                        </div>
-                                        <div class="6u">
-                                            <input type="password" class="text" name="user_password" id="user-password" placeholder="Password" />
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="12u">
-                                            <input type="submit" class="button button-style3 button-big" value="Login" /></li>
-                                        </div>
-                                    </div>
+                    <!-- Login Form -->
+                    <form method="post" action="{% url "tradewave:process_login" %}">
+                        {% csrf_token %}
+                        <div>
+                            <div class="row half">
+                                <div class="6u">
+                                    <input type="text" class="text" name="user_name" id="user-email" placeholder="Email / Username" />
                                 </div>
-                            </form>
-                            <!-- /Login Form -->
-                {% if status_message %}
-                <div>{{ status_message }}</div>
-                {% endif %}
+                                <div class="6u">
+                                    <input type="password" class="text" name="user_password" id="user-password" placeholder="Password" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="12u">
+                                    <ul class="actions">
+                                        <li><input type="submit" class="button button-style3 button-big" value="Login" /></li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </form>
+                    <!-- /Login Form -->
+
                 </div>
             </div>
-        <!-- Footer Wrapper -->
-            <div id="footer-wrapper" class="wrapper">
-                <div class="title">Our Mission</div>
-                <div class="container">
-                    <div class="row">
-                        <div class="12u">
+        </div>
+    </div>
+    <!-- Intro Wrapper -->
 
-                            <!-- Footer -->
-                                <div id="footer">
-                                    <header class="style1">
-                                        <h2>An Economy of Abundance</h2>
-                                        <p class="byline">
-                                            Right now there are 23 homes on the market for every homeless person.<br />
-                                            Just one example of an economy gone awry.
-                                        </p>
-                                        <p class="style3"><br/>
-                                        Trade Wave is working to bring about an <strong>economic revolution</strong>;<br/>
-                                         a way of doing business that works for <strong>people</strong> and the <strong>planet</strong> and not just <strong>profit</strong>.<br/>
-                                         The first step is to create a platform of commerce that promotes abundance<br/>
-                                         and connects people rather than rewarding greed and scarcity.</p>
-                                    </header>
-                                    <hr />
-                            <!-- /Footer -->
-
-                            <!-- Copyright -->
-                                <div id="copyright">
-                                    <span>
-                                        &copy; Endeavor Marketing Solutions 2014. Design by <a href="http://html5up.net/">HTML5 UP</a>.
-                                    </span>
-                                </div>
-                            <!-- /Copyright -->
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <!-- /Footer Wrapper -->
+    {% include "tradewave/header.html" %}
 
     </body>
 </html>
