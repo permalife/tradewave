@@ -53,7 +53,7 @@
 											<input type="text" class="text" name="product_category" id="product-category" placeholder="Food" />
 										</div>
 										<div class="6u">
-											<input type="number" step="0.01" min="0.01" max="{{user_total}}" class="text" name="product_amount" id="product-amount" placeholder="$$$" />
+											<input type="number" step="0.01" min="0.01" max="{{ user_total|floatformat:2 }}" class="text" name="product_amount" id="product-amount" placeholder="$$$" />
 										</div>
 									</div>
 

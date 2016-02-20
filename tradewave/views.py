@@ -148,11 +148,11 @@ def process_login(request):
             user_amount_total = user_account.amount_total
             user_wallet = CreditMap.objects.filter(account=user_account)
             user_credits = OrderedDict([
-                (entry.credit.name, '%.2f' % entry.amount)
+                (entry.credit.name, float(entry.amount))
                 for entry in sorted(user_wallet, key=attrgetter('amount'), reverse=True)
             ])
             logger.info(user_credits)
-            request.session['user_total'] = '%.2f' % user_amount_total
+            request.session['user_total'] = float(user_amount_total)
             request.session['user_credits'] = user_credits
 
             # session-wide variable vendor entity
@@ -176,10 +176,10 @@ def process_login(request):
                 entity_amount_total = entity_account.amount_total
                 entity_wallet = CreditMap.objects.filter(account=entity_account)
                 entity_credits = OrderedDict([
-                    (entry.credit.name, '%.2f' % entry.amount)
+                    (entry.credit.name, float(entry.amount))
                     for entry in sorted(entity_wallet, key=attrgetter('amount'), reverse=True)
                 ])
-                request.session['entity_total'] = '%.2f' % entity_amount_total
+                request.session['entity_total'] = float(entity_amount_total)
                 request.session['entity_credits'] = entity_credits
 
             # generate the render link
@@ -225,10 +225,11 @@ def process_vendor_transaction(request):
         #   use django forms
         #   track product categories
         product_category = request.POST.get('product_category')
-        product_amount = request.POST.get('product_amount')
+        product_amount = float(request.POST.get('product_amount'))
         request_obj = {
             'selected_venue': request.session['selected_venue'],
-            'name': request.session['entity_vendor'],
+            'vendor_name': request.session['entity_vendor'],
+            'user_name': request.session['entity_personal'],
             'user_total': request.session['user_total'],
             'user_credits': request.session['user_credits'],
             'product_amount': product_amount

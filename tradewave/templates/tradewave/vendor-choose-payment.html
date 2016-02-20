@@ -5,6 +5,8 @@
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
 {% load staticfiles %}
+{% load tw_extras %}
+
 <html>
 	<head>
 		<title>Trade Wave</title>
@@ -34,13 +36,13 @@
 
 		<!-- Intro Wrapper -->
 		<div id="intro-wrapper" class="wrapper wrapper-style1">
-			<div class="title">Vendor {{ name }}</div>
+			<div class="title">Paying to Vendor {{ vendor_name }}</div>
 			<div class="container">
 				<div class="row">
 					<div class="12u">
 
 						<section id="intro">
-							<p class="style1">Transaction total: <strong>{{product_amount}}</strong></p>
+							<p class="style1">Transaction total: <strong>$ {{ product_amount }}</strong></p>
 
 								<!-- Credit Form  This should Auto-populate with recommended credits-->
 								<form method="post" action="{% url "tradewave:transaction-confirmed" %}">
@@ -49,34 +51,84 @@
 										<div class="row half">
 											<!--input type="text" class="text" name="Vendor" id="scredit-vendor" placeholder="Credit" /-->
 											<!--select class="text"-->
+											<div class="12u">
+												{% if user_credits.values|first >= product_amount %}
+													<p class="style1"> {{ user_name }} has enough in {{ user_credits.keys|first }} for this transaction </p>
+												{% else %}
+													<p class="style1"> {{ user_name }} must use multiple credit types for this transaction </p>
+												{% endif %}
+											</div>
+
 											{% for credit, amount in user_credits.items %}
-												<div class="6u">
-													<input type="text" class="text" name="{{ credit }}" value="{{ credit }}" readonly>
-												</div>
-												<div class="6u">
-													<input type="number" min="0.00" step="0.01" max="{{ amount }}" class="text" name="{{ credit }}" id="product-amount" placeholder="{{ product_amount }}">
+												{% if forloop.first or product_amount > user_credits.values|first %}
+													<div class="6u">
+														<input
+															type="text"
+															class="text"
+															name="credit_{{ credit }}"
+															id="credit-{{ credit }}"
+															value="{{ credit }}"
+															readonly>
+													</div>
+													<div class="6u">
+														<input
+															type="number"
+															min="0.00"
+															step="0.01"
+															max="{{ amount|floatformat:2 }}"
+															class="text"
+															name="amount_{{ credit }}"
+															id="amount-{{ credit }}"
+															value="{% spaceless %}
+																{% if forloop.first %}
+																	{% if product_amount > amount %}
+																		{{ amount|floatformat:2 }}
+																	{% else %}
+																		{{ product_amount|floatformat:2 }}
+																	{% endif %}
+																{% else %}
+																	{% if product_amount|subtractfirst:user_credits > amount %}
+																		{{ amount }}
+																	{% else %}
+																		{{ product_amount|subtractfirst:user_credits }}
+																	{% endif %}
+																{% endif %}
+															{% endspaceless %}">
+													</div>
+													<div class="12u">
+														<br>
+													</div>
+												{% endif %}
+											{% empty %}
+												<div class="12u">
+													<strong> User has no credits in the account </strong>
 												</div>
 											{% endfor %}
 											<!--/select-->
 										</div>
 
-										<div class="row half">
-											<div class="12u">
-												<input type="hidden" class="text" name="{{ product_amount }}" id="product-amount" value="{{ product_amount }}" readonly>
-										</div>
-										<!--div class="6u"-->
-										<!--/div-->
-									</div>
-
 									<div class="row half">
 										<div class="12u">
-										<!-- These controls should allow you to add additional types of credits-->
+											<input type="hidden" class="text" name="{{ product_amount }}" id="product-amount" value="{{ product_amount }}" readonly>
+										</div>
+									</div>
+
+
+									{% if product_amount > user_total %}
+										<div class="12u">
+												<p class="style1"> ${{ product_amount|subtract:user_total }} is the remaining balance for this transaction </p>
+										</div>
+									{% endif %}
+
+									<!--div class="row half">
+										<div class="12u">
+										<These controls should allow you to add additional types of credits>
 											<ul class="actions">
 												<li><a href="#" class="button button-style3 button">+</a></li>
 												<li><a href="#" class="button button-style3 button">-</a></li>
 											</ul>
 										</div>
-									</div>
+									</div-->
 
 									<div class="row">
 										<div class="12u">
