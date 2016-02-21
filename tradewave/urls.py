@@ -1,9 +1,9 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from tradewave import views
 
-urlpatterns = patterns('',
-    url(r'^$', views.LoginView.as_view(), name='login'),
+urlpatterns = [
+    url(r'^$', views.LoginView.as_view(), name='root'),
     url(r'^login/$', views.LoginView.as_view(), name='login'),
     url(r'^user-home/$', views.UserHomeView.as_view(), name='user-home'),
     url(r'^send/$', views.SendView.as_view(), name='send'),
@@ -25,11 +25,13 @@ urlpatterns = patterns('',
     url(r'^settings-user/$', views.SettingsUser.as_view(), name='settings-user'),
     url(r'^settings-vendor/$', views.SettingsVendor.as_view(), name='settings-vendor'),
     url(r'^settings-marketplace/$', views.SettingsMarketplace.as_view(), name='settings-marketplace'),
+    url(r'^complete_vendor_transaction/$', views.complete_vendor_transaction, name='complete_vendor_transaction'),
     url(r'^process_login/$', views.process_login, name='process_login'),
     url(r'^process_logout/$', views.process_logout, name='process_logout'),
+    url(r'^process_vendor_payment/$', views.process_vendor_payment, name='process_vendor_payment'),
     url(r'^process_vendor_transaction/$', views.process_vendor_transaction, name='process_vendor_transaction'),
     url(r'^record_venue/(?P<venue_id>\d+)/$', views.record_venue, name='record_venue'),
     url(r'^redirect_to_personal/$', views.redirect_to_personal, name='redirect_to_personal'),
     url(r'^redirect_to_vendor/$', views.redirect_to_vendor, name='redirect_to_vendor'),
     url(r'^redirect_to_marketplace/$', views.redirect_to_marketplace, name='redirect_to_marketplace'),
-)
+]
