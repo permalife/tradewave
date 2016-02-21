@@ -19,5 +19,5 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'/?', include('tradewave.urls', namespace="tradewave"))
+    url(r'', include('tradewave.urls', namespace="tradewave"))
 ]
