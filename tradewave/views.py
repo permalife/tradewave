@@ -5,16 +5,20 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template import RequestContext, loader
 from django.views.generic import View, ListView, TemplateView
+
 
 from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
     Marketplace, Affiliation, TransactionLog
 
 from collections import OrderedDict
+from datetime import datetime
 from decimal import Decimal
+from import_export import resources
 from operator import attrgetter
 
 import time
@@ -91,6 +95,10 @@ class CreateUserView(ListView):
 class CreateVendorView(ListView):
     model = User
     template_name = 'tradewave/create-vendor.html'
+
+class DashboardView(LoginRequiredMixin, SessionContextView, ListView):
+    model = User
+    template_name = 'tradewave/dashboard.html'
 
 
 class LoadDdipView(ListView):
@@ -317,9 +325,26 @@ class UserHomeView(LoginRequiredMixin, SessionContextView, TemplateView):
 
 
 # *** handler for completing the transaction vendor-user transaction ***
-def complete_vendor_transaction(request):
+def export_data(request):
+    class CreditMapResource(resources.ModelResource):
+
+        class Meta:
+            model = CreditMap
+            fields = (
+                'account__entity__name',
+                'credit__name',
+                'amount',
+                'account__date_last_transacted'
+            )
+            exclude = ('id',)
+
     try:
-        pass
+        dataset = CreditMapResource().export()
+        response = HttpResponse(dataset.csv, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=tw-account-data-%s.csv'
+        response['Content-Disposition'] %= datetime.now().strftime('%Y-%M-%d-%H-%M-%S')
+        return response
+
     except Exception as e:
         logger.error("Server error: %s", e)
         context_obj = {

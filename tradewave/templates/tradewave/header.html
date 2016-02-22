@@ -40,8 +40,8 @@
                                   </ul>
 			                        </li>
 			                        <li><a href="#">Settings</a></li>
-                              <li><a href="#">Dashboard</a></li>
-                              <li><a href="/process_logout">Logout</a></li>
+                              <li><a href="{% url 'tradewave:dashboard' %}"> Dashboard </a></li>
+                              <li><a href="/process_logout"> Logout </a></li>
                             {% else %}
                               <li><a href="/login">Login</a></li>
                             {% endif %}

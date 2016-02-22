@@ -45,7 +45,7 @@
 						{% endif %}
 
 							<!-- Credit Form -->
-							<form method="post" action="{% url "tradewave:process_vendor_transaction" %}">
+							<form method="post" action="{% url 'tradewave:process_vendor_transaction' %}">
 								{% csrf_token %}
 								<div>
 									<div class="row half">
