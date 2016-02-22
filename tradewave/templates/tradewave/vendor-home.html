@@ -40,10 +40,6 @@
                 <div class="12u">
 
                     <section id="intro">
-                        {% if selected_venue %}
-                        <p class="style1">Selected venue: <strong> {{ selected_venue }} </strong></p>
-                        {% endif %}
-
                         <p class="style1">{{ name }} has {{ total|floatformat:2 }} total in:</p>
                         <ul>
                             {% for credit, amount in credits.items %}

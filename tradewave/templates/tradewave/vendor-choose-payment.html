@@ -42,25 +42,25 @@
 					<div class="12u">
 
 						<section id="intro">
-							<p class="style1">Transaction total: <strong>$ {{ product_amount|floatformat:2 }}</strong></p>
+							<p class="style1">Transaction total: <strong>$ {{ tr_amount|floatformat:2 }}</strong></p>
 
 								<!-- Credit Form  This should Auto-populate with recommended credits-->
-								<form method="post" action="{% url "tradewave:process_vendor_payment" %}">
+								<form method="post" action="{% url 'tradewave:process_vendor_payment' %}">
         					{% csrf_token %}
 									<div>
 										<div class="row half">
 											<!--input type="text" class="text" name="Vendor" id="scredit-vendor" placeholder="Credit" /-->
 											<!--select class="text"-->
 											<div class="12u">
-												{% if user_credits.values|first >= product_amount %}
-													<p class="style1"> {{ user_name }} has enough in {{ user_credits.keys|first }} for this transaction </p>
+												{% if cust_credits.values|first >= tr_amount %}
+													<p class="style1"> {{ cust_name }} has enough in {{ cust_credits.keys|first }} for this transaction </p>
 												{% else %}
-													<p class="style1"> The amount can not be paid using a single credit and has to be split across {{ user_name }}'s credits </p>
+													<p class="style1"> The amount can not be paid using a single credit and has to be split across {{ cust_name }}'s credits </p>
 												{% endif %}
 											</div>
 
-											{% for credit, amount in user_credits.items %}
-												{% if forloop.first or product_amount > user_credits.values|first %}
+											{% for credit, amount in cust_credits.items %}
+												{% if forloop.first or tr_amount > cust_credits.values|first %}
 													<div class="6u">
 														<input
 															type="text"
@@ -81,16 +81,16 @@
 															id="amount-{{ credit }}"
 															value="{% spaceless %}
 																{% if forloop.first %}
-																	{% if product_amount > amount %}
+																	{% if tr_amount > amount %}
 																		{{ amount|floatformat:2 }}
 																	{% else %}
-																		{{ product_amount|floatformat:2 }}
+																		{{ tr_amount|floatformat:2 }}
 																	{% endif %}
 																{% else %}
-																	{% if product_amount|subtractfirst:user_credits > amount %}
+																	{% if tr_amount|subtractfirst:cust_credits > amount %}
 																		{{ amount|floatformat:2 }}
 																	{% else %}
-																		{{ product_amount|subtractfirst:user_credits|floatformat:2 }}
+																		{{ tr_amount|subtractfirst:cust_credits|floatformat:2 }}
 																	{% endif %}
 																{% endif %}
 															{% endspaceless %}">
@@ -109,14 +109,14 @@
 
 									<div class="row half">
 										<div class="12u">
-											<input type="hidden" class="text" name="product_amount" id="product-amount" value="{{ product_amount }}" readonly>
+											<input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
 										</div>
 									</div>
 
 
-									{% if product_amount > user_total %}
+									{% if tr_amount > cust_total %}
 										<div class="12u">
-												<p class="style1"> <strong>The remainder of ${{ product_amount|subtract:user_total|floatformat:2 }} has to be paid in cash </strong></p>
+												<p class="style1"> <strong>The remainder of ${{ tr_amount|subtract:cust_total|floatformat:2 }} has to be paid in cash </strong></p>
 										</div>
 									{% endif %}
 

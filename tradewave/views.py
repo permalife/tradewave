@@ -1,11 +1,13 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render, redirect
 from django.template import RequestContext, loader
-from django.views import generic
+from django.views.generic import View, ListView, TemplateView
 
 from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
@@ -23,139 +25,295 @@ logging.basicConfig(level=logging.DEBUG, filename="log/views.log")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
 # *** classes ***
-class IndexView(generic.ListView):
+class IndexView(ListView):
     model = User
     template_name = 'tradewave/index.html'
 
-class LoginView(generic.ListView):
+
+class SessionContextView(View):
+    def get_context_data(self, **kwargs):
+        context = super(SessionContextView, self).get_context_data(**kwargs)
+        session = self.request.session
+        state_vars = [
+            'entity_personal',
+            'entity_vendor',
+            'entity_customer',
+            'entity_marketplace',
+            'selected_venue'
+        ]
+
+        for var in state_vars:
+            if session.has_key(var):
+                context[var] = session[var]
+
+        context['user_id'] = self.request.user.id
+        return context
+
+
+class LoginView(ListView):
     model = User
     template_name = 'tradewave/login.html'
 
-class UserHomeView(generic.TemplateView):
-    template_name = 'tradewave/user-home.html'
 
-    def get_context_data(self, **kwargs):
-        context = super(TransactionConfirmedView, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
-        return context
-
-class SendView(generic.ListView):
+class SendView(ListView):
     model = User
     template_name = 'tradewave/send.html'
 
-class ConfirmSendView(generic.ListView):
+
+class ConfirmSendView(ListView):
     model = User
     template_name = 'tradewave/confirm-send.html'
 
-class ConfirmReceiveView(generic.ListView):
+
+class ConfirmReceiveView(ListView):
     model = User
     template_name = 'tradewave/confirm-receive.html'
 
-class TransactionConfirmedView(generic.TemplateView):
+
+class TransactionConfirmedView(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/transaction-confirmed.html'
 
     def get_context_data(self, **kwargs):
         context = super(TransactionConfirmedView, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
+        context['tr_amount'] = float(context['tr_amount'])
+        context['amount'] = float(context['amount'])
+
         return context
 
-class CreateUserView(generic.ListView):
+
+class CreateUserView(ListView):
     model = User
     template_name = 'tradewave/create-user.html'
 
-class CreateVendorView(generic.ListView):
+
+class CreateVendorView(ListView):
     model = User
     template_name = 'tradewave/create-vendor.html'
 
-class LoadDdipView(generic.ListView):
+
+class LoadDdipView(ListView):
     model = User
     template_name = 'tradewave/load-ddip.html'
 
-class MarketplaceInitial(generic.TemplateView):
+
+class MarketplaceInitial(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/marketplace-initial.html'
 
     def get_context_data(self, **kwargs):
         context = super(MarketplaceInitial, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
+        context['featured_venues'] = Venue.objects.all()
         return context
 
-class MarketplaceHome(generic.TemplateView):
+
+class MarketplaceHome(LoginRequiredMixin, SessionContextView, TemplateView):
+    # url args: user_id (django user id)
     template_name = 'tradewave/marketplace-home.html'
 
     def get_context_data(self, **kwargs):
         context = super(MarketplaceHome, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
+
+        # retrieve tradewave user by django user id
+        tw_user = TradewaveUser.objects.get(user_id=context['user_id'])
+        user_name = tw_user.user.username
+
+        # do basic authorization check by user_name here
+        # TODO: use django permissions
+        if user_name != self.request.user.username:
+            raise PermissionDenied('Not authorized to access this page')
+
+        if tw_user.marketplaces.exists():
+            # user's personal entity
+            marketplace_entity = tw_user.marketplaces.first()
+            logger.info('marketplace entity: %s', marketplace_entity.name)
+
+            # generate marketplace's credit account statement
+            # we limit to a single account for simplicity for now
+            marketplace_account = marketplace_entity.account_set.first()
+            marketplace_amount_total = marketplace_account.amount_total
+            marketplace_wallet = CreditMap.objects.filter(account=marketplace_account)
+            marketplace_credits = OrderedDict([
+                (entry.credit.name, float(entry.amount))
+                for entry in sorted(marketplace_wallet, key=attrgetter('amount'), reverse=True)
+            ])
+            logger.info(marketplace_credits)
+
+            context['name'] = marketplace_entity.name
+            context['total'] = marketplace_amount_total
+            context['credits'] = marketplace_credits
+
+        else:
+            logger.warning(
+                'User %s is not associated with any marketplace',
+                user_name
+            )
+
+        logger.info(context)
         return context
 
-class MarketplaceIssue(generic.ListView):
+
+class MarketplaceIssue(ListView):
     model = User
     template_name = 'tradewave/marketplace-issue.html'
 
-class MarketplaceSend(generic.ListView):
+
+class MarketplaceSend(ListView):
     model = User
     template_name = 'tradewave/marketplace-send.html'
 
-class VendorChoosePayment(generic.TemplateView):
+
+class SettingsUser(ListView):
+    model = User
+    template_name = 'tradewave/settings-user.html'
+
+
+class SettingsVendor(ListView):
+    model = User
+    template_name = 'tradewave/settings-vendor.html'
+
+
+class SettingsMarketplace(ListView):
+    model = User
+    template_name = 'tradewave/settings-marketplace.html'
+
+
+class VendorChoosePayment(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/vendor-choose-payment.html'
 
     def get_context_data(self, **kwargs):
         context = super(VendorChoosePayment, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
+        logger.info(context)
+
+        # retrieve tradewave user by django user id
+        tw_user = TradewaveUser.objects.get(user_id=context['user_id'])
+        user_name = tw_user.user.username
+
+        # user's personal entity
+        user_personal_entity = tw_user.user_entity
+        logger.info('user\'s personal entity: %s', user_personal_entity.name)
+
+        # generate the list of user personal credits
+        # we limit to a single account for simplicity for now
+        user_account = user_personal_entity.account_set.first()
+        user_amount_total = user_account.amount_total
+        user_wallet = CreditMap.objects.filter(account=user_account)
+        user_credits = OrderedDict([
+            (entry.credit.name, float(entry.amount))
+            for entry in sorted(user_wallet, key=attrgetter('amount'), reverse=True)
+        ])
+        logger.info(user_credits)
+
+        context['user_name'] = user_name
+        context['user_total'] = user_amount_total
+        context['user_credits'] = user_credits
+        context['tr_amount'] = float(context['tr_amount'])
+
         return context
 
-class VendorCustLogin(generic.TemplateView):
+class VendorCustLogin(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/vendor-cust-login.html'
 
     def get_context_data(self, **kwargs):
         context = super(VendorCustLogin, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
         return context
 
-class VendorHome(generic.TemplateView):
+
+class VendorHome(LoginRequiredMixin, SessionContextView, TemplateView):
+    # url args: user_id (django user id)
     template_name = 'tradewave/vendor-home.html'
 
     def get_context_data(self, **kwargs):
         context = super(VendorHome, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
+
+        # retrieve tradewave user by django user id
+        tw_user = TradewaveUser.objects.get(user_id=context['user_id'])
+        user_name = tw_user.user.username
+
+        # do basic authorization check by user_name here
+        # TODO: use django permissions
+        if user_name != self.request.user.username:
+            raise PermissionDenied('Not authorized to access this page')
+
+        if tw_user.vendors.exists():
+            # user's personal entity
+            vendor_entity = tw_user.vendors.first()
+            logger.info('vendor entity: %s', vendor_entity.name)
+
+            # generate vendor's credit account statement
+            # we limit to a single account for simplicity for now
+            vendor_account = vendor_entity.account_set.first()
+            vendor_amount_total = vendor_account.amount_total
+            vendor_wallet = CreditMap.objects.filter(account=vendor_account)
+            vendor_credits = OrderedDict([
+                (entry.credit.name, float(entry.amount))
+                for entry in sorted(vendor_wallet, key=attrgetter('amount'), reverse=True)
+            ])
+            logger.info(vendor_credits)
+
+            context['name'] = vendor_entity.name
+            context['total'] = vendor_amount_total
+            context['credits'] = vendor_credits
+
+        else:
+            logger.warning(
+                'User %s is not associated with any vendor',
+                user_name
+            )
+
+        logger.info(context)
         return context
 
-class VendorInitial(generic.TemplateView):
+
+class VendorInitial(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/vendor-initial.html'
 
     def get_context_data(self, **kwargs):
         context = super(VendorInitial, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
+        context['featured_venues'] = Venue.objects.all()
         return context
 
-class VendorTransaction(generic.TemplateView):
+
+class VendorTransaction(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/vendor-transaction.html'
 
+
+class UserHomeView(LoginRequiredMixin, SessionContextView, TemplateView):
+    # url args: user_id (django user id)
+    template_name = 'tradewave/user-home.html'
+
     def get_context_data(self, **kwargs):
-        context = super(VendorTransaction, self).get_context_data(**kwargs)
-        if self.request.session.has_key('entity_personal'):
-            context['name'] = self.request.session['entity_personal']
+        context = super(UserHomeView, self).get_context_data(**kwargs)
+
+        # retrieve tradewave user by django user id
+        tw_user = TradewaveUser.objects.get(user_id=context['user_id'])
+        user_name = tw_user.user.username
+
+        # do basic authorization check by user_name here
+        # TODO: use django permissions
+        if user_name != self.request.user.username:
+            raise PermissionDenied('Not authorized to access this page')
+
+        # user's personal entity
+        user_personal_entity = tw_user.user_entity
+        logger.info('user\'s personal entity: %s', user_personal_entity.name)
+
+        # generate the list of user personal credits
+        # we limit to a single account for simplicity for now
+        user_account = user_personal_entity.account_set.first()
+        user_amount_total = user_account.amount_total
+        user_wallet = CreditMap.objects.filter(account=user_account)
+        user_credits = OrderedDict([
+            (entry.credit.name, float(entry.amount))
+            for entry in sorted(user_wallet, key=attrgetter('amount'), reverse=True)
+        ])
+        logger.info(user_credits)
+
+        context['name'] = user_name
+        context['user_total'] = user_amount_total
+        context['user_credits'] = user_credits
+
         return context
-
-class SettingsUser(generic.ListView):
-    model = User
-    template_name = 'tradewave/settings-user.html'
-
-class SettingsVendor(generic.ListView):
-    model = User
-    template_name = 'tradewave/settings-vendor.html'
-
-class SettingsMarketplace(generic.ListView):
-    model = User
-    template_name = 'tradewave/settings-marketplace.html'
 
 
 # *** handler for completing the transaction vendor-user transaction ***
@@ -164,10 +322,73 @@ def complete_vendor_transaction(request):
         pass
     except Exception as e:
         logger.error("Server error: %s", e)
-        request_obj = {
+        context_obj = {
             'status_msg': 'Server error occured, we were notified!'
         }
-        return render(request, 'tradewave/login.html', request_obj)
+        return render(request, 'tradewave/login.html', context_obj)
+
+
+# *** handler to process user login ***
+def process_cust_login(request):
+    try:
+        # TODO: use django forms
+        cust_name = request.POST.get('cust_name')
+        cust_password = request.POST.get('cust_password')
+        tr_amount = request.POST.get('tr_amount')
+        user = authenticate(
+            username=cust_name,
+            password=cust_password
+        )
+
+        # is existing user?
+        if user is not None and user.is_active:
+            cust_tradewave = TradewaveUser.objects.get(user=user.pk)
+            cust_name = user.username
+
+            # user's personal entity
+            cust_personal_entity = user.tradewaveuser.user_entity
+
+            # session-wide variable customer entity
+            request.session['entity_customer'] = cust_name
+            request.session['entity_customer_id'] = cust_personal_entity.id
+            logger.info('customer entity name: %s', cust_personal_entity.name)
+
+            # generate the list of customer credits
+            # we limit to a single account for simplicity for now
+            cust_account = cust_personal_entity.account_set.first()
+            request.session['cust_account_personal_id'] = cust_account.id
+            cust_amount_total = cust_account.amount_total
+            cust_wallet = CreditMap.objects.filter(account=cust_account)
+            cust_credits = OrderedDict([
+                (entry.credit.name, float(entry.amount))
+                for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
+            ])
+            logger.info(cust_credits)
+            request.session['cust_total'] = float(cust_amount_total)
+            request.session['cust_credits'] = cust_credits
+
+            context_obj = {
+                'vendor_name': request.session['entity_vendor'],
+                'cust_name': cust_name,
+                'cust_total': float(cust_amount_total),
+                'cust_credits': cust_credits,
+                'tr_amount': float(tr_amount)
+            }
+
+            return render(
+                request,
+                'tradewave/vendor-choose-payment.html',
+                context_obj
+            )
+        else:
+            return redirect('tradewave:vendor-cust-login', tr_amount=tr_amount)
+
+    except Exception as e:
+        logger.error("Server error: %s", e)
+        context_obj = {
+            'status_msg': 'Server error occured, we were notified!'
+        }
+        return render(request, 'tradewave/login.html', context_obj)
 
 
 # *** handler to process user login ***
@@ -233,7 +454,6 @@ def process_login(request):
                 entity_account = user_entity.account_set.first()
                 request.session['account_entity_id'] = entity_account.id
                 entity_amount_total = entity_account.amount_total
-                #entity_wallet = CreditMap.objects.filter(account=entity_account)
                 entity_wallet = entity_account.creditmap_set.all()
                 entity_credits = OrderedDict([
                     (entry.credit.name, float(entry.amount))
@@ -242,29 +462,18 @@ def process_login(request):
                 request.session['entity_total'] = float(entity_amount_total)
                 request.session['entity_credits'] = entity_credits
 
-            # generate the render link
-            template_handle = 'tradewave/user-home.html'
-            logger.info('redirecting to %s', template_handle)
+            return redirect('tradewave:user-home')
 
-            # standard request object to the user page
-            request_obj = {
-                #'featured_venues': Venue.objects.all()[:3],
-                'name': user_name,
-                'user_total': user_amount_total,
-                'user_credits': user_credits,
-            }
-
-            return render(request, template_handle, request_obj)
         else:
-            request_obj = {'status_msg': 'Invalid login / password'}
-            return render(request, 'tradewave/login.html', request_obj)
+            context_obj = {'status_msg': 'Invalid login / password'}
+            return render(request, 'tradewave/login.html', context_obj)
 
     except Exception as e:
         logger.error("Server error: %s", e)
-        request_obj = {
+        context_obj = {
             'status_msg': 'Server error occured, we were notified!'
         }
-        return render(request, 'tradewave/login.html', request_obj)
+        return render(request, 'tradewave/login.html', context_obj)
 
 
 # *** handler to process user logout ***
@@ -274,11 +483,12 @@ def process_logout(request):
     except Exception as e:
         logger.error("Server error: %s", e)
     finally:
-        request_obj = {'status_msg': 'Please login to your account'}
-        return render(request, 'tradewave/login.html', request_obj)
+        context_obj = {'status_msg': 'Please login to your account'}
+        return render(request, 'tradewave/login.html', context_obj)
 
 
 # *** handler for processing the payment from user to vendor ***
+@login_required
 @transaction.atomic
 def process_vendor_payment(request):
     try:
@@ -286,13 +496,9 @@ def process_vendor_payment(request):
         logger.info(request.POST.getlist('amounts'))
         credits = request.POST.getlist('credits')
         amounts = request.POST.getlist('amounts')
+        tr_amount = float(request.POST.get('tr_amount'))
 
-        logger.info(request.session['entity_personal_id'])
-        logger.info(request.session['entity_vendor_id'])
-        logger.info(request.session['account_personal_id'])
-        logger.info(request.session['account_entity_id'])
-
-        user_account = Account.objects.get(id=request.session['account_personal_id'])
+        user_account = Account.objects.get(id=request.session['cust_account_personal_id'])
         entity_account = Account.objects.get(id=request.session['account_entity_id'])
         amounts = map(Decimal, amounts)
 
@@ -311,7 +517,7 @@ def process_vendor_payment(request):
                         'Account asset for credit',
                         tr_credit.name,
                         'was updated for user',
-                        request.session['entity_personal']
+                        request.session['entity_customer']
                     ]))
                 else:
                     user_creditmap.delete()
@@ -319,7 +525,7 @@ def process_vendor_payment(request):
                         'Account asset for credit',
                         tr_credit.name,
                         'was deleted for user',
-                        request.session['entity_personal']
+                        request.session['entity_customer']
                     ]))
 
                 # create or update the asset for this credit in the entity's wallet
@@ -371,22 +577,22 @@ def process_vendor_payment(request):
             user_account.save()
             entity_account.save()
 
-            request_obj = {
-                'amount': float(sum(amounts)),
-                'user_name': request.session['entity_personal'],
-                'vendor_name': request.session['entity_vendor']
-            }
-            return render(request, 'tradewave/transaction-confirmed.html', request_obj)
+            return redirect(
+                'tradewave:transaction-confirmed',
+                tr_amount='%.2f' % tr_amount,
+                amount='%.2f' % float(sum(amounts))
+            )
 
     except Exception as e:
         logger.error("Server error: %s", e)
-        request_obj = {
+        context_obj = {
             'status_msg': 'Server error occured, we were notified!'
         }
-        return render(request, 'tradewave/login.html', request_obj)
+        return render(request, 'tradewave/login.html', context_obj)
 
 
 # *** handler for vendor transaction screen ***
+@login_required
 def process_vendor_transaction(request):
     try:
         # TODO'S:
@@ -394,41 +600,20 @@ def process_vendor_transaction(request):
         #   track product categories
         product_category = request.POST.get('product_category')
         product_amount = float(request.POST.get('product_amount'))
-        request_obj = {
-            'selected_venue': request.session['selected_venue'],
-            'vendor_name': request.session['entity_vendor'],
-            'user_name': request.session['entity_personal'],
-            'user_total': request.session['user_total'],
-            'user_credits': request.session['user_credits'],
-            'product_amount': product_amount
-        }
-        return render(request, 'tradewave/vendor-choose-payment.html', request_obj)
+
+        return redirect(
+            'tradewave:vendor-cust-login',
+            tr_amount='%.2f' % product_amount
+        )
 
     except Exception as e:
         logger.error("Server error: %s", e)
-        request_obj = {'status_msg': e.message}
-        return render(request, 'tradewave/login.html', request_obj)
-
-
-# *** handler to redirect to the personal page ***
-def redirect_to_personal(request):
-    try:
-        request_obj = {
-            'name': request.session['entity_personal'],
-            'user_total': request.session['user_total'],
-            'user_credits': request.session['user_credits'],
-        }
-        return render(request, 'tradewave/user-home.html', request_obj)
-
-    except Exception as e:
-        logger.error("Server error: %s", e)
-        request_obj = {
-            'status_msg': 'Server error occurred: we were notified!'
-        }
-        return render(request, 'tradewave/login.html', request_obj)
+        context_obj = {'status_msg': e.message}
+        return render(request, 'tradewave/login.html', context_obj)
 
 
 # *** handler to redirect to the vendor page, if applicable ***
+@login_required
 def redirect_to_vendor(request):
     try:
         if request.session.has_key('entity_vendor'):
@@ -438,41 +623,26 @@ def redirect_to_vendor(request):
                     'user has already chosen a venue: %s',
                     request.session['selected_venue']
                 )
-                template_name = 'tradewave/vendor-home.html'
-                request_obj = {
-                    'selected_venue': request.session['selected_venue'],
-                    'name': request.session['entity_vendor'],
-                    'total': request.session['entity_total'],
-                    'credits': request.session['entity_credits']
-                }
+                return redirect('tradewave:vendor-home')
+
             else:
                 logger.info('user has not chosen a venue')
-                template_name = 'tradewave/vendor-initial.html'
-                request_obj = {
-                    'name': request.session['entity_vendor'],
-                    'featured_venues': Venue.objects.all()[:3]
-                }
+                return redirect('tradewave:vendor-initial')
+
         else:
             logger.info('user has no vendor associations')
-            request_obj = {
-                'name': request.session['entity_personal'],
-                'total': request.session['total'],
-                'credits': request.session['credits'],
-                'status_msg': 'Your account is not associated with any vendor'
-            }
-            template_name = 'tradewave/user-home.html'
-
-        return render(request, template_name, request_obj)
+            return redirect('tradewave:user-home')
 
     except Exception as e:
         logger.error("Server error: %s", e)
-        request_obj = {
+        context_obj = {
             'status_msg': 'Server error occurred: we were notified!'
         }
-        return render(request, 'tradewave/login.html', request_obj)
+        return render(request, 'tradewave/login.html', context_obj)
 
 
 # *** handler to redirect to the marketplace page, if applicable ***
+@login_required
 def redirect_to_marketplace(request):
     try:
         if request.session.has_key('entity_marketplace'):
@@ -482,65 +652,38 @@ def redirect_to_marketplace(request):
                     'user has already chosen a venue: %s',
                     request.session['selected_venue']
                 )
-                template_name = 'tradewave/marketplace-home.html'
-                request_obj = {
-                    'selected_venue': request.session['selected_venue'],
-                    'name': request.session['entity_marketplace'],
-                    'total': request.session['entity_total'],
-                    'credits': request.session['entity_credits']
-                }
+                return redirect('tradewave:marketplace-home')
             else:
                 logger.info('user has not chosen a venue')
-                template_name = 'tradewave/marketplace-initial.html'
-                request_obj = {
-                    'name': request.session['entity_marketplace'],
-                    'featured_venues': Venue.objects.all()[:3]
-                }
+                return redirect('tradewave:marketplace-initial')
         else:
-            logger.info('user has no marketplace associations')
-            request_obj = {
-                'name': request.session['entity_personal'],
-                'total': request.session['total'],
-                'credits': request.session['credits'],
-                'status_msg': 'Your account is not associated with any marketplace'
-            }
-            template_name = 'tradewave/user-home.html'
-
-        return render(request, template_name, request_obj)
+            return redirect('tradewave:user-home')
 
     except Exception as e:
         logger.error("Server error: %s", e)
-        request_obj = {
+        context_obj = {
             'status_msg': 'Server error occurred: we were notified!'
         }
-        return render(request, 'tradewave/login.html', request_obj)
+        return render(request, 'tradewave/login.html', context_obj)
 
 
 # *** handlers [record] ***
+@login_required
 def record_venue(request, venue_id):
     logger.info("Selected venue id is [%s]", venue_id)
-    request.session['venue_id'] = venue_id
     venue = Venue.objects.get(id=venue_id)
     request.session['selected_venue'] = venue.name
     request.session['selected_venue_id'] = venue.id
-    #logger.info("request.session: %s", str(request.session.items()))
-
-    request_obj = {
-        'selected_venue': request.session['selected_venue'],
-        'total': request.session['entity_total'],
-        'credits': request.session['entity_credits']
-    }
 
     # determine the destination template
     if request.session.has_key('entity_vendor'):
-        template_name = 'tradewave/vendor-home.html'
-        request_obj['name'] = request.session['entity_vendor']
+        return redirect('tradewave:vendor-home')
+
     elif request.session.has_key('entity_marketplace'):
-        template_name = 'tradewave/marketplace-home.html'
-        request_obj['name'] = request.session['entity_marketplace']
+        return redirect('tradewave:marketplace-home')
+
     else:
         # possibly the session has expired, have the user re-login
         template_name = 'tradewave/login.html'
-        request_obj = {'status_msg': 'Your session has expired'}
-
-    return render(request, template_name, request_obj)
+        context_obj = {'status_msg': 'Your session has expired'}
+        return render(request, template_name, context_obj)
