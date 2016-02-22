@@ -122,3 +122,6 @@ STATIC_URL = '/static/'
 
 # Media root
 MEDIA_ROOT = '/home/permalife/tradewave_dev/tradewave/images/'
+
+# Login url
+LOGIN_URL = '/login/'

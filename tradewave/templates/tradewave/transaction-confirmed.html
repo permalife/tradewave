@@ -5,6 +5,8 @@
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
 {% load staticfiles %}
+{% load tw_extras %}
+
 <html>
 	<head>
 		<title>Trade Wave</title>
@@ -41,9 +43,11 @@
 
 							<!-- Intro -->
 								<section id="intro">
-									<p class="style1"> ${{ amount|floatformat:2 }} has been transferred from <strong>{{user_name}}</strong> to <strong>{{vendor_name}}</strong> </p>
+									<p class="style1"> ${{ amount|floatformat:2 }} has been transferred from <strong>{{ entity_customer }}</strong> to <strong>{{ entity_vendor }}</strong> </p>
+									<p class="style1"> The remaining balance for this transaction is <strong>${{ tr_amount|subtract:amount|floatformat:2 }}</strong> </p>
+
 										<ul class="actions">
-											<li><a href="{% url "tradewave:vendor-home" %}" class="button button-style3 button-big">OK</a></li>
+											<li><a href="{% url 'tradewave:vendor-home' %}" class="button button-style3 button-big">OK</a></li>
 										</ul>
 								</section>
 							<!-- /Intro -->
