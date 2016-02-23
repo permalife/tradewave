@@ -139,6 +139,7 @@ class MarketplaceHome(LoginRequiredMixin, SessionContextView, TemplateView):
             # generate marketplace's credit account statement
             # we limit to a single account for simplicity for now
             marketplace_account = marketplace_entity.account_set.first()
+            self.request.session['account_entity_id'] = marketplace_account.id
             marketplace_amount_total = marketplace_account.amount_total
             marketplace_wallet = CreditMap.objects.filter(account=marketplace_account)
             marketplace_credits = OrderedDict([
@@ -244,13 +245,14 @@ class VendorHome(LoginRequiredMixin, SessionContextView, TemplateView):
             raise PermissionDenied('Not authorized to access this page')
 
         if tw_user.vendors.exists():
-            # user's personal entity
+            # user's vendor entity
             vendor_entity = tw_user.vendors.first()
             logger.info('vendor entity: %s', vendor_entity.name)
 
             # generate vendor's credit account statement
             # we limit to a single account for simplicity for now
             vendor_account = vendor_entity.account_set.first()
+            self.request.session['account_entity_id'] = vendor_account.id
             vendor_amount_total = vendor_account.amount_total
             vendor_wallet = CreditMap.objects.filter(account=vendor_account)
             vendor_credits = OrderedDict([
@@ -477,15 +479,14 @@ def process_login(request):
             # we limit to a single account for simplicity for now
             if user_tradewave.vendors.exists() or user_tradewave.marketplaces.exists():
                 entity_account = user_entity.account_set.first()
-                request.session['account_entity_id'] = entity_account.id
                 entity_amount_total = entity_account.amount_total
                 entity_wallet = entity_account.creditmap_set.all()
                 entity_credits = OrderedDict([
                     (entry.credit.name, float(entry.amount))
                     for entry in sorted(entity_wallet, key=attrgetter('amount'), reverse=True)
                 ])
-                request.session['entity_total'] = float(entity_amount_total)
-                request.session['entity_credits'] = entity_credits
+                #request.session['entity_total'] = float(entity_amount_total)
+                #request.session['entity_credits'] = entity_credits
 
             return redirect('tradewave:user-home')
 
