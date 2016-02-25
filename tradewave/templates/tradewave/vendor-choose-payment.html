@@ -49,8 +49,6 @@
         					{% csrf_token %}
 									<div>
 										<div class="row">
-											<!--input type="text" class="text" name="Vendor" id="scredit-vendor" placeholder="Credit" /-->
-											<!--select class="text"-->
 											<div class="12u">
 												{% if cust_credits and cust_credits.values|first >= tr_amount and tr_amount > 0 %}
 													<p class="style1"> {{ cust_name }} has enough {{ cust_credits.keys|first }} for this transaction </p>
@@ -59,15 +57,9 @@
 												{% endif %}
 											</div>
 
-											<div class="12u">
-												<p class="style1">
-													Buying {{ product_category }}:
-												</p>
-											</div>
-
 											{% for credit, amount in cust_credits.items %}
 												{% if forloop.first or tr_amount > cust_credits.values|first %}
-													<!-- dump trick to make it centered -->
+													<!-- dumb trick to make it centered -->
 													<div class="3u">
 														<p class="style1">
 														</p>
@@ -111,6 +103,11 @@
 														<br>
 													</div>
 												{% endif %}
+                        <div class="12u">
+  												<p class="style1">
+  													for {{ product_category }}
+  												</p>
+  											</div>
 											{% empty %}
 												<div class="12u">
 													<p class="style1">
@@ -118,7 +115,6 @@
 													</p>
 												</div>
 											{% endfor %}
-											<!--/select-->
 										</div>
 
 									<div class="row half">
@@ -126,7 +122,6 @@
 											<input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
 										</div>
 									</div>
-
 
 									{% if tr_amount > cust_total %}
 										<div class="12u">
