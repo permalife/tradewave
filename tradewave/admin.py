@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
-    Marketplace, Affiliation, TransactionLog
+    Marketplace, Affiliation, TransactionLog, Product, CreditProductMap
 
 from import_export import resources
 #from import_export.admin import ImportExportActionModelAdmin
@@ -42,3 +42,5 @@ admin.site.register(Vendor)
 admin.site.register(Marketplace)
 admin.site.register(Affiliation)
 admin.site.register(TransactionLog)
+admin.site.register(Product)
+admin.site.register(CreditProductMap)
