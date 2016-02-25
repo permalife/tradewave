@@ -13,7 +13,7 @@ from django.views.generic import View, ListView, TemplateView
 
 from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
-    Marketplace, Affiliation, TransactionLog
+    Marketplace, Affiliation, TransactionLog, Product
 
 from collections import OrderedDict
 from datetime import datetime
@@ -45,6 +45,7 @@ class SessionContextView(View):
             'entity_vendor',
             'entity_customer',
             'entity_marketplace',
+            'product_category',
             'selected_venue'
         ]
 
@@ -287,6 +288,11 @@ class VendorInitial(LoginRequiredMixin, SessionContextView, TemplateView):
 class VendorTransaction(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/vendor-transaction.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(VendorTransaction, self).get_context_data(**kwargs)
+        context['product_categories'] = Product.objects.all()
+        return context
+
 
 class UserHomeView(LoginRequiredMixin, SessionContextView, TemplateView):
     # url args: user_id (django user id)
@@ -382,6 +388,9 @@ def process_cust_login(request):
 
             # generate the list of customer credits
             # we limit to a single account for simplicity for now
+            def can_buy(credit):
+                return (not credit.is_restricted) or credit.products.filter(id=request.session['product_category_id'])
+
             cust_account = cust_personal_entity.account_set.first()
             request.session['cust_account_personal_id'] = cust_account.id
             cust_amount_total = cust_account.amount_total
@@ -389,6 +398,7 @@ def process_cust_login(request):
             cust_credits = OrderedDict([
                 (entry.credit.name, float(entry.amount))
                 for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
+                if can_buy(entry.credit)
             ])
             logger.info(cust_credits)
             request.session['cust_total'] = float(cust_amount_total)
@@ -399,7 +409,9 @@ def process_cust_login(request):
                 'cust_name': cust_name,
                 'cust_total': float(cust_amount_total),
                 'cust_credits': cust_credits,
-                'tr_amount': float(tr_amount)
+                'tr_amount': float(tr_amount),
+                'product_category': Product.objects.get(
+                    id=request.session['product_category_id']).name
             }
 
             return render(
@@ -624,8 +636,9 @@ def process_vendor_transaction(request):
         # TODO'S:
         #   use django forms
         #   track product categories
-        product_category = request.POST.get('product_category')
+        product_category_id = request.POST.get('product_category_id')
         product_amount = float(request.POST.get('product_amount'))
+        request.session['product_category_id'] = product_category_id
 
         return redirect(
             'tradewave:vendor-cust-login',

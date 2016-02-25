@@ -48,20 +48,32 @@
 								<form method="post" action="{% url 'tradewave:process_vendor_payment' %}">
         					{% csrf_token %}
 									<div>
-										<div class="row half">
+										<div class="row">
 											<!--input type="text" class="text" name="Vendor" id="scredit-vendor" placeholder="Credit" /-->
 											<!--select class="text"-->
 											<div class="12u">
-												{% if cust_credits.values|first >= tr_amount %}
-													<p class="style1"> {{ cust_name }} has enough in {{ cust_credits.keys|first }} for this transaction </p>
-												{% else %}
-													<p class="style1"> The amount can not be paid using a single credit and has to be split across {{ cust_name }}'s credits </p>
+												{% if cust_credits and cust_credits.values|first >= tr_amount and tr_amount > 0 %}
+													<p class="style1"> {{ cust_name }} has enough {{ cust_credits.keys|first }} for this transaction </p>
+												{% elif cust_credits|length > 1 %}
+													<p class="style1"> The amount can not be paid using a single credit and has to be split across multiple credits </p>
 												{% endif %}
+											</div>
+
+											<div class="12u">
+												<p class="style1">
+													Buying {{ product_category }}:
+												</p>
 											</div>
 
 											{% for credit, amount in cust_credits.items %}
 												{% if forloop.first or tr_amount > cust_credits.values|first %}
-													<div class="6u">
+													<!-- dump trick to make it centered -->
+													<div class="3u">
+														<p class="style1">
+														</p>
+													</div>
+
+													<div class="3u">
 														<input
 															type="text"
 															class="text"
@@ -70,7 +82,7 @@
 															value="{{ credit }}"
 															readonly>
 													</div>
-													<div class="6u">
+													<div class="3u">
 														<input
 															type="number"
 															min="0.01"
@@ -101,7 +113,9 @@
 												{% endif %}
 											{% empty %}
 												<div class="12u">
-													<strong> User has no credits in the account </strong>
+													<p class="style1">
+														<strong> User has no credits in to buy this product </strong>
+													</p>
 												</div>
 											{% endfor %}
 											<!--/select-->

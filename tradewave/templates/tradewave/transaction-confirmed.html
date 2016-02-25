@@ -43,7 +43,7 @@
 
 							<!-- Intro -->
 								<section id="intro">
-									<p class="style1"> ${{ amount|floatformat:2 }} has been transferred from <strong>{{ entity_customer }}</strong> to <strong>{{ entity_vendor }}</strong> </p>
+									<p class="style1"> <strong>${{ amount|floatformat:2 }}</strong> has been transferred from <strong>{{ entity_customer }}</strong> to <strong>{{ entity_vendor }}</strong> </p>
 									<p class="style1"> The remaining balance for this transaction is <strong>${{ tr_amount|subtract:amount|floatformat:2 }}</strong> </p>
 
 										<ul class="actions">
