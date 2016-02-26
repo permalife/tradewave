@@ -85,6 +85,7 @@ class VendorCustLogin(generic.ListView):
     model = User
     template_name = 'tradewave/vendor-cust-login.html'
 
+	
 class VendorHome(generic.ListView):
     model = User
     template_name = 'tradewave/vendor-home.html'
