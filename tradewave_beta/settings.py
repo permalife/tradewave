@@ -31,13 +31,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'import_export',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tradewave.apps.TradewaveConfig'
+    'tradewave.apps.TradewaveConfig',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -122,3 +123,6 @@ STATIC_URL = '/static/'
 
 # Media root
 MEDIA_ROOT = '/home/permalife/tradewave_dev/tradewave/images/'
+
+# Login url
+LOGIN_URL = '/login/'
