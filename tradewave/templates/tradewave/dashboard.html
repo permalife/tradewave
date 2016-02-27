@@ -34,23 +34,23 @@
 
     <!-- Intro Wrapper -->
     <div id="intro-wrapper" class="wrapper wrapper-style1">
-      <div class="title"> Vendor {{ name }} </div>
+      <div class="title"> {{ entity_personal }} </div>
       <div class="container">
         <div class="row">
           <div class="12u">
 
             <section id="intro">
-              <p class="style1">{{ name }} has <strong>{{ total|floatformat:2 }}</strong> total in:</p>
-              <ul>
-                {% for credit, amount in credits.items %}
-                  <li>{{ credit }}: ${{ amount|floatformat:2 }} </li>
-                {% endfor %}
-              </ul>
-
-              <ul class="actions">
-                <li><a href="{% url "tradewave:vendor-transaction" %}" class="button button-style3 button-big">New Transaction</a></li>
-                <li><a href="#" class="button button-style3 button-big">View Dashboard</a></li>
-              </ul>
+              {% if entity_marketplace %}
+              <div class="row half">
+          						<div class="12u">
+          							<a href="{% url 'tradewave:export_data' %}" class="button button-style3 button-big"> Export Account Data  </a>
+          						</div>
+          					</div>
+              {% else %}
+              <div class="row half">
+                <p class="style3"> No functionality available for your account at the moment </p>
+              </div>
+              {% endif %}
             </section>
 
           </div>

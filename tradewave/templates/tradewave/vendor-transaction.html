@@ -30,96 +30,71 @@
 	</head>
 	<body class="homepage">
 
-		{% include "tradewave/header.html" %}
+	{% include "tradewave/header.html" %}
 
-		<!-- Intro Wrapper -->
-		<div id="intro-wrapper" class="wrapper wrapper-style1">
-			<div class="title">Issue Credits</div>
-			<div class="container">
-				<div class="row">
-					<div class="12u">
+	<!-- Intro Wrapper -->
+	<div id="intro-wrapper" class="wrapper wrapper-style1">
+		<div class="title"> Vendor {{ entity_vendor }} </div>
+		<div class="container">
+			<div class="row">
+				<div class="12u">
 
-						<section id="intro">
-							<p class="style1">Logged into <strong>Current Location</strong></p>
+					<section id="intro">
+						{% if selected_venue %}
+						<p class="style1">Selected venue: <strong> {{ selected_venue }} </strong></p>
+						{% endif %}
 
-								<!-- Credit Form -->
-								<form method="post" action="#">
-									<div>
-										<div class="row half">
-											<div class="6u">
-												<input type="text" class="text" name="Vendor" id="scredit-vendor" placeholder="Category" />
-											</div>
-											<div class="6u">
-												<input type="number" class="text" name="Value" id="scredit-value" placeholder="$$$" />
-											</div>
-										<div>
-
-										<div class="row half">
-											<div class="12u">
-											<!-- These controls should allow you to add additional types of credits-->
-												<ul class="actions">
-													<li><a href="#" class="button button-style3 button">+</a></li>
-													<li><a href="#" class="button button-style3 button">-</a></li>
-												</ul>
-											</div>
+							<!-- Credit Form -->
+							<form method="post" action="{% url 'tradewave:process_vendor_transaction' %}">
+								{% csrf_token %}
+								<div>
+									<div class="row">
+										<!-- dump trick to make it centered -->
+										<div class="3u"><p></p></div>
+										<div class="3u">
+											<!--input type="text" class="text" name="product_category" id="product-category" placeholder="Produce" /-->
+											<select name="product_category_id" class="text">
+												{% for product_category in product_categories %}
+													<option value="{{ product_category.id }}"> {{ product_category.name }} </option>
+												{% endfor %}
+											</select>
 										</div>
-
-										<div class="row">
-											<div class="12u">
-												<ul class="actions">
-													<li><input type="submit" class="button button-style3 button-big" value="Complete" /></li>
-													<li><input type="reset" class="button button-style2 button-big" value="Reset" /></li>
-												</ul>
-											</div>
+										<div class="3u">
+											<input type="number" step="0.01" min="0.01" class="text" name="product_amount" id="product-amount" placeholder="$$$" />
 										</div>
 									</div>
-								</form>
-								<!-- /Credit Form -->
 
-						</section>
+									<!--div class="row half">
+										<div class="12u">
+										<These controls should allow you to add additional types of credits>
+											<ul class="actions">
+												<li><a href="#" class="button button-style3 button">+</a></li>
+												<li><a href="#" class="button button-style3 button">-</a></li>
+											</ul>
+										</div>
+									</div-->
 
-					</div>
+									<div class="row">
+										<div class="12u">
+											<ul class="actions">
+												<li><input type="submit" class="button button-style3 button-big" value="Complete" /></li>
+												<li><input type="reset" class="button button-style2 button-big" value="Reset" /></li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</form>
+							<!-- /Credit Form -->
+
+					</section>
+
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<!-- Footer Wrapper -->
-			<div id="footer-wrapper" class="wrapper">
-				<div class="title">Our Mission</div>
-				<div class="container">
-					<div class="row">
-						<div class="12u">
+	{% include "tradewave/footer.html" %}
 
-							<!-- Footer -->
-								<div id="footer">
-									<header class="style1">
-										<h2>An Economy of Abundance</h2>
-										<p class="byline">
-											Right now there are 23 homes on the market for every homeless person.<br />
-											Just one example of an economy gone awry.
-										</p>
-										<p class="style3"><br/>
-										Trade Wave is working to bring about an <strong>economic revolution</strong>;<br/>
-										 a way of doing business that works for <strong>people</strong> and the <strong>planet</strong> and not just <strong>profit</strong>.<br/>
-										 The first step is to create a platform of commerce that promotes abundance<br/>
-										 and connects people rather than rewarding greed and scarcity.</p>
-									</header>
-									<hr />
-							<!-- /Footer -->
-
-							<!-- Copyright -->
-								<div id="copyright">
-									<span>
-										&copy; Endeavor Marketing Solutions 2014. Design by <a href="http://html5up.net/">HTML5 UP</a>.
-									</span>
-								</div>
-							<!-- /Copyright -->
-
-						</div>
-					</div>
-				</div>
-			</div>
-		<!-- /Footer Wrapper -->
 
 	</body>
 </html>
