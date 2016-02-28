@@ -65,8 +65,9 @@
                   </div>
                   <div class="row">
                     <div class="12u">
-                      <input type="submit" class="button button-style3 button-big" value="Login" />
-                      <a href="#" class="button button-style3 button-big">Scan Card</a>
+                      <center>
+                        <input type="submit" class="button button-style3 button-big" value="Login" />
+                      </center>
                     </div>
                   </div>
 
@@ -120,6 +121,14 @@
 
                   <div class="row half">
                     <div class="12u">
+                      <center>
+                        <input type="submit" class="button button-style3 button-big" id="button_qr_login" value="Login with QR" style="visibility:hidden"/>
+                      </center>
+                    </div>
+                  </div>
+
+                  <div class="row half">
+                    <div class="12u">
                       <input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
                     </div>
                   </div>
@@ -148,6 +157,7 @@
           document.getElementById("qr_string").value=data;
           document.getElementById("qr_pin").style.visibility="visible";
           document.getElementById("label_qr_pin").style.visibility="visible";
+          document.getElementById("button_qr_login").style.visibility="visible";
           //window.alert("QR Code read: " + data);
         },
         function(error){
