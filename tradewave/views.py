@@ -183,12 +183,8 @@ class SettingsVendor(ListView):
     template_name = 'tradewave/settings-vendor.html'
 
 
-<<<<<<< HEAD
-	
-class VendorHome(generic.ListView):
-=======
+
 class SettingsMarketplace(ListView):
->>>>>>> refs/remotes/permalife/master
     model = User
     template_name = 'tradewave/settings-marketplace.html'
 
