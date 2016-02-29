@@ -42,13 +42,15 @@
             <section id="intro">
               {% if entity_marketplace %}
               <div class="row half">
-          						<div class="12u">
-          							<a href="{% url 'tradewave:export_data' %}" class="button button-style3 button-big"> Export Account Data  </a>
-          						</div>
-          					</div>
+    						<div class="12u">
+    							<a href="{% url 'tradewave:export_data' %}" class="button button-style3 button-big"> Export Account Data  </a>
+    						</div>
+    					</div>
               {% else %}
               <div class="row half">
-                <p class="style3"> No functionality available for your account at the moment </p>
+                <center>
+                  <p class="style3"> No functionality available for your account at the moment </p>
+                </center>
               </div>
               {% endif %}
             </section>
