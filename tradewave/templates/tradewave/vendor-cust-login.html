@@ -71,7 +71,33 @@
                   </div>
                   <div class="row half">
                     <div class="12u">
-                      <input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
+                      QRCode Scan View:<br />
+<script>
+(function($){
+	$('document').ready(function(){
+		$('#qrcodebox').WebcamQRCode({
+			onQRCodeDecode: function( p_data ){
+					$('#qrcode_result').html( p_data );
+			}
+		});
+		
+		$('#btn_start').click(function(){
+			$('#qrcodebox').WebcamQRCode().start();
+		});
+		
+		$('#btn_stop').click(function(){
+			$('#qrcodebox').WebcamQRCode().stop();
+		});
+	});
+})(jQuery);
+</script>
+<div style="width: 350px; height: 350px;" id="qrcodebox">
+</div>
+<input type="button" value="Start" id="btn_start" /> 
+<input type="button" value="Stop" id="btn_stop" />
+<p>
+Last QRCode value: <span id="qrcode_result">none</span>
+</p>
                     </div>
                   </div>
                 </div>
@@ -91,7 +117,7 @@
 
               <!--End of WebCam TO Scan QR Codes -->
               <!-- QR Reader Wrapper -->
-              <div>
+          <!--    <div>
                 <div class="row">
                   <div class="4u">
                     <p></p>
@@ -116,7 +142,7 @@
     {% include "tradewave/footer.html" %}
     <!-- /Footer Wrapper -->
 
-    <script type="text/javascript">
+    <!-- script type="text/javascript">
       $('#reader').html5_qrcode(
         function(data) {
           // do something when code is read
@@ -133,7 +159,7 @@
           window.alert("Video error");
         }
       );
-    </script>
+    </script -->
 
     <!--script>
       (function($){
