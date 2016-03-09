@@ -77,6 +77,10 @@ class ConfirmReceiveView(ListView):
     template_name = 'tradewave/confirm-receive.html'
 
 
+class CustomerSupportView(SessionContextView, TemplateView):
+    template_name = 'tradewave/cust-support.html'
+
+
 class TransactionConfirmedView(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/transaction-confirmed.html'
 
@@ -371,6 +375,7 @@ def process_cust_login(request):
         cust_pin = request.POST.get('cust_pin')
         tr_amount = request.POST.get('tr_amount')
 
+        user = None
         if cust_name and cust_password:
             # login user django user credentials
             user = authenticate(
