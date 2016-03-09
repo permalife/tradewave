@@ -22,10 +22,9 @@
     <script src="{% static "js/config.js" %}"></script>
     <script src="{% static "js/skel.min.js" %}"></script>
     <script src="{% static "js/skel-panels.min.js" %}"></script>
-    <script src="{% static "js/html5-qrcode.min.js" %}"></script>
-
-		<!--script type="text/javascript" src="js/jquery.min.js"></script-->
-		<!--script type="text/javascript" src="js/jquery.webcamqrcode.min.js"></script-->
+		<script src="{% static "js/jquery.webcamqrcode.js" %}"></script>
+    <!--script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script-->
+    <!--script src="{% static "js/html5-qrcode.min.js" %}"></script-->
 
     <!--noscript-->
     <link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
@@ -33,7 +32,33 @@
     <link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
     <!--/noscript-->
   </head>
+
   <body class="homepage">
+    <script>
+    (function($){
+    	$('document').ready(function(){
+    		$('#qrcodebox').WebcamQRCode({
+    			onQRCodeDecode: function( p_data ){
+              //window.alert("QR Code read: " + p_data);
+    					//$('#qrcode_result').html( p_data );
+              document.getElementById("qr_status").innerHTML="<strong> Code scanned </strong>";
+              document.getElementById("qr_string").value=p_data;
+              document.getElementById("qr_pin").style.visibility="visible";
+              document.getElementById("label_qr_pin").style.visibility="visible";
+              document.getElementById("button_qr_login").style.visibility="visible";
+    			}
+    		});
+
+    		$('#btn_start').click(function(){
+    			$('#qrcodebox').WebcamQRCode().start();
+    		});
+
+    		$('#btn_stop').click(function(){
+    			$('#qrcodebox').WebcamQRCode().stop();
+    		});
+    	});
+    })(jQuery);
+    </script>
 
     {% include "tradewave/header.html" %}
 
@@ -67,71 +92,64 @@
                     <div class="12u">
                       <center>
                         <input type="submit" class="button button-style3 button-big" value="Login" />
+                        <input type="button" class="button button-style3 button-big" value="Scan card" id="btn_start" />
+                        <!--input type="button" class="button button-style3 button-big" value="Stop" id="btn_stop" /-->
                       </center>
                     </div>
                   </div>
-
-                <!-- Web Cam to Scan QR Codes-->
-                <!--WebcamQRCode View:<br />
-                <div style="width: 350px; height: 350px;" id="qrcodebox">
                 </div>
-                <input type="button" value="Start" id="btn_start" />
-                <input type="button" value="Stop" id="btn_stop" />
-                <p>
-                  Last QRCode value: <span id="qrcode_result">none</span>
-                </p>-->
-                <!--End of WebCam TO Scan QR Codes -->
 
                 <!-- QR Reader Wrapper -->
-                  <div class="row">
-                    <!--div class="4u">
-                      <p></p>
-                    </div-->
-                    <div class="12u">
-                      <center>
-                        <p class="style1"> Or scan card: </p>
-                        <div id="reader" style="width:300px;height:250px">
-                        </div>
-                      </center>
-                    </div>
+                <div class="row">
+                  <div class="12u">
+                    <center>
+                      <!--p class="style1"> Or scan card: </p-->
+                      <!-- Web Cam to Scan QR Codes-->
+                      <div style="width: 350px; height: 350px;" id="qrcodebox">
+                      </div>
+                      <!--p>
+                        Last QRCode value: <span id="qrcode_result">none</span>
+                      </p-->
+                      <!--End of WebCam TO Scan QR Codes -->
+                    </center>
                   </div>
+                </div>
 
-                  <div class="row half">
-                    <div class="12u">
-                      <p class="style1" id="qr_status"> </p>
-                    </div>
+                <div class="row half">
+                  <div class="12u">
+                    <p class="style1" id="qr_status"> </p>
                   </div>
+                </div>
 
-                  <div class="row half">
+                <div class="row half">
+                  <div class="3u">
+                    <input type="hidden" class="text" name="cust_qr_string" id="qr_string" value="" readonly>
+                  </div>
+                </div>
+
+                <div class="row half">
                     <div class="3u">
-                      <input type="hidden" class="text" name="cust_qr_string" id="qr_string" value="" readonly>
+                      <p></p>
                     </div>
-                  </div>
-
-                  <div class="row half">
-                      <div class="3u">
-                        <p></p>
-                      </div>
-                      <div class="3u">
-                        <p id="label_qr_pin" class="style1" style="visibility:hidden"> Enter your pin: </p>
-                      </div>
-                      <div class="3u">
-                        <input type="password" class="text" name="cust_pin" id="qr_pin" value="" style="visibility:hidden" size=4 maxlength=4>
-                      </div>
-                  </div>
-
-                  <div class="row half">
-                    <div class="12u">
-                      <center>
-                        <input type="submit" class="button button-style3 button-big" id="button_qr_login" value="Enter" style="visibility:hidden"/>
-                      </center>
+                    <div class="3u">
+                      <p id="label_qr_pin" class="style1" style="visibility:hidden"> Enter your pin: </p>
                     </div>
-                  </div>
-
-                  <div class="row half">
-                    <div class="12u">
-                      <input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
+                    <div class="3u">
+                      <input type="password" class="text" name="cust_pin" id="qr_pin" value="" style="visibility:hidden" size=4 maxlength=4>
                     </div>
+                </div>
+
+                <div class="row half">
+                  <div class="12u">
+                    <center>
+                      <input type="submit" class="button button-style3 button-big" id="button_qr_login" value="Enter" style="visibility:hidden"/>
+                    </center>
+                  </div>
+                </div>
+
+                <div class="row half">
+                  <div class="12u">
+                    <input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
                   </div>
                 </div>
                 <!-- /QR Reader Wrapper -->
@@ -150,7 +168,7 @@
     {% include "tradewave/footer.html" %}
     <!-- /Footer Wrapper -->
 
-    <script type="text/javascript">
+    <!--script type="text/javascript">
       $('#reader').html5_qrcode(
         function(data) {
           // do something when code is read
@@ -163,34 +181,14 @@
         },
         function(error){
           //show read errors
-          //window.alert("Read error")
+          window.alert(error);
         },
   		  function(videoError){
           //the video stream could be opened
-          window.alert("Video error");
+          window.alert(videoError);
         }
       );
-    </script>
-
-    <!--script>
-      (function($){
-        $('document').ready(function(){
-          $('#qrcodebox').WebcamQRCode({
-            onQRCodeDecode: function( p_data ){
-              $('#qrcode_result').html( p_data );
-            }
-          });
-
-          $('#btn_start').click(function(){
-            $('#qrcodebox').WebcamQRCode().start();
-          });
-
-          $('#btn_stop').click(function(){
-            $('#qrcodebox').WebcamQRCode().stop();
-          });
-        });
-      })(jQuery);
-
     </script-->
+
   </body>
 </html>
