@@ -34,65 +34,93 @@
 
     <!-- Intro Wrapper -->
     <div id="intro-wrapper" class="wrapper wrapper-style1">
-      <div class="title">{{ name }} Account</div>
-      <div class="container">
-        <div class="row">
-          <div class="12u">
+      <div class="title">Personal account</div>
+        <div class="container">
+          <div class="row 150%">
+            <div class="2u 12u(mobile)">
+              <div id="sidebar">
+                <section class="box">
+                  <header>
+                    <h2>Your accounts:</h2>
+                  </header>
+                  <ul class="style3">
+                    <li><a href="{% url "tradewave:user-home" %}"> Personal account </a></li>
+                    {% if entity_vendor %}
+                    <li><a href="/redirect_to_vendor/"> Vendor account </a></li>
+                    {% endif %}
+                    {% if entity_marketplace %}
+                    <li><a href="/redirect_to_marketplace/">Marketplace account </a></li>
+                    {% endif %}
+                    {% if entity_vendor %}
+                    <li><a href="{% url "tradewave:vendor-transaction" %}"> New transaction </a></li>
+                    {% endif %}
+                  </ul>
+                </section>
+              </div>
+            </div>
 
-            <!-- Intro -->
-            <section id="intro">
-              {% if user_total > 0 %}
-                <p class="style1">Account summary:</p>
-                  <div>
-                    <!-- list credit in account -->
-                    {% for credit, amount in user_credits.items %}
-                      <div class="row half">
-                        <div class="3u">
-                          <p></p>
-                        </div>
-                        <div class="3u">
-                          <p class="style1"> {{ credit }}: </p>
-                        </div>
-                        <div class="3u">
-                          <p class="style1"> ${{ amount|floatformat:2 }} </p>
-                        </div>
-                      </div>
-                    {% endfor %}
+            <div class="10u 12u(mobile) important(mobile)">
+              <div id="content">
+                <div class="row">
+                  <div class="12u">
 
-                    <!-- dividing line -->
-                    <div class="row half">
-                      <div class="3u">
-                        <p></p>
-                      </div>
-                      <div class="6u">
-                        <hr />
-                      </div>
-                    </div>
+                    <!-- Intro -->
+                    <section id="intro">
+                      {% if user_total > 0 %}
+                        <p class="style1">Account summary:</p>
+                          <div>
+                            <!-- list credit in account -->
+                            {% for credit, amount in user_credits.items %}
+                              <div class="row half">
+                                <div class="3u">
+                                  <p></p>
+                                </div>
+                                <div class="3u">
+                                  <p class="style1"> {{ credit }}: </p>
+                                </div>
+                                <div class="3u">
+                                  <p class="style1"> ${{ amount|floatformat:2 }} </p>
+                                </div>
+                              </div>
+                            {% endfor %}
 
-                    <!-- list total -->
-                    <div class="row half">
-                      <div class="3u">
-                        <p></p>
-                      </div>
-                      <div class="3u">
-                        <p class="style1"> <strong>Total:</strong> </p>
-                      </div>
-                      <div class="3u">
-                        <p class="style1"> <strong>${{ user_total|floatformat:2 }}</strong> </p>
-                      </div>
-                    </div>
+                            <!-- dividing line -->
+                            <div class="row half">
+                              <div class="3u">
+                                <p></p>
+                              </div>
+                              <div class="6u">
+                                <hr />
+                              </div>
+                            </div>
+
+                            <!-- list total -->
+                            <div class="row half">
+                              <div class="3u">
+                                <p></p>
+                              </div>
+                              <div class="3u">
+                                <p class="style1"> <strong>Total:</strong> </p>
+                              </div>
+                              <div class="3u">
+                                <p class="style1"> <strong>${{ user_total|floatformat:2 }}</strong> </p>
+                              </div>
+                            </div>
+                        </div>
+                      {% else %}
+                        <p class="style1">There are no credits in your personal account</p>
+                      {% endif %}
+
+                      <!--ul class="actions">
+                        <li><a href="#" class="button button-style3 button-big">Make a Purchase</a></li>
+                        <li><a href="#" class="button button-style3 button-big">Find Offers</a></li>
+                      </ul-->
+                    </section>
+                    <!-- /Intro -->
+                  </div>
                 </div>
-              {% else %}
-                <p class="style1">There are no credits in your personal account</p>
-              {% endif %}
-
-              <!--ul class="actions">
-                <li><a href="#" class="button button-style3 button-big">Make a Purchase</a></li>
-                <li><a href="#" class="button button-style3 button-big">Find Offers</a></li>
-              </ul-->
-            </section>
-            <!-- /Intro -->
-          </div>
+              </div>
+            </div>
         </div>
       </div>
     </div>
