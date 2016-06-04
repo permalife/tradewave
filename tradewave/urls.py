@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^vendor-cust-login/(?P<tr_amount>\d+\.\d{2})$', views.VendorCustLogin.as_view(), name='vendor-cust-login'),
     url(r'^vendor-choose-payment/(?P<tr_amount>\d+\.\d{2})/$', views.VendorChoosePayment.as_view(), name='vendor-choose-payment'),
     url(r'^vendor-home/$', views.VendorHome.as_view(), name='vendor-home'),
+	url(r'^cust-support/$', views.CustSupport.as_view(), name='cust-support'),
     url(r'^vendor-transaction/$', views.VendorTransaction.as_view(), name='vendor-transaction'),
     url(r'^settings-user/$', views.SettingsUser.as_view(), name='settings-user'),
     url(r'^settings-vendor/$', views.SettingsVendor.as_view(), name='settings-vendor'),
