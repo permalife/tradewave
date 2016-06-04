@@ -41,18 +41,55 @@
 
             <!-- Intro -->
             <section id="intro">
-              <p class="style1">Use TradeWave to make purchases from your favorite vendors.</p>
-              <p class="style1">You have <strong>${{ user_total|floatformat:2 }}</strong> total in:</p>
-              <ul>
-                {% for credit, amount in user_credits.items %}
-                  <li>{{ credit }}: ${{ amount|floatformat:2 }} </li>
-                {% endfor %}
-              </ul>
+              {% if user_total > 0 %}
+                <p class="style1">Account summary:</p>
+                  <div>
+                    <!-- list credit in account -->
+                    {% for credit, amount in user_credits.items %}
+                      <div class="row half">
+                        <div class="3u">
+                          <p></p>
+                        </div>
+                        <div class="3u">
+                          <p class="style1"> {{ credit }}: </p>
+                        </div>
+                        <div class="3u">
+                          <p class="style1"> ${{ amount|floatformat:2 }} </p>
+                        </div>
+                      </div>
+                    {% endfor %}
 
-              <ul class="actions">
+                    <!-- dividing line -->
+                    <div class="row half">
+                      <div class="3u">
+                        <p></p>
+                      </div>
+                      <div class="6u">
+                        <hr />
+                      </div>
+                    </div>
+
+                    <!-- list total -->
+                    <div class="row half">
+                      <div class="3u">
+                        <p></p>
+                      </div>
+                      <div class="3u">
+                        <p class="style1"> <strong>Total:</strong> </p>
+                      </div>
+                      <div class="3u">
+                        <p class="style1"> <strong>${{ user_total|floatformat:2 }}</strong> </p>
+                      </div>
+                    </div>
+                </div>
+              {% else %}
+                <p class="style1">There are no credits in your personal account</p>
+              {% endif %}
+
+              <!--ul class="actions">
                 <li><a href="#" class="button button-style3 button-big">Make a Purchase</a></li>
                 <li><a href="#" class="button button-style3 button-big">Find Offers</a></li>
-              </ul>
+              </ul-->
             </section>
             <!-- /Intro -->
           </div>

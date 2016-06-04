@@ -81,6 +81,10 @@ class ConfirmReceiveView(ListView):
     template_name = 'tradewave/confirm-receive.html'
 
 
+class CustomerSupportView(SessionContextView, TemplateView):
+    template_name = 'tradewave/cust-support.html'
+
+
 class TransactionConfirmedView(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/transaction-confirmed.html'
 
@@ -372,19 +376,41 @@ def process_cust_login(request):
         # TODO: use django forms
         cust_name = request.POST.get('cust_name')
         cust_password = request.POST.get('cust_password')
+        cust_qr_string = request.POST.get('cust_qr_string')
+        cust_pin = request.POST.get('cust_pin')
         tr_amount = request.POST.get('tr_amount')
-        user = authenticate(
-            username=cust_name,
-            password=cust_password
-        )
+
+        user = None
+        if cust_name and cust_password:
+            # login user django user credentials
+            user = authenticate(
+                username=cust_name,
+                password=cust_password
+            )
+        elif cust_qr_string and cust_pin:
+            # login using qr and pin
+            try:
+                cust_twuser = TradewaveUser.objects.get(
+                    qr_string=cust_qr_string,
+                    pin=cust_pin
+                )
+                user = cust_twuser.user
+                logger.info('Logged in as [%s]', user.username)
+            except Exception as e:
+                logger.warning(
+                    'Invalid login attempt using QR: %s (%s)',
+                    e.message,
+                    type(e)
+                )
+                return redirect('tradewave:vendor-cust-login', tr_amount=tr_amount)
 
         # is existing user?
         if user is not None and user.is_active:
-            cust_tradewave = TradewaveUser.objects.get(user=user.pk)
-            cust_name = user.username
+            cust_twuser = user.tradewaveuser
 
             # user's personal entity
-            cust_personal_entity = user.tradewaveuser.user_entity
+            cust_personal_entity = cust_twuser.user_entity
+            cust_name = user.username
 
             # session-wide variable customer entity
             request.session['entity_customer'] = cust_name

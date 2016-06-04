@@ -88,7 +88,7 @@
 										<div class="row">
 											<div class="12u">
 												{% if cust_credits and cust_credits.values|first >= tr_amount and tr_amount > 0 %}
-													<p class="style1"> {{ cust_name }} has enough {{ cust_credits.keys|first }} for this transaction </p>
+													<p class="style1"> <strong>{{ cust_name }}</strong> can pay in <strong>{{ cust_credits.keys|first }}</strong> for this transaction </p>
 												{% elif cust_credits|length > 1 %}
 													<p class="style1"> The amount can not be paid using a single credit and has to be split across multiple credits </p>
 												{% endif %}

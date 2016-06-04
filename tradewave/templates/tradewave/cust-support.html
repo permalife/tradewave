@@ -23,7 +23,7 @@
     <script src="{% static "js/skel.min.js" %}"></script>
     <script src="{% static "js/skel-panels.min.js" %}"></script>
 	<link rel="stylesheet" type="text/css" href="{% static "css/cust-support.css" %}"/>
-	
+
     <!--noscript-->
     <link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
     <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
@@ -35,48 +35,76 @@
 		{% include "tradewave/header.html" %}
 
     <!-- Intro Wrapper -->
-   <div id="page-wrap">
+    <div id="intro-wrapper" class="wrapper wrapper-style1">
+      <div class="title"> Submit Issue </div>
+        <div class="container">
+          <div class="row">
+            <div class="12u">
+              <section id="intro">
 
-		<img src="images/title.bmp" alt="Customer &amp; Support Form" /><br /><br />
-		
-		
-		<p>Thank you for your Interest in developing our platform to address challenges</p>
-		
-		<p>Kindly Fill the Below Form and Submit</a></p>
-		
-		<p>Kindly Select the Browser type you are currently using</a></p>
-				<div id="radio-buttons">
-				
-				<input type="radio" value="Browser" name="Firfox"> Mozilla Firefox </input> <br/>
-				<input type="radio" value="Browser" name="Firfox"> Opera Mini </input> <br/>
-				<input type="radio" value="Browser" name="Firfox"> Google Chrome </input>  <br/>
-				<input type="radio" value="Browser" name="Firfox"> Safari Browser </input>  <br/>
-				
-	            </div>
-				
-		<div id="contact-area">
-			
-			<form method="post" action="contactengine.php">
-				<label for="Name">User Name:</label>
-				<input type="text" name="Name" id="Name" />
-				
-				<label for="City">Attempted Action:</label>
-				<input type="text" name="attempted" id="attempted" />
-				
-				
-				
-				<label for="Email">Email:</label>
-				<input type="text" name="Email" id="Email" />
-				
-				<label for="Message">Issue Description:</label><br />
-				<textarea name="Message" rows="20" cols="20" id="Message"></textarea>
+          		<p class="style1">Thank you for your interest in helping us make Tradewave platform better!</p>
 
-				<input type="submit" name="submit" value="Submit" class="submit-button" />
-			</form>
-			
-			
-	
-	</div>
+          		<p class="style1">Please describe the issue you've encountered and hit submit.</a></p>
+
+        			<form method="post" action="#">
+                {% csrf_token %}
+                <div class="row">
+                  <div class="6u">
+                    <p class="style3"> Browser: </p>
+                  </div>
+                  <div class="3u">
+                    <select>
+                      <option name="browser_chrome"> Google Chrome </option>
+              				<option name="browser_firefox"> Mozilla Firefox </option>
+              				<option name="browser_opera"> Opera </option>
+              				<option name="browser_safari"> Safari Browser </option>
+                      <option name="browser_browser"> Mobile </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="6u">
+            				<p class="style3"> Username: </p>
+                  </div>
+                  <div class="3u">
+            				<input type="text" name="Name" id="Name" value="{{ entity_personal }}"/>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="6u">
+            				<p class="style3"> Attempted Action: </p>
+                  </div>
+                  <div class="3u">
+            				<input type="text" name="action" id="action"/>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="12u">
+            				<p class="style3"> Issue Description: </p>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="3u">
+                    <p class="style3"> </p>
+                  </div>
+                  <div class="6u">
+                    <textarea name="description" rows="10" cols="10" id="Message"></textarea>
+                  </div>
+                </div>
+                <br>
+        				<input type="submit" name="submit" value="Submit" class="button button-style3 button-big" />
+        			</form>
+
+              </section>
+
+          </div>
+        </div>
+      </div>
+  	</div>
     <!-- /Intro Wrapper -->
 
     {% include "tradewave/footer.html" %}
