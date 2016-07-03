@@ -34,65 +34,72 @@
 
     <!-- Intro Wrapper -->
     <div id="intro-wrapper" class="wrapper wrapper-style1">
-      <div class="title">{{ name }} Account</div>
-      <div class="container">
-        <div class="row">
-          <div class="12u">
+      <div class="title">Personal account</div>
+        <div class="container">
+          <div class="row 150%">
 
-            <!-- Intro -->
-            <section id="intro">
-              {% if user_total > 0 %}
-                <p class="style1">Account summary:</p>
-                  <div>
-                    <!-- list credit in account -->
-                    {% for credit, amount in user_credits.items %}
-                      <div class="row half">
-                        <div class="3u">
-                          <p></p>
-                        </div>
-                        <div class="3u">
-                          <p class="style1"> {{ credit }}: </p>
-                        </div>
-                        <div class="3u">
-                          <p class="style1"> ${{ amount|floatformat:2 }} </p>
-                        </div>
-                      </div>
-                    {% endfor %}
+            {% include "tradewave/sidebar.html" %}
 
-                    <!-- dividing line -->
-                    <div class="row half">
-                      <div class="3u">
-                        <p></p>
-                      </div>
-                      <div class="6u">
-                        <hr />
-                      </div>
-                    </div>
+            <div class="10u 12u(mobile) important(mobile)">
+              <div id="content">
+                <div class="row">
+                  <div class="12u">
 
-                    <!-- list total -->
-                    <div class="row half">
-                      <div class="3u">
-                        <p></p>
-                      </div>
-                      <div class="3u">
-                        <p class="style1"> <strong>Total:</strong> </p>
-                      </div>
-                      <div class="3u">
-                        <p class="style1"> <strong>${{ user_total|floatformat:2 }}</strong> </p>
-                      </div>
-                    </div>
+                    <!-- Intro -->
+                    <section id="intro">
+                        <p class="style1">Account summary:</p>
+                          <div>
+                            {% if user_total > 0 %}
+                              <!-- list credit in account -->
+                              {% for credit, amount in user_credits.items %}
+                                <div class="row half">
+                                  <div class="3u">
+                                    <p></p>
+                                  </div>
+                                  <div class="3u">
+                                    <p class="style1"> {{ credit }}: </p>
+                                  </div>
+                                  <div class="3u">
+                                    <p class="style1"> ${{ amount|floatformat:2 }} </p>
+                                  </div>
+                                </div>
+                              {% endfor %}
+
+                              <!-- dividing line -->
+                              <div class="row half">
+                                <div class="3u">
+                                  <p></p>
+                                </div>
+                                <div class="6u">
+                                  <hr />
+                                </div>
+                              </div>
+                            {% endif %}
+
+                            <!-- list total -->
+                            <div class="row half">
+                              <div class="3u">
+                                <p></p>
+                              </div>
+                              <div class="3u">
+                                <p class="style1"> <strong>Total:</strong> </p>
+                              </div>
+                              <div class="3u">
+                                <p class="style1"> <strong>${{ user_total|floatformat:2 }}</strong> </p>
+                              </div>
+                            </div>
+                          </div>
+
+                      <!--ul class="actions">
+                        <li><a href="#" class="button button-style3 button-big">Make a Purchase</a></li>
+                        <li><a href="#" class="button button-style3 button-big">Find Offers</a></li>
+                      </ul-->
+                    </section>
+                    <!-- /Intro -->
+                  </div>
                 </div>
-              {% else %}
-                <p class="style1">There are no credits in your personal account</p>
-              {% endif %}
-
-              <!--ul class="actions">
-                <li><a href="#" class="button button-style3 button-big">Make a Purchase</a></li>
-                <li><a href="#" class="button button-style3 button-big">Find Offers</a></li>
-              </ul-->
-            </section>
-            <!-- /Intro -->
-          </div>
+              </div>
+            </div>
         </div>
       </div>
     </div>

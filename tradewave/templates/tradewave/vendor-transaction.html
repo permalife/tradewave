@@ -35,66 +35,70 @@
 	<!-- Intro Wrapper -->
 	<div id="intro-wrapper" class="wrapper wrapper-style1">
 		<div class="title"> Vendor {{ entity_vendor }} </div>
-		<div class="container">
-			<div class="row">
-				<div class="12u">
+    <div class="container">
+      <div class="row 150%">
 
-					<section id="intro">
-						{% if selected_venue %}
-						<p class="style1">Selected venue: <strong> {{ selected_venue }} </strong></p>
-						{% endif %}
+        {% include "tradewave/sidebar.html" %}
 
-							<!-- Credit Form -->
-							<form method="post" action="{% url 'tradewave:process_vendor_transaction' %}">
-								{% csrf_token %}
-								<div>
-									<div class="row">
-										<!-- dump trick to make it centered -->
-										<div class="3u"><p></p></div>
-										<div class="3u">
-											<!--input type="text" class="text" name="product_category" id="product-category" placeholder="Produce" /-->
-											<select name="product_category_id" class="text">
-												{% for product_category in product_categories %}
-													<option value="{{ product_category.id }}"> {{ product_category.name }} </option>
-												{% endfor %}
-											</select>
-										</div>
-										<div class="3u">
-											<input type="number" step="0.01" min="0.01" class="text" name="product_amount" id="product-amount" placeholder="$$$" />
-										</div>
-									</div>
+        <div class="10u 12u(mobile) important(mobile)">
+          <div id="content">
+            <div class="row">
+      				<div class="12u">
 
-									<!--div class="row half">
-										<div class="12u">
-										<These controls should allow you to add additional types of credits>
-											<ul class="actions">
-												<li><a href="#" class="button button-style3 button">+</a></li>
-												<li><a href="#" class="button button-style3 button">-</a></li>
-											</ul>
-										</div>
-									</div-->
+      					<section id="intro">
+      							<!-- Credit Form -->
+      							<form method="post" action="{% url 'tradewave:process_vendor_transaction' %}">
+      								{% csrf_token %}
+      								<div>
+      									<div class="row">
+      										<!-- dump trick to make it centered -->
+      										<div class="3u"><p></p></div>
+      										<div class="3u">
+      											<!--input type="text" class="text" name="product_category" id="product-category" placeholder="Produce" /-->
+      											<select name="product_category_id" class="text">
+      												{% for product_category in product_categories %}
+      													<option value="{{ product_category.id }}"> {{ product_category.name }} </option>
+      												{% endfor %}
+      											</select>
+      										</div>
+      										<div class="3u">
+      											<input type="number" step="0.01" min="0.01" class="text" name="product_amount" id="product-amount" placeholder="$$$" />
+      										</div>
+      									</div>
 
-									<div class="row">
-										<div class="12u">
-											<ul class="actions">
-												<li><input type="submit" class="button button-style3 button-big" value="Complete" /></li>
-												<li><input type="reset" class="button button-style2 button-big" value="Reset" /></li>
-											</ul>
-										</div>
-									</div>
-								</div>
-							</form>
-							<!-- /Credit Form -->
+      									<!--div class="row half">
+      										<div class="12u">
+      										<These controls should allow you to add additional types of credits>
+      											<ul class="actions">
+      												<li><a href="#" class="button button-style3 button">+</a></li>
+      												<li><a href="#" class="button button-style3 button">-</a></li>
+      											</ul>
+      										</div>
+      									</div-->
 
-					</section>
+      									<div class="row">
+      										<div class="12u">
+      											<ul class="actions">
+      												<li><input type="submit" class="button button-style1 button-big" value="Complete" /></li>
+      												<li><input type="reset" class="button button-style1 button-big" value="Reset" /></li>
+      											</ul>
+      										</div>
+      									</div>
+      								</div>
+      							</form>
+      							<!-- /Credit Form -->
 
-				</div>
+      					</section>
+
+      				</div>
+            </div>
+          </div>
+        </div>
 			</div>
 		</div>
 	</div>
 
 	{% include "tradewave/footer.html" %}
-
 
 	</body>
 </html>
