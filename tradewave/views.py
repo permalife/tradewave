@@ -167,9 +167,20 @@ class MarketplaceHome(LoginRequiredMixin, SessionContextView, TemplateView):
         return context
 
 
-class MarketplaceIssue(ListView):
-    model = User
+class MarketplaceIssue(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/marketplace-issue.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(MarketplaceIssue, self).get_context_data(**kwargs)
+        return context
+
+
+class MarketplaceRedeem(LoginRequiredMixin, SessionContextView, TemplateView):
+    template_name = 'tradewave/marketplace-redeem.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(MarketplaceRedeem, self).get_context_data(**kwargs)
+        return context
 
 
 class MarketplaceSend(ListView):
@@ -752,3 +763,34 @@ def record_venue(request, venue_id):
         template_name = 'tradewave/login.html'
         context_obj = {'status_msg': 'Your session has expired'}
         return render(request, template_name, context_obj)
+
+# *** handler for vendor transaction screen ***
+@login_required
+def process_user_create(request):
+    try:
+        # TODO'S:
+        #   use django forms
+        #   track product categories
+        user_firstname = request.POST.get('user_firstname')
+        user_lastname = request.POST.get('user_lastname')
+        user_email = request.POST.get('user_email')
+        user_password = request.POST.get('user_password')
+
+        user = User(
+            username=user_email,
+            email=user_email,
+            first_name=user_firstname,
+            last_name=user_lastname
+        )
+        user.set_password(user_password)
+        user.save()
+
+        return redirect(
+            'tradewave:marketplace-issue'
+            #tr_amount='%.2f' % product_amount
+        )
+
+    except Exception as e:
+        logger.error("Server error: %s", e)
+        context_obj = {'status_msg': e.message}
+        return render(request, 'tradewave/login.html', context_obj)
