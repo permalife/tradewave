@@ -36,28 +36,26 @@
     <div id="intro-wrapper" class="wrapper wrapper-style1">
       <div class="title"> Marketplace {{ name }}</div>
       <div class="container">
-        <div class="row">
-          <div class="12u">
+        <div class="row 150%">
 
-            <section id="intro">
-              {% if selected_venue %}
-              <p class="style1">Selected venue: <strong> {{ selected_venue }} </strong></p>
-              {% endif %}
+          {% include "tradewave/sidebar.html" %}
 
-              <p class="style1">{{ name }} has {{ total|floatformat:2 }} total in:</p>
-              <ul>
-                {% for credit, amount in credits.items %}
-                  <li>{{ credit }}: ${{ amount|floatformat:2 }} </li>
-                {% endfor %}
-              </ul>
+          <div class="10u 12u(mobile) important(mobile)">
+            <div id="content">
+              <div class="row">
+                <div class="12u">
 
-              <ul class="actions">
-                <li><a href="#" class="button button-style3 button-big">Issue Credits</a></li>
-                <li><a href="#" class="button button-style3 button-big">Redeem Credits</a></li>
-                <li><a href="#" class="button button-style3 button-big">View Dashboard</a></li>
-              </ul>
-            </section>
+                  <section id="intro">
+                    <ul class="actions">
+                      <li><a href="{% url 'tradewave:marketplace-issue' %}" class="button button-style1 button-big">Issue Credits</a></li>
+                      <li><a href="#" class="button button-style1 button-big">Redeem Credits</a></li>
+                      <li><a href="{% url 'tradewave:dashboard' %}" class="button button-style1 button-big">View Dashboard</a></li>
+                    </ul>
+                  </section>
 
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

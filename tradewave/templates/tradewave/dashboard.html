@@ -36,25 +36,34 @@
     <div id="intro-wrapper" class="wrapper wrapper-style1">
       <div class="title"> {{ entity_personal }} </div>
       <div class="container">
-        <div class="row">
-          <div class="12u">
+        <div class="row 150%">
 
-            <section id="intro">
-              {% if entity_marketplace %}
-              <div class="row half">
-    						<div class="12u">
-    							<a href="{% url 'tradewave:export_data' %}" class="button button-style3 button-big"> Export Account Data  </a>
-    						</div>
-    					</div>
-              {% else %}
-              <div class="row half">
-                <center>
-                  <p class="style3"> No functionality available for your account at the moment </p>
-                </center>
+          {% include "tradewave/sidebar.html" %}
+
+          <div class="10u 12u(mobile) important(mobile)">
+            <div id="content">
+              <div class="row">
+                <div class="12u">
+
+                  <section id="intro">
+                    {% if entity_marketplace %}
+                    <div class="row half">
+          						<div class="12u">
+          							<a href="{% url 'tradewave:export_data' %}" class="button button-style3 button-big"> Export Account Data  </a>
+          						</div>
+          					</div>
+                    {% else %}
+                    <div class="row half">
+                      <center>
+                        <p class="style3"> No functionality available for your account at the moment </p>
+                      </center>
+                    </div>
+                    {% endif %}
+                  </section>
+
+                </div>
               </div>
-              {% endif %}
-            </section>
-
+            </div>
           </div>
         </div>
       </div>
