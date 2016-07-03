@@ -35,75 +35,84 @@
 		<!-- Intro Wrapper -->
 		<div id="intro-wrapper" class="wrapper wrapper-style1">
 			<div class="title">Issue Credits</div>
-			<div class="container">
-				<div class="row">
-					<div class="12u">
+      <div class="container">
+        <div class="row 150%">
 
-						<section id="intro">
-							<p class="style1">Logged into <strong>Current Marketplace</strong></p>
-							<h2>Existing User</h2>
+          {% include "tradewave/sidebar.html" %}
 
-							<!-- Login Form -->
-              <!-- change / adapt the action link to issuing credits -->
-              <form method="post" action="{% url 'tradewave:process_cust_login' %}">
-                {% csrf_token %}
-                <div>
-									<div class="row half">
-										<div class="6u">
-											<input type="email" class="text" name="existing" id="user-email" placeholder="Email" />
-										</div>
-										<div class="6u">
-											<input type="password" class="text" name="existing" id="user-password" placeholder="Password" />
-										</div>
-									</div>
-									<div class="row">
-										<div class="12u">
-											<input type="submit" class="button button-style3 button-big" value="Login" />
-											<a href="#" class="button button-style3 button-big">Scan Card</a>
-										</div>
-									</div>
-								</div>
-							</form>
-							<!-- /Login Form -->
+          <div class="10u 12u(mobile) important(mobile)">
+            <div id="content">
+              <div class="row">
+                <div class="12u">
 
-							<h2>Create New User</h2>
-							<!-- User Form -->
-							<form method="post" action="{% url 'tradewave:process_user_create' %}">
-                {% csrf_token %}
+      						<section id="intro">
+      							<p class="style1">Logged into <strong>Current Marketplace</strong></p>
+      							<h2>Existing User</h2>
 
-								<div>
-									<div class="row half">
-										<div class="12u">
-										<p>Name</p>
-										</div>
-										<div class="6u">
-											<input type="text" required class="text" name="user_firstname" id="user-fname" placeholder="First Name" />
-										</div>
-										<div class="6u">
-											<input type="text" required class="text" name="user_lastname" id="user-lname" placeholder="Last Name" />
-										</div>
-										<div class="12u">
-										<p>Login Info</p>
-										</div>
-										<div class="6u">
-											<input type="email" required class="text" name="user_email" id="user-email" placeholder="Email" />
-										</div>
-										<div class="6u">
-											<input type="password" required class="text" name="user_password" id="user-password" placeholder="Password" />
-										</div>
-									</div>
-									<div class="row">
-										<div class="12u">
-											<input type="submit" class="button button-style3 button-big" value="Create" /></li>
-										</div>
-									</div>
-								</div>
-							</form>
-							<!-- /User Form -->
+      							<!-- Login Form -->
+                    <!-- change / adapt the action link to issuing credits -->
+                    <form method="post" action="{% url 'tradewave:process_cust_login' %}">
+                      {% csrf_token %}
+                      <div>
+      									<div class="row half">
+      										<div class="6u">
+      											<input type="email" class="text" name="existing" id="user-email" placeholder="Email" />
+      										</div>
+      										<div class="6u">
+      											<input type="password" class="text" name="existing" id="user-password" placeholder="Password" />
+      										</div>
+      									</div>
+      									<div class="row">
+      										<div class="12u">
+      											<input type="submit" class="button button-style3 button-big" value="Login" />
+      											<a href="#" class="button button-style3 button-big">Scan Card</a>
+      										</div>
+      									</div>
+      								</div>
+      							</form>
+      							<!-- /Login Form -->
 
-						</section>
+      							<h2>Create New User</h2>
+      							<!-- User Form -->
+      							<form method="post" action="{% url 'tradewave:process_user_create' %}">
+                      {% csrf_token %}
 
-					</div>
+      								<div>
+      									<div class="row half">
+      										<div class="12u">
+      										<p>Name</p>
+      										</div>
+      										<div class="6u">
+      											<input type="text" required class="text" name="user_firstname" id="user-fname" placeholder="First Name" />
+      										</div>
+      										<div class="6u">
+      											<input type="text" required class="text" name="user_lastname" id="user-lname" placeholder="Last Name" />
+      										</div>
+      										<div class="12u">
+      										<p>Login Info</p>
+      										</div>
+      										<div class="6u">
+      											<input type="email" required class="text" name="user_email" id="user-email" placeholder="Email" />
+      										</div>
+      										<div class="6u">
+      											<input type="password" required class="text" name="user_password" id="user-password" placeholder="Password" />
+      										</div>
+      									</div>
+      									<div class="row">
+      										<div class="12u">
+      											<input type="submit" class="button button-style3 button-big" value="Create" /></li>
+      										</div>
+      									</div>
+      								</div>
+      							</form>
+      							<!-- /User Form -->
+
+      						</section>
+
+      					</div>
+              </div>
+            </div>
+          </div>                
 				</div>
 			</div>
 		</div>

@@ -37,124 +37,132 @@
 		<!-- Intro Wrapper -->
 		<div id="intro-wrapper" class="wrapper wrapper-style1">
 			<div class="title">Paying to Vendor {{ vendor_name }}</div>
-			<div class="container">
-				<div class="row">
-					<div class="12u">
+      <div class="container">
+        <div class="row 150%">
 
-						<section id="intro">
-							<p class="style1">Transaction total: <strong>$ {{ tr_amount|floatformat:2 }}</strong></p>
+          {% include "tradewave/sidebar.html" %}
 
-								<!-- Credit Form  This should Auto-populate with recommended credits-->
-								<form method="post" action="{% url 'tradewave:process_vendor_payment' %}">
-        					{% csrf_token %}
-									<div>
-										<div class="row">
-											<div class="12u">
-												{% if cust_credits and cust_credits.values|first >= tr_amount and tr_amount > 0 %}
-													<p class="style1"> <strong>{{ cust_name }}</strong> can pay in <strong>{{ cust_credits.keys|first }}</strong> for this transaction </p>
-												{% elif cust_credits|length > 1 %}
-													<p class="style1"> The amount can not be paid using a single credit and has to be split across multiple credits </p>
-												{% endif %}
-											</div>
+          <div class="10u 12u(mobile) important(mobile)">
+            <div id="content">
+              <div class="row">
+      					<div class="12u">
 
-											{% for credit, amount in cust_credits.items %}
-												{% if forloop.first or tr_amount > cust_credits.values|first %}
-													<!-- dumb trick to make it centered -->
-													<div class="3u">
-														<p class="style1">
-														</p>
-													</div>
+      						<section id="intro">
+      							<p class="style1">Transaction total: <strong>$ {{ tr_amount|floatformat:2 }}</strong></p>
 
-													<div class="3u">
-														<input
-															type="text"
-															class="text"
-															name="credits"
-															id="credit-{{ credit }}"
-															value="{{ credit }}"
-															readonly>
-													</div>
-													<div class="3u">
-														<input
-															type="number"
-															min="0.01"
-															step="0.01"
-															max="{{ amount|floatformat:2 }}"
-															class="text"
-															name="amounts"
-															id="amount-{{ credit }}"
-															value="{% spaceless %}
-																{% if forloop.first %}
-																	{% if tr_amount > amount %}
-																		{{ amount|floatformat:2 }}
-																	{% else %}
-																		{{ tr_amount|floatformat:2 }}
-																	{% endif %}
-																{% else %}
-																	{% if tr_amount|subtractfirst:cust_credits > amount %}
-																		{{ amount|floatformat:2 }}
-																	{% else %}
-																		{{ tr_amount|subtractfirst:cust_credits|floatformat:2 }}
-																	{% endif %}
-																{% endif %}
-															{% endspaceless %}">
-													</div>
-													<div class="12u">
-														<br>
-													</div>
-												{% endif %}
-											{% empty %}
-												<div class="12u">
-													<p class="style1">
-														<strong> User has no credits in to buy this product </strong>
-													</p>
-												</div>
-											{% endfor %}
-                      <div class="12u">
-                        <p class="style1">
-                          for {{ product_category }}
-                        </p>
-                      </div>                      
-										</div>
+      								<!-- Credit Form  This should Auto-populate with recommended credits-->
+      								<form method="post" action="{% url 'tradewave:process_vendor_payment' %}">
+              					{% csrf_token %}
+      									<div>
+      										<div class="row">
+      											<div class="12u">
+      												{% if cust_credits and cust_credits.values|first >= tr_amount and tr_amount > 0 %}
+      													<p class="style1"> <strong>{{ cust_name }}</strong> can pay in <strong>{{ cust_credits.keys|first }}</strong> for this transaction </p>
+      												{% elif cust_credits|length > 1 %}
+      													<p class="style1"> The amount can not be paid using a single credit and has to be split across multiple credits </p>
+      												{% endif %}
+      											</div>
 
-									<div class="row half">
-										<div class="12u">
-											<input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
-										</div>
-									</div>
+      											{% for credit, amount in cust_credits.items %}
+      												{% if forloop.first or tr_amount > cust_credits.values|first %}
+      													<!-- dumb trick to make it centered -->
+      													<div class="3u">
+      														<p class="style1">
+      														</p>
+      													</div>
 
-									{% if tr_amount > cust_total %}
-										<div class="12u">
-												<p class="style1"> <strong>The remainder of ${{ tr_amount|subtract:cust_total|floatformat:2 }} has to be paid in cash </strong></p>
-										</div>
-									{% endif %}
+      													<div class="3u">
+      														<input
+      															type="text"
+      															class="text"
+      															name="credits"
+      															id="credit-{{ credit }}"
+      															value="{{ credit }}"
+      															readonly>
+      													</div>
+      													<div class="3u">
+      														<input
+      															type="number"
+      															min="0.01"
+      															step="0.01"
+      															max="{{ amount|floatformat:2 }}"
+      															class="text"
+      															name="amounts"
+      															id="amount-{{ credit }}"
+      															value="{% spaceless %}
+      																{% if forloop.first %}
+      																	{% if tr_amount > amount %}
+      																		{{ amount|floatformat:2 }}
+      																	{% else %}
+      																		{{ tr_amount|floatformat:2 }}
+      																	{% endif %}
+      																{% else %}
+      																	{% if tr_amount|subtractfirst:cust_credits > amount %}
+      																		{{ amount|floatformat:2 }}
+      																	{% else %}
+      																		{{ tr_amount|subtractfirst:cust_credits|floatformat:2 }}
+      																	{% endif %}
+      																{% endif %}
+      															{% endspaceless %}">
+      													</div>
+      													<div class="12u">
+      														<br>
+      													</div>
+      												{% endif %}
+      											{% empty %}
+      												<div class="12u">
+      													<p class="style1">
+      														<strong> User has no credits in to buy this product </strong>
+      													</p>
+      												</div>
+      											{% endfor %}
+                            <div class="12u">
+                              <p class="style1">
+                                for {{ product_category }}
+                              </p>
+                            </div>
+      										</div>
 
-									<!--div class="row half">
-										<div class="12u">
-										<These controls should allow you to add additional types of credits>
-											<ul class="actions">
-												<li><a href="#" class="button button-style3 button">+</a></li>
-												<li><a href="#" class="button button-style3 button">-</a></li>
-											</ul>
-										</div>
-									</div-->
+      									{% if tr_amount > cust_total %}
+      										<div class="12u">
+      												<p class="style1"> <strong>The remainder of ${{ tr_amount|subtract:cust_total|floatformat:2 }} has to be paid in cash </strong></p>
+      										</div>
+      									{% endif %}
 
-									<div class="row">
-										<div class="12u">
-											<ul class="actions">
-											<!-- Be sure to verify that the correct amount has been sent -->
-												<li><input type="submit" class="button button-style3 button-big" value="Complete" /></li>
-												<li><input type="reset" class="button button-style2 button-big" value="Reset" /></li>
-											</ul>
-										</div>
-									</div>
-								</div>
-							</form>
-							<!-- /Credit Form -->
+      									<!--div class="row half">
+      										<div class="12u">
+      										<These controls should allow you to add additional types of credits>
+      											<ul class="actions">
+      												<li><a href="#" class="button button-style3 button">+</a></li>
+      												<li><a href="#" class="button button-style3 button">-</a></li>
+      											</ul>
+      										</div>
+      									</div-->
 
-						</section>
+      									<div class="row">
+      										<div class="12u">
+      											<ul class="actions">
+      											<!-- Be sure to verify that the correct amount has been sent -->
+      												<li><input type="submit" class="button button-style1 button-big" value="Complete" /></li>
+      												<li><input type="reset" class="button button-style1 button-big" value="Reset" /></li>
+      											</ul>
+      										</div>
+      									</div>
 
-					</div>
+                        <div class="row half">
+      										<div class="12u">
+      											<input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
+      										</div>
+      									</div>                        
+      								</div>
+      							</form>
+      							<!-- /Credit Form -->
+
+      						</section>
+      					</div>
+              </div>
+            </div>
+          </div>
 				</div>
 			</div>
 		</div>
