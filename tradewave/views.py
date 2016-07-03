@@ -49,9 +49,13 @@ class SessionContextView(View):
             'selected_venue'
         ]
 
-        for var in state_vars:
-            if session.has_key(var):
-                context[var] = session[var]
+        #for var in state_vars:
+        #    if session.has_key(var):
+        #        context[var] = session[var]
+
+        # TODO: revisit any potential security risks here
+        for key, val in session.iteritems():
+            context[key] = val
 
         context['user_id'] = self.request.user.id
         return context
@@ -451,12 +455,16 @@ def process_cust_login(request):
                     id=request.session['product_category_id']).name
             }
 
-            return render(
-                request,
-                'tradewave/vendor-choose-payment.html',
-                context_obj
-            )
+            for key, val in context_obj.iteritems():
+                request.session[key] = val
+            #return render(
+            #    request,
+            #    'tradewave/vendor-choose-payment.html',
+            #    context_obj
+            #)
+            return redirect('tradewave:vendor-choose-payment');
         else:
+            context_obj = {'status_msg': 'Invalid login / password'}
             return redirect('tradewave:vendor-cust-login', tr_amount=tr_amount)
 
     except Exception as e:
