@@ -138,7 +138,7 @@ class TradewaveUser(models.Model):
     pin = models.PositiveSmallIntegerField()
 
     # qr image
-    qr_image = models.ImageField(upload_to='qr')
+    qr_string = models.CharField(max_length=1024, blank=True, null=True)
 
     # user's personal entity
     user_entity = models.OneToOneField(Entity)

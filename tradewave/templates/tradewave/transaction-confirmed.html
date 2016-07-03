@@ -37,21 +37,30 @@
 		<!-- Intro Wrapper -->
 			<div id="intro-wrapper" class="wrapper wrapper-style1">
 				<div class="title">Transaction Confirmed</div>
-				<div class="container">
-					<div class="row">
-						<div class="12u">
+        <div class="container">
+          <div class="row 150%">
 
-							<!-- Intro -->
-								<section id="intro">
-									<p class="style1"> <strong>${{ amount|floatformat:2 }}</strong> has been transferred from <strong>{{ entity_customer }}</strong> to <strong>{{ entity_vendor }}</strong> </p>
-									<p class="style1"> The remaining balance for this transaction is <strong>${{ tr_amount|subtract:amount|floatformat:2 }}</strong> </p>
+            {% include "tradewave/sidebar.html" %}
 
-										<ul class="actions">
-											<li><a href="{% url 'tradewave:vendor-home' %}" class="button button-style3 button-big">OK</a></li>
-										</ul>
-								</section>
-							<!-- /Intro -->
-						</div>
+            <div class="10u 12u(mobile) important(mobile)">
+              <div id="content">
+                <div class="row">
+      						<div class="12u">
+
+      							<!-- Intro -->
+      								<section id="intro">
+      									<p class="style1"> <strong>${{ amount|floatformat:2 }}</strong> has been transferred from <strong>{{ entity_customer }}</strong> to <strong>{{ entity_vendor }}</strong> </p>
+      									<p class="style1"> The remaining balance for this transaction is <strong>${{ tr_amount|subtract:amount|floatformat:2 }}</strong> </p>
+
+      										<ul class="actions">
+      											<li><a href="{% url 'tradewave:vendor-home' %}" class="button button-style2 button-big">OK</a></li>
+      										</ul>
+      								</section>
+      							<!-- /Intro -->
+      						</div>
+                </div>
+              </div>
+            </div>
 					</div>
 				</div>
 			</div>

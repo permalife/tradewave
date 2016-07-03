@@ -36,20 +36,32 @@
     <div id="intro-wrapper" class="wrapper wrapper-style1">
       <div class="title">Vendor {{ entity_vendor }}</div>
       <div class="container">
-        <div class="row">
-          <div class="12u">
+        <div class="row 150%">
 
-            <section id="intro">
-              <h1>Choose Location</h1>
-            					<div class="row half">
+          {% include "tradewave/sidebar.html" %}
+
+          <div class="10u 12u(mobile) important(mobile)">
+            <div id="content">
+              <div class="row">
+                <div class="12u">
+
+                  <section id="intro">
+                    <h1>Choose Location:</h1>
+                      <!--div class="row">
+                        <p></p>
+                      </div-->
+                      <div class="row">
             						{% for featured_venue in featured_venues %}
-            						<div class="4u">
-            							<a href="/record_venue/{{ featured_venue.id }}" class="button button-style3 button-big">{{ featured_venue.name }}  </a>
+            						<div class="12u">
+            							<a href="/record_venue/{{ featured_venue.id }}" class="button button-style1 button-big">{{ featured_venue.name }}  </a>
             						</div>
             						{% endfor %}
-            					</div>
-            </section>
+                  		</div>
+                  </section>
 
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

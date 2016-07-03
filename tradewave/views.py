@@ -34,6 +34,10 @@ logger.setLevel(logging.DEBUG)
 class IndexView(ListView):
     model = User
     template_name = 'tradewave/index.html'
+	
+class CustSupport(generic.ListView):
+    model = User
+    template_name = 'tradewave/cust-support.html'
 
 
 class SessionContextView(View):
@@ -49,9 +53,13 @@ class SessionContextView(View):
             'selected_venue'
         ]
 
-        for var in state_vars:
-            if session.has_key(var):
-                context[var] = session[var]
+        #for var in state_vars:
+        #    if session.has_key(var):
+        #        context[var] = session[var]
+
+        # TODO: revisit any potential security risks here
+        for key, val in session.iteritems():
+            context[key] = val
 
         context['user_id'] = self.request.user.id
         return context
@@ -75,6 +83,10 @@ class ConfirmSendView(ListView):
 class ConfirmReceiveView(ListView):
     model = User
     template_name = 'tradewave/confirm-receive.html'
+
+
+class CustomerSupportView(SessionContextView, TemplateView):
+    template_name = 'tradewave/cust-support.html'
 
 
 class TransactionConfirmedView(LoginRequiredMixin, SessionContextView, TemplateView):
@@ -163,9 +175,20 @@ class MarketplaceHome(LoginRequiredMixin, SessionContextView, TemplateView):
         return context
 
 
-class MarketplaceIssue(ListView):
-    model = User
+class MarketplaceIssue(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/marketplace-issue.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(MarketplaceIssue, self).get_context_data(**kwargs)
+        return context
+
+
+class MarketplaceRedeem(LoginRequiredMixin, SessionContextView, TemplateView):
+    template_name = 'tradewave/marketplace-redeem.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(MarketplaceRedeem, self).get_context_data(**kwargs)
+        return context
 
 
 class MarketplaceSend(ListView):
@@ -368,19 +391,41 @@ def process_cust_login(request):
         # TODO: use django forms
         cust_name = request.POST.get('cust_name')
         cust_password = request.POST.get('cust_password')
+        cust_qr_string = request.POST.get('cust_qr_string')
+        cust_pin = request.POST.get('cust_pin')
         tr_amount = request.POST.get('tr_amount')
-        user = authenticate(
-            username=cust_name,
-            password=cust_password
-        )
+
+        user = None
+        if cust_name and cust_password:
+            # login user django user credentials
+            user = authenticate(
+                username=cust_name,
+                password=cust_password
+            )
+        elif cust_qr_string and cust_pin:
+            # login using qr and pin
+            try:
+                cust_twuser = TradewaveUser.objects.get(
+                    qr_string=cust_qr_string,
+                    pin=cust_pin
+                )
+                user = cust_twuser.user
+                logger.info('Logged in as [%s]', user.username)
+            except Exception as e:
+                logger.warning(
+                    'Invalid login attempt using QR: %s (%s)',
+                    e.message,
+                    type(e)
+                )
+                return redirect('tradewave:vendor-cust-login', tr_amount=tr_amount)
 
         # is existing user?
         if user is not None and user.is_active:
-            cust_tradewave = TradewaveUser.objects.get(user=user.pk)
-            cust_name = user.username
+            cust_twuser = user.tradewaveuser
 
             # user's personal entity
-            cust_personal_entity = user.tradewaveuser.user_entity
+            cust_personal_entity = cust_twuser.user_entity
+            cust_name = user.username
 
             # session-wide variable customer entity
             request.session['entity_customer'] = cust_name
@@ -415,12 +460,16 @@ def process_cust_login(request):
                     id=request.session['product_category_id']).name
             }
 
-            return render(
-                request,
-                'tradewave/vendor-choose-payment.html',
-                context_obj
-            )
+            for key, val in context_obj.iteritems():
+                request.session[key] = val
+            #return render(
+            #    request,
+            #    'tradewave/vendor-choose-payment.html',
+            #    context_obj
+            #)
+            return redirect('tradewave:vendor-choose-payment');
         else:
+            context_obj = {'status_msg': 'Invalid login / password'}
             return redirect('tradewave:vendor-cust-login', tr_amount=tr_amount)
 
     except Exception as e:
@@ -727,3 +776,34 @@ def record_venue(request, venue_id):
         template_name = 'tradewave/login.html'
         context_obj = {'status_msg': 'Your session has expired'}
         return render(request, template_name, context_obj)
+
+# *** handler for vendor transaction screen ***
+@login_required
+def process_user_create(request):
+    try:
+        # TODO'S:
+        #   use django forms
+        #   track product categories
+        user_firstname = request.POST.get('user_firstname')
+        user_lastname = request.POST.get('user_lastname')
+        user_email = request.POST.get('user_email')
+        user_password = request.POST.get('user_password')
+
+        user = User(
+            username=user_email,
+            email=user_email,
+            first_name=user_firstname,
+            last_name=user_lastname
+        )
+        user.set_password(user_password)
+        user.save()
+
+        return redirect(
+            'tradewave:marketplace-issue'
+            #tr_amount='%.2f' % product_amount
+        )
+
+    except Exception as e:
+        logger.error("Server error: %s", e)
+        context_obj = {'status_msg': e.message}
+        return render(request, 'tradewave/login.html', context_obj)
