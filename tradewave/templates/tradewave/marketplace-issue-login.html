@@ -46,9 +46,30 @@
                 <div class="12u">
 
       						<section id="intro">
+      							<h2>Existing User</h2>
 
-                    <a href="{% url 'tradewave:marketplace-issue-new' %}" class="button button-style1 button-big">New User</a>
-                    <a href="{% url 'tradewave:marketplace-issue-login' %}" class="button button-style1 button-big">Existing User</a>
+      							<!-- Login Form -->
+                    <!-- change / adapt the action link to issuing credits -->
+                    <form method="post" action="{% url 'tradewave:process_cust_login' login_reason='issue_credit' %}">
+                      {% csrf_token %}
+                      <div>
+      									<div class="row half">
+      										<div class="6u">
+      											<input type="text" class="text" name="cust_name" id="user-email" placeholder="Email" />
+      										</div>
+      										<div class="6u">
+      											<input type="password" class="text" name="cust_password" id="user-password" placeholder="Password" />
+      										</div>
+      									</div>
+      									<div class="row">
+      										<div class="12u">
+      											<input type="submit" class="button button-style1 button-big" value="Login" />
+      											<a href="#" class="button button-style1 button-big">Scan Card</a>
+      										</div>
+      									</div>
+      								</div>
+      							</form>
+      							<!-- /Login Form -->
 
       						</section>
 
