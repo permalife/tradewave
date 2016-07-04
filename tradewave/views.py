@@ -10,10 +10,11 @@ from django.shortcuts import render, redirect
 from django.template import RequestContext, loader
 from django.views.generic import View, ListView, TemplateView
 
-
 from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
     Marketplace, Affiliation, TransactionLog, Product
+
+from .forms import CreateUserForm, LoginUserForm
 
 from collections import OrderedDict
 from datetime import datetime
@@ -61,8 +62,7 @@ class SessionContextView(View):
         return context
 
 
-class LoginView(ListView):
-    model = User
+class LoginView(SessionContextView, TemplateView):
     template_name = 'tradewave/login.html'
 
 
@@ -176,6 +176,30 @@ class MarketplaceIssue(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(MarketplaceIssue, self).get_context_data(**kwargs)
+        return context
+
+
+class MarketplaceIssueNew(LoginRequiredMixin, SessionContextView, TemplateView):
+    template_name = 'tradewave/marketplace-issue-new.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(MarketplaceIssueNew, self).get_context_data(**kwargs)
+        return context
+
+
+class MarketplaceIssueLogin(LoginRequiredMixin, SessionContextView, TemplateView):
+    template_name = 'tradewave/marketplace-issue-login.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(MarketplaceIssueLogin, self).get_context_data(**kwargs)
+        return context
+
+
+class MarketplaceIssuePickCredit(LoginRequiredMixin, SessionContextView, TemplateView):
+    template_name = 'tradewave/marketplace-issue-pick-credit.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(MarketplaceIssuePickCredit, self).get_context_data(**kwargs)
         return context
 
 
@@ -373,46 +397,48 @@ def export_data(request):
         return response
 
     except Exception as e:
-        logger.error("Server error: %s", e)
-        context_obj = {
-            'status_msg': 'Server error occured, we were notified!'
-        }
-        return render(request, 'tradewave/login.html', context_obj)
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
+
+def login_username_or_qr(request):
+    cust_name = request.POST.get('cust_name')
+    cust_password = request.POST.get('cust_password')
+    cust_qr_string = request.POST.get('cust_qr_string')
+    cust_pin = request.POST.get('cust_pin')
+
+    user = None
+    if cust_name and cust_password:
+        # login user django user credentials
+        user = authenticate(
+            username=cust_name,
+            password=cust_password
+        )
+    elif cust_qr_string and cust_pin:
+        # login using qr and pin
+        try:
+            cust_twuser = TradewaveUser.objects.get(
+                qr_string=cust_qr_string,
+                pin=cust_pin
+            )
+            user = cust_twuser.user
+            logger.info('Logged in as [%s]', user.username)
+        except Exception as e:
+            status_msg = 'Invalid login attempt using QR'
+            logger.warning(
+                '%s: %s (%s)',
+                status_msg,
+                e.message,
+                type(e)
+            )
+            return redirect('tradewave:vendor-cust-login', status_msg=status_msg)
+
+    return user
 
 
 # *** handler to process user login ***
-def process_cust_login(request):
+def process_cust_login(request, login_reason):
     try:
-        # TODO: use django forms
-        cust_name = request.POST.get('cust_name')
-        cust_password = request.POST.get('cust_password')
-        cust_qr_string = request.POST.get('cust_qr_string')
-        cust_pin = request.POST.get('cust_pin')
-        tr_amount = request.POST.get('tr_amount')
-
-        user = None
-        if cust_name and cust_password:
-            # login user django user credentials
-            user = authenticate(
-                username=cust_name,
-                password=cust_password
-            )
-        elif cust_qr_string and cust_pin:
-            # login using qr and pin
-            try:
-                cust_twuser = TradewaveUser.objects.get(
-                    qr_string=cust_qr_string,
-                    pin=cust_pin
-                )
-                user = cust_twuser.user
-                logger.info('Logged in as [%s]', user.username)
-            except Exception as e:
-                logger.warning(
-                    'Invalid login attempt using QR: %s (%s)',
-                    e.message,
-                    type(e)
-                )
-                return redirect('tradewave:vendor-cust-login', tr_amount=tr_amount)
+        user = login_username_or_qr(request)
 
         # is existing user?
         if user is not None and user.is_active:
@@ -427,52 +453,71 @@ def process_cust_login(request):
             request.session['entity_customer_id'] = cust_personal_entity.id
             logger.info('customer entity name: %s', cust_personal_entity.name)
 
-            # generate the list of customer credits
-            # we limit to a single account for simplicity for now
-            def can_buy(credit):
-                return (not credit.is_restricted) or credit.products.filter(id=request.session['product_category_id'])
-
+            # customers account data
             cust_account = cust_personal_entity.account_set.first()
             request.session['cust_account_personal_id'] = cust_account.id
             cust_amount_total = cust_account.amount_total
+            request.session['cust_total'] = float(cust_amount_total)
+
+            # common fields to all requests
+            context_obj = {
+                'cust_name': cust_name,
+                'cust_total': float(cust_amount_total),
+            }
+
+            # login_reason determines if this customer login was requested
+            # from transaction or issuing credits.
+            logger.info('login_reason: %s', login_reason)
+
+            # login requested from transaction flow
+            if login_reason == 'transaction':
+                context_obj['product_category'] = Product.objects.get(
+                    id=request.session['product_category_id']
+                ).name
+
+                def can_buy(credit):
+                    return (not credit.is_restricted) or credit.products.filter(id=request.session['product_category_id'])
+
+                customer_credit_filter = can_buy
+                redirect_view = 'tradewave:vendor-choose-payment'
+
+            # login requested from marketplace issue credit flow
+            elif login_reason == 'issue_credit':
+                all_credits = dict([
+                    (str(credit.uuid), credit.name)
+                    for credit in Credit.objects.all()
+                ])
+                context_obj['all_credits'] = all_credits
+                logger.info(all_credits)
+                customer_credit_filter = lambda x : True
+                redirect_view = 'tradewave:marketplace-issue-pick-credit'
+            else:
+                status_msg = 'Unknown referrer'
+                return redirect('tradewave:user-home', status_msg=status_msg)
+
+            # get customer credits
             cust_wallet = CreditMap.objects.filter(account=cust_account)
             cust_credits = OrderedDict([
                 (entry.credit.name, float(entry.amount))
                 for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
-                if can_buy(entry.credit)
+                if customer_credit_filter(entry.credit)
             ])
             logger.info(cust_credits)
-            request.session['cust_total'] = float(cust_amount_total)
-            request.session['cust_credits'] = cust_credits
+            context_obj['cust_credits'] = cust_credits
 
-            context_obj = {
-                'vendor_name': request.session['entity_vendor'],
-                'cust_name': cust_name,
-                'cust_total': float(cust_amount_total),
-                'cust_credits': cust_credits,
-                'tr_amount': float(tr_amount),
-                'product_category': Product.objects.get(
-                    id=request.session['product_category_id']).name
-            }
-
+            # TODO: evaluate any security risks here
             for key, val in context_obj.iteritems():
                 request.session[key] = val
-            #return render(
-            #    request,
-            #    'tradewave/vendor-choose-payment.html',
-            #    context_obj
-            #)
-            return redirect('tradewave:vendor-choose-payment');
+
+            return redirect(redirect_view);
+
         else:
-            context_obj = {'status_msg': 'Invalid login / password'}
-            return redirect('tradewave:vendor-cust-login', tr_amount=tr_amount)
+            status_msg = 'Invalid login / password'
+            return redirect('tradewave:vendor-cust-login', status_msg=status_msg)
 
     except Exception as e:
-        logger.error("Server error: %s", e)
-        context_obj = {
-            'status_msg': 'Server error occured, we were notified!'
-        }
-        return render(request, 'tradewave/login.html', context_obj)
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
 
 
 # *** handler to process user login ***
@@ -548,26 +593,21 @@ def process_login(request):
             return redirect('tradewave:user-home')
 
         else:
-            context_obj = {'status_msg': 'Invalid login / password'}
-            return render(request, 'tradewave/login.html', context_obj)
+            logger.error("Server error: %s (%s)", e.message, type(e))
+            return redirect('tradewave:login', status_msg=e.message)
 
     except Exception as e:
-        logger.error("Server error: %s", e)
-        context_obj = {
-            'status_msg': 'Server error occured, we were notified!'
-        }
-        return render(request, 'tradewave/login.html', context_obj)
-
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
 
 # *** handler to process user logout ***
 def process_logout(request):
     try:
         logout(request)
     except Exception as e:
-        logger.error("Server error: %s", e)
+        logger.error("Server error: %s (%s)", e.message, type(e))
     finally:
-        context_obj = {'status_msg': 'Please login to your account'}
-        return render(request, 'tradewave/login.html', context_obj)
+        return redirect('tradewave:login', status_msg='Please login to your account')
 
 
 # *** handler for processing the payment from user to vendor ***
@@ -667,12 +707,8 @@ def process_vendor_payment(request):
             )
 
     except Exception as e:
-        logger.error("Server error: %s", e)
-        context_obj = {
-            'status_msg': 'Server error occured, we were notified!'
-        }
-        return render(request, 'tradewave/login.html', context_obj)
-
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
 
 # *** handler for vendor transaction screen ***
 @login_required
@@ -684,17 +720,13 @@ def process_vendor_transaction(request):
         product_category_id = request.POST.get('product_category_id')
         product_amount = float(request.POST.get('product_amount'))
         request.session['product_category_id'] = product_category_id
+        request.session['tr_amount'] = product_amount
 
-        return redirect(
-            'tradewave:vendor-cust-login',
-            tr_amount='%.2f' % product_amount
-        )
+        return redirect('tradewave:vendor-cust-login', status_msg='')
 
     except Exception as e:
-        logger.error("Server error: %s", e)
-        context_obj = {'status_msg': e.message}
-        return render(request, 'tradewave/login.html', context_obj)
-
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
 
 # *** handler to redirect to the vendor page, if applicable ***
 @login_required
@@ -718,12 +750,8 @@ def redirect_to_vendor(request):
             return redirect('tradewave:user-home')
 
     except Exception as e:
-        logger.error("Server error: %s", e)
-        context_obj = {
-            'status_msg': 'Server error occurred: we were notified!'
-        }
-        return render(request, 'tradewave/login.html', context_obj)
-
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
 
 # *** handler to redirect to the marketplace page, if applicable ***
 @login_required
@@ -744,11 +772,8 @@ def redirect_to_marketplace(request):
             return redirect('tradewave:user-home')
 
     except Exception as e:
-        logger.error("Server error: %s", e)
-        context_obj = {
-            'status_msg': 'Server error occurred: we were notified!'
-        }
-        return render(request, 'tradewave/login.html', context_obj)
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
 
 
 # *** handlers [record] ***
@@ -768,21 +793,16 @@ def record_venue(request, venue_id):
 
     else:
         # possibly the session has expired, have the user re-login
-        template_name = 'tradewave/login.html'
-        context_obj = {'status_msg': 'Your session has expired'}
-        return render(request, template_name, context_obj)
+        status_msg ='Your session has expired. Please login again.'
+        logger.warning(status_msg)
+        return redirect('tradewave:login', status_msg=status_msg)
 
-# *** handler for vendor transaction screen ***
+
+# *** handler for creating a new user ***
 @login_required
-def process_user_create(request):
+def create_user(request):
     try:
-        # TODO'S:
-        #   use django forms
-        #   track product categories
-        user_firstname = request.POST.get('user_firstname')
-        user_lastname = request.POST.get('user_lastname')
-        user_email = request.POST.get('user_email')
-        user_password = request.POST.get('user_password')
+        form = CreateUserForm(request.POST)
 
         user = User(
             username=user_email,
@@ -793,12 +813,14 @@ def process_user_create(request):
         user.set_password(user_password)
         user.save()
 
-        return redirect(
-            'tradewave:marketplace-issue'
-            #tr_amount='%.2f' % product_amount
-        )
+        return redirect('tradewave:marketplace-issue')
 
     except Exception as e:
-        logger.error("Server error: %s", e)
-        context_obj = {'status_msg': e.message}
-        return render(request, 'tradewave/login.html', context_obj)
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
+
+
+# *** handler for creating a new user ***
+@login_required
+def assign_credit(request):
+    return
