@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse
@@ -14,7 +14,8 @@ from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
     Marketplace, Affiliation, TransactionLog, Product
 
-from .forms import CreateUserForm, LoginUserForm
+from .forms import AssignCreditToUserForm, CreateUserForm
+from .transaction import TradewaveTransaction
 
 from collections import OrderedDict
 from datetime import datetime
@@ -24,7 +25,7 @@ from operator import attrgetter
 
 import time
 import logging
-
+import uuid
 
 logging.basicConfig(level=logging.DEBUG, filename="log/views.log")
 logger = logging.getLogger(__name__)
@@ -421,9 +422,9 @@ def login_username_or_qr(request):
                 pin=cust_pin
             )
             user = cust_twuser.user
-            logger.info('Logged in as [%s]', user.username)
+            logger.info('Authenticated customer as [%s]', user.username)
         except Exception as e:
-            status_msg = 'Invalid login attempt using QR'
+            status_msg = 'Invalid authentication attempt using QR'
             logger.warning(
                 '%s: %s (%s)',
                 status_msg,
@@ -432,88 +433,89 @@ def login_username_or_qr(request):
             )
             return redirect('tradewave:vendor-cust-login', status_msg=status_msg)
 
-    return user
+    # is existing active user?
+    if user is not None and user.is_active:
+        # return user object to the caller
+        return user
+    else:
+        # retry
+        status_msg = 'Invalid login / password'
+        return redirect('tradewave:vendor-cust-login', status_msg=status_msg)
 
 
 # *** handler to process user login ***
 def process_cust_login(request, login_reason):
     try:
+        # athenticate customer within the master entity session
         user = login_username_or_qr(request)
+        cust_twuser = user.tradewaveuser
 
-        # is existing user?
-        if user is not None and user.is_active:
-            cust_twuser = user.tradewaveuser
+        # customer's personal entity
+        cust_personal_entity = cust_twuser.user_entity
+        cust_name = user.username
 
-            # user's personal entity
-            cust_personal_entity = cust_twuser.user_entity
-            cust_name = user.username
+        # set session-wide variable customer entity
+        request.session['entity_customer'] = cust_name
+        request.session['entity_customer_id'] = cust_personal_entity.id
+        logger.info('customer entity name: %s', cust_personal_entity.name)
 
-            # session-wide variable customer entity
-            request.session['entity_customer'] = cust_name
-            request.session['entity_customer_id'] = cust_personal_entity.id
-            logger.info('customer entity name: %s', cust_personal_entity.name)
+        # customers account data
+        cust_account = cust_personal_entity.account_set.first()
+        request.session['cust_account_personal_id'] = cust_account.id
+        cust_amount_total = cust_account.amount_total
+        request.session['cust_total'] = float(cust_amount_total)
 
-            # customers account data
-            cust_account = cust_personal_entity.account_set.first()
-            request.session['cust_account_personal_id'] = cust_account.id
-            cust_amount_total = cust_account.amount_total
-            request.session['cust_total'] = float(cust_amount_total)
+        # common fields to all requests
+        context_obj = {
+            'cust_name': cust_name,
+            'cust_total': float(cust_amount_total),
+        }
 
-            # common fields to all requests
-            context_obj = {
-                'cust_name': cust_name,
-                'cust_total': float(cust_amount_total),
-            }
+        # login_reason determines if this customer login was requested
+        # from transaction or issuing credits.
+        logger.info('login_reason: %s', login_reason)
 
-            # login_reason determines if this customer login was requested
-            # from transaction or issuing credits.
-            logger.info('login_reason: %s', login_reason)
+        # login requested from transaction flow
+        if login_reason == 'transaction':
+            context_obj['product_category'] = Product.objects.get(
+                id=request.session['product_category_id']
+            ).name
 
-            # login requested from transaction flow
-            if login_reason == 'transaction':
-                context_obj['product_category'] = Product.objects.get(
-                    id=request.session['product_category_id']
-                ).name
+            def can_buy(credit):
+                return (not credit.is_restricted) or credit.products.filter(id=request.session['product_category_id'])
 
-                def can_buy(credit):
-                    return (not credit.is_restricted) or credit.products.filter(id=request.session['product_category_id'])
+            customer_credit_filter = can_buy
+            redirect_view = 'tradewave:vendor-choose-payment'
 
-                customer_credit_filter = can_buy
-                redirect_view = 'tradewave:vendor-choose-payment'
-
-            # login requested from marketplace issue credit flow
-            elif login_reason == 'issue_credit':
-                all_credits = dict([
-                    (str(credit.uuid), credit.name)
-                    for credit in Credit.objects.all()
-                ])
-                context_obj['all_credits'] = all_credits
-                logger.info(all_credits)
-                customer_credit_filter = lambda x : True
-                redirect_view = 'tradewave:marketplace-issue-pick-credit'
-            else:
-                status_msg = 'Unknown referrer'
-                return redirect('tradewave:user-home', status_msg=status_msg)
-
-            # get customer credits
-            cust_wallet = CreditMap.objects.filter(account=cust_account)
-            cust_credits = OrderedDict([
-                (entry.credit.name, float(entry.amount))
-                for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
-                if customer_credit_filter(entry.credit)
+        # login requested from marketplace issue credit flow
+        elif login_reason == 'issue_credit':
+            all_credits = dict([
+                (str(credit.uuid), credit.name)
+                for credit in Credit.objects.all()
             ])
-            logger.info(cust_credits)
-            context_obj['cust_credits'] = cust_credits
-
-            # TODO: evaluate any security risks here
-            for key, val in context_obj.iteritems():
-                request.session[key] = val
-
-            return redirect(redirect_view);
-
+            context_obj['all_credits'] = all_credits
+            logger.info(all_credits)
+            customer_credit_filter = lambda x : True
+            redirect_view = 'tradewave:marketplace-issue-pick-credit'
         else:
-            status_msg = 'Invalid login / password'
-            return redirect('tradewave:vendor-cust-login', status_msg=status_msg)
+            status_msg = 'Unknown referrer'
+            return redirect('tradewave:user-home', status_msg=status_msg)
+
+        # get customer credits
+        cust_wallet = CreditMap.objects.filter(account=cust_account)
+        cust_credits = OrderedDict([
+            (entry.credit.name, float(entry.amount))
+            for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
+            if customer_credit_filter(entry.credit)
+        ])
+        logger.info(cust_credits)
+        context_obj['cust_credits'] = cust_credits
+
+        # TODO: evaluate any security risks here in storing everything in session
+        for key, val in context_obj.iteritems():
+            request.session[key] = val
+
+        return redirect(redirect_view);
 
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
@@ -587,6 +589,7 @@ def process_login(request):
                     (entry.credit.name, float(entry.amount))
                     for entry in sorted(entity_wallet, key=attrgetter('amount'), reverse=True)
                 ])
+                request.session['account_entity_id'] = entity_account.id
                 #request.session['entity_total'] = float(entity_amount_total)
                 #request.session['entity_credits'] = entity_credits
 
@@ -703,7 +706,10 @@ def process_vendor_payment(request):
             return redirect(
                 'tradewave:transaction-confirmed',
                 tr_amount='%.2f' % tr_amount,
-                amount='%.2f' % float(sum(amounts))
+                amount='%.2f' % float(sum(amounts)),
+                sender_name=request.session['entity_customer'],
+                recipient_name=request.session['entity_vendor'],
+                tr_type='vendor'
             )
 
     except Exception as e:
@@ -800,20 +806,60 @@ def record_venue(request, venue_id):
 
 # *** handler for creating a new user ***
 @login_required
+@transaction.atomic
 def create_user(request):
     try:
         form = CreateUserForm(request.POST)
 
-        user = User(
-            username=user_email,
-            email=user_email,
-            first_name=user_firstname,
-            last_name=user_lastname
-        )
-        user.set_password(user_password)
-        user.save()
+        if form.is_valid():
+            with transaction.atomic():
+                user = User(
+                    username=form.cleaned_data['user_email'],
+                    email=form.cleaned_data['user_email'],
+                    first_name=form.cleaned_data['user_firstname'],
+                    last_name=form.cleaned_data['user_lastname']
+                )
+                user.set_password(form.cleaned_data['user_password'])
+                user.save()
+                logger.info('New user %s created', user.email)
 
-        return redirect('tradewave:marketplace-issue')
+                entity_personal = Entity(
+                    name='Personal entity of %s' % user.email,
+                    email=user.email
+                )
+                entity_personal.save()
+                logger.info('%s created', entity_personal.name)
+
+                tradewaveuser = TradewaveUser(
+                    user=user,
+                    user_entity=entity_personal,
+                    pin=form.cleaned_data['user_pin'],
+                    qr_string=str(uuid.uuid4())
+                )
+                tradewaveuser.save()
+                logger.info('Tradewave user created for %s', user.email)
+
+                user_account = Account(
+                    entity=entity_personal,
+                    amount_total=0
+                )
+                user_account.save()
+                logger.info('Account created for %s', entity_personal.name)
+
+            return redirect('tradewave:marketplace-issue-login')
+        else:
+            logger.error(
+                'Invalid create user request: %s',
+                form.errors.as_data()
+            )
+
+            # just report the first validation error
+            errors = [
+                '%s: %s' % (field, error)
+                for field, le in form.errors.as_data().iteritems()
+                for error in le
+            ]
+            return redirect('tradewave:marketplace-issue-new', status_msg=errors[0])
 
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
@@ -822,5 +868,33 @@ def create_user(request):
 
 # *** handler for creating a new user ***
 @login_required
-def assign_credit(request):
-    return
+@transaction.atomic
+def assign_credit_to_user(request):
+    form = AssignCreditToUserForm(request.POST)
+
+    if form.is_valid():
+        data = form.cleaned_data
+        tw_transaction = TradewaveTransaction(
+            sender_account_id=request.session['account_entity_id'],
+            recipient_account_id=request.session['cust_account_personal_id'],
+            venue_id=request.session['selected_venue_id']
+        )
+
+        try:
+            tw_transaction.transact(data['credit_uuid'], data['credit_amount'])
+
+        except Exception as e:
+            logger.error('Transaction error: %s (%s)', e.message, type(e))
+
+        return redirect(
+            'tradewave:transaction-confirmed',
+            tr_amount='%.2f' % data['credit_amount'],
+            amount='%.2f' % tw_transaction.amount_last_transacted,
+            sender_name=str(request.session['entity_marketplace']),
+            recipient_name=str(request.session['entity_customer']),
+            tr_type='marketplace'
+        )
+
+    else:
+        logger.error('Invalid form: %s', form.errors.as_data())
+        return redirect('tradewave:marketplace-home')

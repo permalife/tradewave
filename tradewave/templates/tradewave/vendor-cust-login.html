@@ -81,7 +81,7 @@
                     <p class="style1">Customer login:</p>
 
                     <!-- Login Form -->
-                    <form method="post" action="{% url 'tradewave:process_cust_login' login_reason=transaction %}">
+                    <form method="post" action="{% url 'tradewave:process_cust_login' login_reason='transaction' %}">
                       {% csrf_token %}
                       <div id="cust-login-form">
                         <div class="row">

@@ -46,11 +46,11 @@
                 <div class="12u">
 
       						<section id="intro">
-      							<h2>Pick credit and amount</h2>
+      							<h2>Pick credit and amount to assign to {{ entity_customer }}</h2>
 
       							<!-- Login Form -->
                     <!-- change / adapt the action link to issuing credits -->
-                    <form method="post" action="{% url 'tradewave:assign_credit'%}">
+                    <form method="post" action="{% url 'tradewave:assign_credit_to_user'%}">
                       {% csrf_token %}
                       <div>
                         <div class="row half">
@@ -63,9 +63,9 @@
                             </br>
                           </div>
                           <div class="3u">
-                            <select>
+                            <select name="credit_uuid" >
                               {% for credit_uuid, credit_name in all_credits.items %}
-                                  <option class="text" name="{{credit_uuid}}"> {{credit_name}} </option>
+                                  <option class="text" value="{{credit_uuid}}"> {{credit_name}} </option>
                               {% endfor %}
                             </select>
                           </div>
@@ -85,6 +85,7 @@
                         <div class="row">
       										<div class="12u">
       											<input type="submit" class="button button-style1 button-big" value="Assign credit" />
+                            <a href="{% url 'tradewave:marketplace-issue'%}" class="button button-style1 button-big">Cancel</a>
       										</div>
       									</div>
       								</div>
