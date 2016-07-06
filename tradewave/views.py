@@ -209,6 +209,16 @@ class MarketplaceRedeem(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(MarketplaceRedeem, self).get_context_data(**kwargs)
+
+        all_vendors = {}
+        for vendor in Vendor.objects.all():
+            vendor_account = Account.objects.get(entity=vendor)
+            all_vendors[vendor_account.id] = {
+                'name': vendor.name,
+                'amount_total': vendor_account.amount_total
+            }
+
+        context['all_vendors'] = all_vendors
         return context
 
 
@@ -565,7 +575,10 @@ def process_login(request):
 
             # session-wide variable vendor entity
             # for simplicity only handle one-to-one user to vendor association
-            if user_tradewave.vendors.exists():
+            is_vendor = user_tradewave.vendors.exists()
+            is_marketplace = user_tradewave.marketplaces.exists()
+
+            if is_vendor:
                 user_entity = user_tradewave.vendors.first()
                 request.session['entity_vendor'] = user_entity.name
                 request.session['entity_vendor_id'] = user_entity.id
@@ -573,7 +586,7 @@ def process_login(request):
 
             # session-wide variable user marketplace entity
             # for simplicity only handle one-to-one user to marketplace association
-            if user_tradewave.marketplaces.exists():
+            if is_marketplace:
                 user_entity = user_tradewave.marketplaces.first()
                 request.session['entity_marketplace'] = user_entity.name
                 request.session['entity_marketplace_id'] = user_entity.id
@@ -581,7 +594,7 @@ def process_login(request):
 
             # generate the list of vendor / entity entity credits
             # we limit to a single account for simplicity for now
-            if user_tradewave.vendors.exists() or user_tradewave.marketplaces.exists():
+            if is_vendor or is_marketplace:
                 entity_account = user_entity.account_set.first()
                 entity_amount_total = entity_account.amount_total
                 entity_wallet = entity_account.creditmap_set.all()
@@ -590,14 +603,18 @@ def process_login(request):
                     for entry in sorted(entity_wallet, key=attrgetter('amount'), reverse=True)
                 ])
                 request.session['account_entity_id'] = entity_account.id
-                #request.session['entity_total'] = float(entity_amount_total)
-                #request.session['entity_credits'] = entity_credits
 
-            return redirect('tradewave:user-home')
+            if is_vendor:
+                dest_url = 'vendor-initial'
+            elif is_marketplace:
+                dest_url = 'marketplace-initial'
+            else:
+                dest_url = 'user-home'
+
+            return redirect('tradewave:%s' % dest_url)
 
         else:
-            logger.error("Server error: %s (%s)", e.message, type(e))
-            return redirect('tradewave:login', status_msg=e.message)
+            return redirect('tradewave:login', status_msg='Invalid email / password')
 
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
@@ -759,6 +776,7 @@ def redirect_to_vendor(request):
         logger.error("Server error: %s (%s)", e.message, type(e))
         return redirect('tradewave:login', status_msg=e.message)
 
+
 # *** handler to redirect to the marketplace page, if applicable ***
 @login_required
 def redirect_to_marketplace(request):
@@ -802,6 +820,44 @@ def record_venue(request, venue_id):
         status_msg ='Your session has expired. Please login again.'
         logger.warning(status_msg)
         return redirect('tradewave:login', status_msg=status_msg)
+
+
+# *** handler to redirect to the marketplace page, if applicable ***
+@login_required
+def redeem_credits(request):
+    try:
+        selected_vendors = request.POST.getlist('vendors')
+
+        for vendor_account_id in selected_vendors:
+            logger.info(
+                'Redeeming credits for vendor account id %s',
+                vendor_account_id
+            )
+            tw_transaction = TradewaveTransaction(
+                sender_account_id=vendor_account_id,
+                recipient_account_id=request.session['account_entity_id'],
+                venue_id=request.session['selected_venue_id']
+            )
+
+            with transaction.atomic():
+                vendor_credits = CreditMap.objects.filter(account_id=vendor_account_id)
+                for item in vendor_credits:
+                    logger.info(
+                        'Redeeming credit %s (%s)',
+                        item.credit.name,
+                        item.credit.uuid
+                    )
+                    tw_transaction.transact(
+                        item.credit.uuid,
+                        item.amount,
+                        isRedeemed=True
+                    )
+
+        return redirect('tradewave:marketplace-redeem')
+
+    except Exception as e:
+        logger.error("Server error: %s (%s)", e.message, type(e))
+        return redirect('tradewave:login', status_msg=e.message)
 
 
 # *** handler for creating a new user ***

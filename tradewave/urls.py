@@ -43,6 +43,7 @@ urlpatterns = [
     url(r'^process_vendor_payment/$', views.process_vendor_payment, name='process_vendor_payment'),
     url(r'^process_vendor_transaction/$', views.process_vendor_transaction, name='process_vendor_transaction'),
     url(r'^record_venue/(?P<venue_id>\d+)/$', views.record_venue, name='record_venue'),
+    url(r'^redeem_credits/$', views.redeem_credits, name='redeem_credits'),
     url(r'^redirect_to_vendor/$', views.redirect_to_vendor, name='redirect_to_vendor'),
     url(r'^redirect_to_marketplace/$', views.redirect_to_marketplace, name='redirect_to_marketplace'),
 ]
