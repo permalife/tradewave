@@ -31,7 +31,6 @@ urlpatterns = [
     url(r'^vendor-cust-login/(?P<status_msg>.*)/$', views.VendorCustLogin.as_view(), name='vendor-cust-login'),
     url(r'^vendor-choose-payment/$', views.VendorChoosePayment.as_view(), name='vendor-choose-payment'),
     url(r'^vendor-home/$', views.VendorHome.as_view(), name='vendor-home'),
-	url(r'^cust-support/$', views.CustSupport.as_view(), name='cust-support'),
     url(r'^vendor-transaction/$', views.VendorTransaction.as_view(), name='vendor-transaction'),
     url(r'^user-home/$', views.UserHomeView.as_view(), name='user-home'),
 
