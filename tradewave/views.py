@@ -36,6 +36,10 @@ logger.setLevel(logging.DEBUG)
 class IndexView(ListView):
     model = User
     template_name = 'tradewave/index.html'
+	
+class CustSupport(generic.ListView):
+    model = User
+    template_name = 'tradewave/cust-support.html'
 
 
 class SessionContextView(View):
@@ -235,6 +239,7 @@ class SettingsUser(ListView):
 class SettingsVendor(ListView):
     model = User
     template_name = 'tradewave/settings-vendor.html'
+
 
 
 class SettingsMarketplace(ListView):

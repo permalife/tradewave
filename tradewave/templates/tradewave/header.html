@@ -6,15 +6,16 @@
 
         <!-- Header -->
         <div id="header">
+          {% if status_msg %}
+            <br/>
+            <p class="style1"><strong><center>{{ status_msg }}</strong></center></p>
+          {% endif %}
 
           <!-- Logo -->
           <div id="logo">
             <h1><a href="#">Trade Wave</a></h1>
             <span class="byline">Creating a Sustainable Economy</span>
-            {% if status_msg %}
-              <br/>
-              <p class="style1">{{ status_msg }}</p>
-            {% endif %}
+
             {% if selected_venue %}
               <br/>
               <p class="style1">Logged in to: {{ selected_venue }} </p>
