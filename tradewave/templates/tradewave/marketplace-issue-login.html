@@ -46,30 +46,30 @@
                 <div class="12u">
 
       						<section id="intro">
-      							<h2> Pick vendor(s) to redeem credits for: </h2>
+      							<h2>Existing User Login</h2>
 
       							<!-- Login Form -->
-                    <form method="post" action="{% url 'tradewave:redeem_credits'%}">
+                    <!-- change / adapt the action link to issuing credits -->
+                    <form method="post" action="{% url 'tradewave:process_cust_login' login_reason='issue_credit' %}">
                       {% csrf_token %}
                       <div>
                         <div class="row half">
-                          <div class="3u">
-                            </br>
-                          </div>
-                        </div>
-                        <div class="row">
-
-                          {% for vendor_account_id, vendor_data in all_vendors.iteritems %}
-                            <div class="4u">
-                              <input type="checkbox" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}: {{vendor_data.amount_total}}
-                            </div>
-                          {% endfor %}
-      									</div>
-
-                        <div class="row">
       										<div class="12u">
-      											<input type="submit" class="button button-style1 button-big" value="Redeem" />
-                            <a href="{% url 'tradewave:marketplace-home'%}" class="button button-style1 button-big">Cancel</a>
+                            </br>
+      										</div>
+      									</div>
+      									<div class="row half">
+      										<div class="6u">
+      											<input type="text" class="text" name="cust_name" id="user-email" placeholder="Email" />
+      										</div>
+      										<div class="6u">
+      											<input type="password" class="text" name="cust_password" id="user-password" placeholder="Password" />
+      										</div>
+      									</div>
+      									<div class="row">
+      										<div class="12u">
+      											<input type="submit" class="button button-style1 button-big" value="Login" />
+      											<a href="#" class="button button-style1 button-big">Scan Card</a>
       										</div>
       									</div>
       								</div>

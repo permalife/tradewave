@@ -46,35 +46,59 @@
                 <div class="12u">
 
       						<section id="intro">
-      							<h2> Pick vendor(s) to redeem credits for: </h2>
 
-      							<!-- Login Form -->
-                    <form method="post" action="{% url 'tradewave:redeem_credits'%}">
+      							<h2>Create New User</h2>
+      							<!-- User Form -->
+      							<form method="post" action="{% url 'tradewave:create_user' %}">
                       {% csrf_token %}
-                      <div>
-                        <div class="row half">
-                          <div class="3u">
-                            </br>
-                          </div>
-                        </div>
-                        <div class="row">
 
-                          {% for vendor_account_id, vendor_data in all_vendors.iteritems %}
-                            <div class="4u">
-                              <input type="checkbox" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}: {{vendor_data.amount_total}}
-                            </div>
-                          {% endfor %}
+      								<div>
+      									<div class="row half">
+                          <div class="12u">
+      										  </br>
+      										</div>
+                        </div>
+      									<div class="row half">
+      										<div class="12u">
+      										<p>Name and Email </p>
+      										</div>
+      										<div class="4u">
+      											<input type="text" required class="text" name="user_firstname" id="user-fname" placeholder="First Name" />
+      										</div>
+      										<div class="4u">
+      											<input type="text" required class="text" name="user_lastname" id="user-lname" placeholder="Last Name" />
+      										</div>
+                          <div class="4u">
+      											<input type="email" required class="text" name="user_email" id="user-email" placeholder="Email" />
+      										</div>
+                        </div>
+
+                        <div class="row half">
+      										<div class="12u">
+      										<p>Password and PIN</p>
+      										</div>
+      										<div class="6u">
+      											<input type="password" required class="text" name="user_password" id="user-password" placeholder="Password" />
+      										</div>
+                          <div class="6u">
+      											<input type="password" required class="text" name="user_password_confirm" id="user-password-confirm" placeholder="Confirm password" />
+      										</div>
+        									<div class="6u">
+        										<input type="password" required class="text" name="user_pin" id="user-pin" placeholder="PIN" />
+        									</div>
+                          <div class="6u">
+        										<input type="password" required class="text" name="user_pin_confirm" id="user-pin-confirm" placeholder="Confirm PIN" />
+        									</div>
       									</div>
 
-                        <div class="row">
+      									<div class="row">
       										<div class="12u">
-      											<input type="submit" class="button button-style1 button-big" value="Redeem" />
-                            <a href="{% url 'tradewave:marketplace-home'%}" class="button button-style1 button-big">Cancel</a>
+      											<input type="submit" class="button button-style1 button-big" value="Create" /></li>
       										</div>
       									</div>
       								</div>
       							</form>
-      							<!-- /Login Form -->
+      							<!-- /User Form -->
 
       						</section>
 

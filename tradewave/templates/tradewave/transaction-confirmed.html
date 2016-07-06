@@ -49,12 +49,44 @@
 
       							<!-- Intro -->
       								<section id="intro">
-      									<p class="style1"> <strong>${{ amount|floatformat:2 }}</strong> has been transferred from <strong>{{ entity_customer }}</strong> to <strong>{{ entity_vendor }}</strong> </p>
-      									<p class="style1"> The remaining balance for this transaction is <strong>${{ tr_amount|subtract:amount|floatformat:2 }}</strong> </p>
+      									<p class="style1">
+                          <strong>${{ amount|floatformat:2 }}</strong> has been {% if tr == 'vendor' %} transferred {% else %} issued {% endif %} from <strong>{{ sender_name }}</strong> to <strong>{{ recipient_name }}</strong>
+                        </p>
+                        {% if tr_type == 'vendor' %}
+      									  <p class="style1"> The remaining balance for this transaction is <strong>${{ tr_amount|subtract:amount|floatformat:2 }}</strong> </p>
+                        {% endif %}
 
+                        <div>
       										<ul class="actions">
-      											<li><a href="{% url 'tradewave:vendor-home' %}" class="button button-style2 button-big">OK</a></li>
+                            {% with "tradewave:"|add:tr_type|add:"-home" as dest_url %}
+                              <div class="row-half">
+                                <div class="12u">
+        										      <li>
+                                    <a href="{% url dest_url %}" class="button button-style1 button-big">
+                                      {% if tr_type == 'vendor' %}
+                                        OK
+                                      {% else %}
+                                        Done
+                                      {% endif %}
+                                    </a>
+                                  </li>
+                                </div>
+                              </div>
+                            {% endwith %}
+                            {% if tr_type == 'marketplace' %}
+                              <div class="row-half">
+                                <div class="12u">
+                                  <li><a href="{% url 'tradewave:marketplace-issue-pick-credit' %}" class="button button-style1 button-big">Issue more to this user</a></li>
+                                </div>
+                              </div>
+                              <div class="row-half">
+                                <div class="12u">
+                                  <li><a href="{% url 'tradewave:marketplace-issue' %}" class="button button-style1 button-big">Issue credits to another user</a></li>
+                                </div>
+                              </div>
+                            {% endif %}
       										</ul>
+                        </div>
       								</section>
       							<!-- /Intro -->
       						</div>

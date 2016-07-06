@@ -46,10 +46,11 @@
                 <div class="12u">
 
       						<section id="intro">
-      							<h2> Pick vendor(s) to redeem credits for: </h2>
+      							<h2>Pick credit and amount to assign to {{ entity_customer }}</h2>
 
       							<!-- Login Form -->
-                    <form method="post" action="{% url 'tradewave:redeem_credits'%}">
+                    <!-- change / adapt the action link to issuing credits -->
+                    <form method="post" action="{% url 'tradewave:assign_credit_to_user'%}">
                       {% csrf_token %}
                       <div>
                         <div class="row half">
@@ -57,19 +58,34 @@
                             </br>
                           </div>
                         </div>
-                        <div class="row">
+                        <div class="row half">
+                          <div class="3u">
+                            </br>
+                          </div>
+                          <div class="3u">
+                            <select name="credit_uuid" >
+                              {% for credit_uuid, credit_name in all_credits.items %}
+                                  <option class="text" value="{{credit_uuid}}"> {{credit_name}} </option>
+                              {% endfor %}
+                            </select>
+                          </div>
 
-                          {% for vendor_account_id, vendor_data in all_vendors.iteritems %}
-                            <div class="4u">
-                              <input type="checkbox" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}: {{vendor_data.amount_total}}
-                            </div>
-                          {% endfor %}
+      										<div class="3u">
+      											<input
+                              type="number"
+                              class="text"
+                              min="0.01"
+                              step="0.01"
+                              name="credit_amount"
+                              id="credit-amount"
+                              placeholder="Enter amount"/>
+      										</div>
       									</div>
 
                         <div class="row">
       										<div class="12u">
-      											<input type="submit" class="button button-style1 button-big" value="Redeem" />
-                            <a href="{% url 'tradewave:marketplace-home'%}" class="button button-style1 button-big">Cancel</a>
+      											<input type="submit" class="button button-style1 button-big" value="Assign credit" />
+                            <a href="{% url 'tradewave:marketplace-issue'%}" class="button button-style1 button-big">Cancel</a>
       										</div>
       									</div>
       								</div>

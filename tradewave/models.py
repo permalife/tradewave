@@ -138,7 +138,7 @@ class TradewaveUser(models.Model):
     pin = models.PositiveSmallIntegerField()
 
     # qr image
-    qr_string = models.CharField(max_length=1024, blank=True, null=True)
+    qr_string = models.CharField(max_length=1024)
 
     # user's personal entity
     user_entity = models.OneToOneField(Entity)
@@ -275,6 +275,9 @@ class CreditMap(models.Model):
 
 # defines transaction log (record of all transactions)
 class TransactionLog(models.Model):
+    # unique transaction identifier
+    uuid = models.UUIDField(primary_key=True, default=uuid4)
+
     transact_from = models.ForeignKey(
         Account,
         related_name='transactions_sent'
