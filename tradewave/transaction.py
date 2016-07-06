@@ -17,7 +17,7 @@ class TradewaveTransaction(object):
         self.venue_id = venue_id
         self.amount_last_transacted = None
 
-    def transact(self, credit_uuid, credit_amount):
+    def transact(self, credit_uuid, credit_amount, isRedeemed=False):
         credit = Credit.objects.get(uuid=credit_uuid)
         logger.info(
             'New transaction from %s to %s in credit %s (%s) requested',
@@ -88,7 +88,7 @@ class TradewaveTransaction(object):
                 credit=credit,
                 amount=credit_amount,
                 venue=Venue.objects.get(id=self.venue_id),
-                redeemed=False
+                redeemed=isRedeemed
             )
             tr_log.save()
             logger.info(' '.join(
