@@ -1,92 +1,54 @@
-<!DOCTYPE HTML>
-<!--
-	Escape Velocity 2.5 by HTML5 UP
-	html5up.net | @n33co
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
-{% load staticfiles %}
-<html>
-	<head>
-		<title>Trade Wave</title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		<meta name="description" content="" />
-		<meta name="keywords" content="" />
+{% extends "tradewave/base.html" %}
 
-		<!-- Global Variable for js -->
-		<script language="javascript">var STATIC_URL = "{{ STATIC_URL|escapejs }}";</script>
+{% block title %} Redeem Credits {% endblock %}
 
-		<link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900" rel="stylesheet" />
-		<!--[if lte IE 8]><script src="js/html5shiv.js"></script><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
-		<script src="{% static "js/jquery.min.js" %}"></script>
-		<script src="{% static "js/jquery.dropotron.min.js" %}"></script>
-		<script src="{% static "js/config.js" %}"></script>
-		<script src="{% static "js/skel.min.js" %}"></script>
-		<script src="{% static "js/skel-panels.min.js" %}"></script>
-		<!--noscript-->
-		<link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
-		<link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
-		<link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
-		<!--/noscript-->
-	</head>
-	<body class="homepage">
+{% block content %}
+  <section id="intro">
+    <h2> Pick vendor(s) to redeem credits for: </h2>
 
-		{% include "tradewave/header.html" %}
-
-		<!-- Intro Wrapper -->
-		<div id="intro-wrapper" class="wrapper wrapper-style1">
-			<div class="title">Issue Credits</div>
-      <div class="container">
-        <div class="row 150%">
-
-          {% include "tradewave/sidebar.html" %}
-
-          <div class="10u 12u(mobile) important(mobile)">
-            <div id="content">
-              <div class="row">
-                <div class="12u">
-
-      						<section id="intro">
-      							<h2> Pick vendor(s) to redeem credits for: </h2>
-
-      							<!-- Login Form -->
-                    <form method="post" action="{% url 'tradewave:redeem_credits'%}">
-                      {% csrf_token %}
-                      <div>
-                        <div class="row half">
-                          <div class="3u">
-                            </br>
-                          </div>
-                        </div>
-                        <div class="row">
-
-                          {% for vendor_account_id, vendor_data in all_vendors.iteritems %}
-                            <div class="4u">
-                              <input type="checkbox" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}: {{vendor_data.amount_total}}
-                            </div>
-                          {% endfor %}
-      									</div>
-
-                        <div class="row">
-      										<div class="12u">
-      											<input type="submit" class="button button-style1 button-big" value="Redeem" />
-                            <a href="{% url 'tradewave:marketplace-home'%}" class="button button-style1 button-big">Cancel</a>
-      										</div>
-      									</div>
-      								</div>
-      							</form>
-      							<!-- /Login Form -->
-
-      						</section>
-
-      					</div>
-              </div>
-            </div>
+    <!-- Login Form -->
+    <form method="post" action="{% url 'tradewave:redeem_credits'%}">
+      {% csrf_token %}
+      <div>
+        <div class="row half">
+          <div class="3u">
+            </br>
           </div>
-				</div>
-			</div>
-		</div>
+        </div>
 
-    {% include "tradewave/footer.html" %}
+        <div class="feature-list">
+          <div class="row">
+            {% for vendor_account_id, vendor_data in all_vendors.iteritems %}
+              {% if vendor_data.amount_total %}
+                <div class="3u 12u(mobile)">
+                  </br>
+                </div>
+                <div class="3u 12u(mobile)" align="left">
+                  <input type="checkbox" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}:
+                </div>
+                <div class="2u 12u(mobile)">
+                  <strong>{{vendor_data.amount_total}}</strong>
+                </div>
+                <div class="5u 12u(mobile)">
+                  </br>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
 
-	</body>
-</html>
+        <ul class="actions actions-centered">
+          <li>
+            <input type="submit" class="button button-style1 button-big" value="Redeem" />
+          </li>
+          <li>
+            <a href="{% url 'tradewave:marketplace-home'%}" class="button button-style1 button-big">Cancel</a>
+          </li>
+        <ul>
+
+      </div>
+    </form>
+    <!-- /Login Form -->
+
+  </section>
+{% endblock %}

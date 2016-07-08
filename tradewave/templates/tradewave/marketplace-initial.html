@@ -4,15 +4,18 @@
 
 {% block content %}
   <section id="intro">
-    <h1>Choose Location:</h1>
-      <div class="row">
-        {% for featured_venue in featured_venues %}
-        <div class="12u">
-          <a href="/record_venue/{{ featured_venue.id }}" class="button button-style1 button-big">
-            {{ featured_venue.name }}
-          </a>
-        </div>
-        {% endfor %}
+    <header class="style3">
+      <p>Choose a location before proceeding:</p>
+    </header>
+
+    <div class="row">
+      {% for featured_venue in featured_venues %}
+      <div class="12u">
+        <a href="/record_venue/{{ featured_venue.id }}" class="button button-style1 button-big">
+          {{ featured_venue.name }}
+        </a>
       </div>
+      {% endfor %}
+    </div>
   </section>
 {% endblock %}

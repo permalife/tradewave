@@ -1,108 +1,54 @@
-<!DOCTYPE HTML>
-<!--
-	Escape Velocity 2.5 by HTML5 UP
-	html5up.net | @n33co
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
-{% load staticfiles %}
-<html>
-	<head>
-		<title>Trade Wave</title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		<meta name="description" content="" />
-		<meta name="keywords" content="" />
+{% extends "tradewave/base.html" %}
 
-		<!-- Global Variable for js -->
-		<script language="javascript">var STATIC_URL = "{{ STATIC_URL|escapejs }}";</script>
+{% block title %} Issue Credits {% endblock %}
 
-		<link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900" rel="stylesheet" />
-		<!--[if lte IE 8]><script src="js/html5shiv.js"></script><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
-		<script src="{% static "js/jquery.min.js" %}"></script>
-		<script src="{% static "js/jquery.dropotron.min.js" %}"></script>
-		<script src="{% static "js/config.js" %}"></script>
-		<script src="{% static "js/skel.min.js" %}"></script>
-		<script src="{% static "js/skel-panels.min.js" %}"></script>
-		<!--noscript-->
-		<link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
-		<link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
-		<link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
-		<!--/noscript-->
-	</head>
-	<body class="homepage">
+{% block content %}
+  <section id="intro">
+    Pick credit and amount to assign to {{ entity_customer }}:
 
-		{% include "tradewave/header.html" %}
-
-		<!-- Intro Wrapper -->
-		<div id="intro-wrapper" class="wrapper wrapper-style1">
-			<div class="title">Issue Credits</div>
-      <div class="container">
-        <div class="row 150%">
-
-          {% include "tradewave/sidebar.html" %}
-
-          <div class="10u 12u(mobile) important(mobile)">
-            <div id="content">
-              <div class="row">
-                <div class="12u">
-
-      						<section id="intro">
-      							<h2>Pick credit and amount to assign to {{ entity_customer }}</h2>
-
-      							<!-- Login Form -->
-                    <!-- change / adapt the action link to issuing credits -->
-                    <form method="post" action="{% url 'tradewave:assign_credit_to_user'%}">
-                      {% csrf_token %}
-                      <div>
-                        <div class="row half">
-                          <div class="3u">
-                            </br>
-                          </div>
-                        </div>
-                        <div class="row half">
-                          <div class="3u">
-                            </br>
-                          </div>
-                          <div class="3u">
-                            <select name="credit_uuid" >
-                              {% for credit_uuid, credit_name in all_credits.items %}
-                                  <option class="text" value="{{credit_uuid}}"> {{credit_name}} </option>
-                              {% endfor %}
-                            </select>
-                          </div>
-
-      										<div class="3u">
-      											<input
-                              type="number"
-                              class="text"
-                              min="0.01"
-                              step="0.01"
-                              name="credit_amount"
-                              id="credit-amount"
-                              placeholder="Enter amount"/>
-      										</div>
-      									</div>
-
-                        <div class="row">
-      										<div class="12u">
-      											<input type="submit" class="button button-style1 button-big" value="Assign credit" />
-                            <a href="{% url 'tradewave:marketplace-issue'%}" class="button button-style1 button-big">Cancel</a>
-      										</div>
-      									</div>
-      								</div>
-      							</form>
-      							<!-- /Login Form -->
-
-      						</section>
-
-      					</div>
-              </div>
-            </div>
+    <!-- Login Form -->
+    <!-- change / adapt the action link to issuing credits -->
+    <form method="post" action="{% url 'tradewave:assign_credit_to_user'%}">
+      {% csrf_token %}
+      <div>
+        <div class="row half">
+          <div class="3u">
+            </br>
           </div>
-				</div>
-			</div>
-		</div>
+        </div>
+        <div class="row half">
+          <div class="3u">
+            </br>
+          </div>
+          <div class="3u">
+            <select name="credit_uuid" >
+              {% for credit_uuid, credit_name in all_credits.items %}
+                  <option class="text" value="{{credit_uuid}}"> {{credit_name}} </option>
+              {% endfor %}
+            </select>
+          </div>
 
-    {% include "tradewave/footer.html" %}
+          <div class="3u">
+            <input
+              type="number"
+              class="text"
+              min="0.01"
+              step="0.01"
+              name="credit_amount"
+              id="credit-amount"
+              placeholder="Enter amount"/>
+          </div>
+        </div>
 
-	</body>
-</html>
+        <div class="row">
+          <div class="12u">
+            <input type="submit" class="button button-style1 button-big" value="Assign credit" />
+            <a href="{% url 'tradewave:marketplace-issue'%}" class="button button-style1 button-big">Cancel</a>
+          </div>
+        </div>
+      </div>
+    </form>
+    <!-- /Login Form -->
+
+  </section>
+{% endblock %}
