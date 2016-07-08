@@ -212,11 +212,12 @@ class MarketplaceRedeem(LoginRequiredMixin, SessionContextView, TemplateView):
 
         all_vendors = {}
         for vendor in Vendor.objects.all():
-            vendor_account = Account.objects.get(entity=vendor)
-            all_vendors[vendor_account.id] = {
-                'name': vendor.name,
-                'amount_total': vendor_account.amount_total
-            }
+            vendor_account = vendor.account_set.first()
+            if vendor_account and vendor_account.amount_total:
+                all_vendors[vendor_account.id] = {
+                    'name': vendor.name,
+                    'amount_total': vendor_account.amount_total
+                }
 
         context['all_vendors'] = all_vendors
         return context

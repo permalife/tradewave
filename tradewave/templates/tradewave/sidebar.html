@@ -2,27 +2,85 @@
 <div class="2u 12u(mobile)">
   <div id="sidebar">
     <section class="box">
-      <!--header>
-        <h2>Your accounts:</h2>
-      </header-->
-      <ul class="style3">
-        <li><a href="{% url "tradewave:user-home" %}"> Personal account </a></li>
+      <ul class="style2">
+        <li>
+          <a href="{% url "tradewave:user-home" %}">
+            <h1 class="fa fa-server"> Personal account </h1>
+          </a>
+        </li>
+
         {% if entity_vendor %}
-        <li><a href="/redirect_to_vendor/"> Vendor account </a></li>
+        <li>
+          <a href="/redirect_to_vendor/">
+            <h1 class="fa fa-server"> Vendor account <h1>
+          </a>
+        </li>
         {% endif %}
+
         {% if entity_marketplace %}
-        <li><a href="/redirect_to_marketplace/">Marketplace account </a></li>
-        <li><a href="{% url "tradewave:marketplace-initial" %}">Change venue</a></li>
+        <li>
+          <a href="/redirect_to_marketplace/">
+            <h1 class="fa fa-server"> Marketplace account </h1>
+          </a>
+        </li>
+
+        <li>
+          <a href="{% url "tradewave:marketplace-initial" %}">
+            <h1 class="fa fa-building"> Pick venue </h1>
+          </a>
+        </li>
         {% endif %}
+
         {% if entity_vendor %}
           {% if selected_venue %}
-            <li><a href="{% url "tradewave:vendor-transaction" %}"> New transaction </a></li>
+            <li>
+              <a href="{% url "tradewave:vendor-transaction" %}">
+                <h1 class="fa fa-exchange"> New transaction </h1>
+              </a>
+            </li>
+          {% else %}
+            <li>
+              <a href="{% url "tradewave:vendor-initial" %}">
+                <h1 class="fa fa-exchange"> New transaction </h1>
+              </a>
+            </li>
           {% endif %}
-        <li><a href="{% url "tradewave:vendor-initial" %}"> Change venue </a></li>
+
+          <li>
+            <a href="{% url "tradewave:vendor-initial" %}">
+              <h1 class="fa fa-building"> Change venue </h1>
+            </a>
+          </li>
         {% endif %}
+
         {% if entity_marketplace %}
-        <li><a href="{% url "tradewave:marketplace-issue" %}"> Issue credits </a></li>
-        <li><a href="{% url "tradewave:marketplace-redeem" %}"> Redeem credits </a></li>
+          {% if selected_venue %}
+            <li>
+              <a href="{% url "tradewave:marketplace-issue" %}">
+                  <h1 class="fa fa-edit"> Issue credits </h1>
+              </a>
+            </li>
+
+            <li>
+              <a href="{% url "tradewave:marketplace-redeem" %}">
+                <h1 class="fa fa-check-circle"> Redeem credits </h1>
+              </a>
+            </li>
+          {% else %}
+            <li>
+              <a href="{% url "tradewave:marketplace-initial" %}">
+                  <h1 class="fa fa-edit"> Issue credits </h1>
+              </a>
+            </li>
+
+            <li>
+              <a href="{% url "tradewave:marketplace-initial" %}">
+                  <h1 class="fa fa-edit"> Redeem credits </h1>
+              </a>
+            </li>
+          {% endif %}
+
+
         {% endif %}
       </ul>
     </section>
