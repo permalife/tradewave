@@ -274,6 +274,9 @@ class VendorChoosePayment(LoginRequiredMixin, SessionContextView, TemplateView):
         logger.info(cust_credits)
         context['cust_credits'] = cust_credits
         context['tr_amount'] = float(context['tr_amount'])
+        context['product_category'] = Product.objects.get(
+            id=context['product_category_id']
+        ).name
 
         return context
 
@@ -487,9 +490,6 @@ def process_cust_login(request, login_reason):
 
         # login requested from transaction flow
         if login_reason == 'transaction':
-            context_obj['product_category'] = Product.objects.get(
-                id=request.session['product_category_id']
-            ).name
 
             redirect_view = 'tradewave:vendor-choose-payment'
 
