@@ -156,11 +156,8 @@ class MarketplaceHome(LoginRequiredMixin, SessionContextView, TemplateView):
                 (entry.credit.name, float(entry.amount))
                 for entry in sorted(marketplace_wallet, key=attrgetter('amount'), reverse=True)
             ])
-            logger.info(marketplace_credits)
 
             context['name'] = marketplace_entity.name
-            context['total'] = marketplace_amount_total
-            context['credits'] = marketplace_credits
 
         else:
             logger.warning(
@@ -201,6 +198,13 @@ class MarketplaceIssuePickCredit(LoginRequiredMixin, SessionContextView, Templat
 
     def get_context_data(self, **kwargs):
         context = super(MarketplaceIssuePickCredit, self).get_context_data(**kwargs)
+
+        all_credits = dict([
+            (str(credit.uuid), credit.name)
+            for credit in Credit.objects.all()
+        ])
+        context['all_credits'] = all_credits
+
         return context
 
 
@@ -248,31 +252,31 @@ class VendorChoosePayment(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(VendorChoosePayment, self).get_context_data(**kwargs)
-        logger.info(context)
 
-        # retrieve tradewave user by django user id
-        tw_user = TradewaveUser.objects.get(user_id=context['user_id'])
-        user_name = tw_user.user.username
+        # applies any restrictions to a given credit
+        def can_buy(credit):
+            return (not credit.is_restricted) or credit.products.filter(
+                id=context['product_category_id']
+            )
 
-        # user's personal entity
-        user_personal_entity = tw_user.user_entity
-        logger.info('user\'s personal entity: %s', user_personal_entity.name)
-
-        # generate the list of user personal credits
-        # we limit to a single account for simplicity for now
-        user_account = user_personal_entity.account_set.first()
-        user_amount_total = user_account.amount_total
-        user_wallet = CreditMap.objects.filter(account=user_account)
-        user_credits = OrderedDict([
-            (entry.credit.name, float(entry.amount))
-            for entry in sorted(user_wallet, key=attrgetter('amount'), reverse=True)
+        # generate the list of customer's credits
+        cust_account = Account.objects.get(id=context['cust_account_personal_id'])
+        cust_wallet = CreditMap.objects.filter(account=cust_account)
+        cust_credits = OrderedDict([
+            (entry.credit.uuid, {
+                'name': entry.credit.name,
+                'amount': float(entry.amount)
+            })
+            for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
+            if can_buy(entry.credit)
         ])
-        logger.info(user_credits)
 
-        context['user_name'] = user_name
-        context['user_total'] = user_amount_total
-        context['user_credits'] = user_credits
+        logger.info(cust_credits)
+        context['cust_credits'] = cust_credits
         context['tr_amount'] = float(context['tr_amount'])
+        context['product_category'] = Product.objects.get(
+            id=context['product_category_id']
+        ).name
 
         return context
 
@@ -315,9 +319,7 @@ class VendorHome(LoginRequiredMixin, SessionContextView, TemplateView):
                 (entry.credit.name, float(entry.amount))
                 for entry in sorted(vendor_wallet, key=attrgetter('amount'), reverse=True)
             ])
-            logger.info(vendor_credits)
 
-            context['name'] = vendor_entity.name
             context['total'] = vendor_amount_total
             context['credits'] = vendor_credits
 
@@ -488,39 +490,16 @@ def process_cust_login(request, login_reason):
 
         # login requested from transaction flow
         if login_reason == 'transaction':
-            context_obj['product_category'] = Product.objects.get(
-                id=request.session['product_category_id']
-            ).name
 
-            def can_buy(credit):
-                return (not credit.is_restricted) or credit.products.filter(id=request.session['product_category_id'])
-
-            customer_credit_filter = can_buy
             redirect_view = 'tradewave:vendor-choose-payment'
 
         # login requested from marketplace issue credit flow
         elif login_reason == 'issue_credit':
-            all_credits = dict([
-                (str(credit.uuid), credit.name)
-                for credit in Credit.objects.all()
-            ])
-            context_obj['all_credits'] = all_credits
-            logger.info(all_credits)
-            customer_credit_filter = lambda x : True
+
             redirect_view = 'tradewave:marketplace-issue-pick-credit'
         else:
             status_msg = 'Unknown referrer'
             return redirect('tradewave:user-home', status_msg=status_msg)
-
-        # get customer credits
-        cust_wallet = CreditMap.objects.filter(account=cust_account)
-        cust_credits = OrderedDict([
-            (entry.credit.name, float(entry.amount))
-            for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
-            if customer_credit_filter(entry.credit)
-        ])
-        logger.info(cust_credits)
-        context_obj['cust_credits'] = cust_credits
 
         # TODO: evaluate any security risks here in storing everything in session
         for key, val in context_obj.iteritems():
@@ -639,94 +618,40 @@ def process_vendor_payment(request):
         logger.info(request.POST.getlist('credits'))
         logger.info(request.POST.getlist('amounts'))
         credits = request.POST.getlist('credits')
-        amounts = request.POST.getlist('amounts')
+        amounts = map(Decimal, request.POST.getlist('amounts'))
         tr_amount = float(request.POST.get('tr_amount'))
 
-        user_account = Account.objects.get(id=request.session['cust_account_personal_id'])
-        entity_account = Account.objects.get(id=request.session['account_entity_id'])
-        amounts = map(Decimal, amounts)
+        sender_account_id = request.session['cust_account_personal_id']
+        recipient_account_id = request.session['account_entity_id']
+        sender_name=str(request.session['entity_customer'])
+        recipient_name=str(request.session['entity_vendor'])
+
+        tw_transaction = TradewaveTransaction(
+            sender_account_id,
+            recipient_account_id,
+            venue_id=request.session['selected_venue_id']
+        )
 
         # attempt to complete the user/vendor transaction as an atomic db transaction
         with transaction.atomic():
-            for credit, amount in zip(credits, amounts):
-                tr_credit = Credit.objects.get(name=credit)
-                logger.info(tr_credit.uuid)
-
-                # update or delete the asset for this credit in the user's wallet
-                user_creditmap = user_account.creditmap_set.get(credit_id=tr_credit.uuid)
-                if user_creditmap.amount > amount:
-                    user_creditmap.amount -= amount
-                    user_creditmap.save()
-                    logger.info(' '.join([
-                        'Account asset for credit',
-                        tr_credit.name,
-                        'was updated for user',
-                        request.session['entity_customer']
-                    ]))
-                else:
-                    user_creditmap.delete()
-                    logger.info(' '.join([
-                        'Account asset for credit',
-                        tr_credit.name,
-                        'was deleted for user',
-                        request.session['entity_customer']
-                    ]))
-
-                # create or update the asset for this credit in the entity's wallet
-                entity_creditmap, wasCreated = entity_account.creditmap_set.get_or_create(
-                    credit_id=tr_credit.uuid,
-                    defaults = {
-                        'amount': amount
-                    }
-                )
-                if wasCreated:
-                    logger.info(' '.join([
-                        'Account asset for credit',
-                        tr_credit.name,
-                        'was created for vendor',
-                        request.session['entity_vendor']
-                    ]))
-                else:
-                    entity_creditmap.amount += amount
-                    entity_creditmap.save()
-                    logger.info(' '.join([
-                        'Account asset for credit',
-                        tr_credit.name,
-                        'was updated for vendor',
-                        request.session['entity_vendor']
-                    ]))
-
-                # update transaction log
-                tr_log = TransactionLog(
-                    transact_from=user_account,
-                    transact_to=entity_account,
-                    credit=tr_credit,
-                    amount=amount,
-                    venue=Venue.objects.get(id=request.session['selected_venue_id']),
-                    redeemed=False
-                )
-                tr_log.save()
-                logger.info(' '.join([
-                    'Credit:',
+            for credit_uuid, amount in zip(credits, amounts):
+                tr_credit = Credit.objects.get(uuid=credit_uuid)
+                logger.info(
+                    "Transaction from %s to %s in credit %s (%s) requested",
+                    sender_name,
+                    recipient_name,
                     tr_credit.name,
-                    'transaction log entry was created'
-                ]))
+                    tr_credit.uuid
+                )
 
-                # account total records
-                # (we'll save these at the end in a single db transaction)
-                user_account.amount_total -= amount
-                entity_account.amount_total += amount
-
-            # save the changes to account totals
-            user_account.save()
-            entity_account.save()
+                tw_transaction.transact(tr_credit.uuid, amount)
 
             return redirect(
                 'tradewave:transaction-confirmed',
                 tr_amount='%.2f' % tr_amount,
                 amount='%.2f' % float(sum(amounts)),
-                sender_name=request.session['entity_customer'],
-                recipient_name=request.session['entity_vendor'],
+                sender_name=sender_name,
+                recipient_name=recipient_name,
                 tr_type='vendor'
             )
 
