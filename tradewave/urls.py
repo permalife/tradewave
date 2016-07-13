@@ -1,17 +1,32 @@
-from django.conf.urls import url
-
+from django.conf.urls import url, include
+#from django.contrib.auth.models import User
+from rest_framework import routers, viewsets
 from tradewave import views
 
+# Routers provide an easy way of automatically determining the URL conf.
+#router = routers.DefaultRouter()
+#router.register(r'accounts', views.account_list)
+
 urlpatterns = [
+    # API
+    #url(r'^', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^accounts/$', views.AccountList.as_view(), name='accounts'),
+    url(r'^accounts/(?P<pk>[0-9]+)/$', views.AccountDetail.as_view()),
+    url(r'^transaction-logs/$', views.TransactionLogList.as_view(), name='transaction-logs'),
+    url(r'^transaction-logs/(?P<uuid>[\w-]+)/$', views.TransactionLogDetail.as_view()),
+    url(r'^transaction-logs/entity/spent/(?P<account_id>\d+)/$', views.TransactionLogEntitySpentPandas.as_view(), name='transactions-spent'),
+    url(r'^transaction-logs/entity/received/(?P<account_id>\d+)/$', views.TransactionLogEntityReceiviedPandas.as_view(), name='transactions-received'),
+
     # template views
-    url(r'^$', views.LoginView.as_view(), name='root'),
+    #url(r'^$', views.LoginView.as_view(), name='root'),
     url(r'^login/(?P<status_msg>.*)/$', views.LoginView.as_view(), name='login'),
     url(r'^send/$', views.SendView.as_view(), name='send'),
     url(r'^confirm-send/$', views.ConfirmSendView.as_view(), name='confirm-send'),
     url(r'^confirm-receive/$', views.ConfirmReceiveView.as_view(), name='confirm-receive'),
     url(r'^create-user/$', views.CreateUserView.as_view(), name='create-user'),
     url(r'^create-vendor/$', views.CreateVendorView.as_view(), name='create-vendor'),
-    url(r'^dashboard/$', views.DashboardView.as_view(), name='dashboard'),
+    url(r'^dashboard/(?P<account_id>\d+)$', views.DashboardView.as_view(), name='dashboard'),
     url(r'^export_data/$', views.export_data, name='export_data'),
     url(r'^load-ddip/$', views.LoadDdipView.as_view(), name='load-ddip'),
     url(r'^marketplace-initial/$', views.MarketplaceInitial.as_view(), name='marketplace-initial'),
