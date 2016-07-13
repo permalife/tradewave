@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
 from django.template import RequestContext, loader
 from django.views.generic import View, ListView, TemplateView
@@ -14,14 +14,24 @@ from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
     Marketplace, Affiliation, TransactionLog, Product
 
-from .forms import AssignCreditToUserForm, CreateUserForm
-from .transaction import TradewaveTransaction
+from tradewave.serializers import AccountSerializer, TransactionLogSerializer
+from tradewave.forms import AssignCreditToUserForm, CreateUserForm
+from tradewave.transaction import TradewaveTransaction
 
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
 from import_export import resources
 from operator import attrgetter
+
+from rest_framework import status
+from rest_framework.decorators import api_view, APIView
+from rest_framework.response import Response
+from rest_framework import mixins
+from rest_framework import generics
+from rest_framework import permissions
+
+from rest_pandas import PandasView
 
 import time
 import logging
@@ -30,6 +40,143 @@ import uuid
 logging.basicConfig(level=logging.DEBUG, filename="log/views.log")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+# *** API ***
+class AccountList(generics.ListCreateAPIView):
+    """
+    List all accounts, or create a new account.
+    """
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+
+
+class AccountDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve / update / destroy an account.
+    """
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+
+
+# *** API ***
+class TransactionLogList(generics.ListCreateAPIView):
+    """
+    List all accounts, or create a new transaction log.
+    """
+    queryset = TransactionLog.objects.all()
+    serializer_class = TransactionLogSerializer
+
+
+class TransactionLogDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve / update / destroy an account.
+    """
+    queryset = TransactionLog.objects.all()
+    serializer_class = TransactionLogSerializer
+    lookup_field = 'uuid'
+
+
+class TransactionLogEntitySpentDetail(generics.ListAPIView):
+    """
+    Retrieve transactions for a given entity
+    """
+    serializer_class = TransactionLogSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    lookup_url_kwarg = "account_id"
+
+    def get_queryset(self):
+        account_id = self.kwargs.get(self.lookup_url_kwarg)
+        transactions = TransactionLog.objects.filter(transact_from=account_id)
+
+        before = self.request.query_params.get('before', None)
+        if before:
+            transactions = transactions.filter(
+                date_transacted__lte=datetime.fromtimestamp(float(before))
+            )
+
+        after = self.request.query_params.get('after', None)
+        if after:
+            transactions = transactions.filter(
+                date_transacted__gte=datetime.fromtimestamp(float(after))
+            )
+        return transactions
+
+
+class TransactionLogEntityReceivedDetail(generics.ListAPIView):
+    """
+    Retrieve transactions for a given entity
+    """
+    serializer_class = TransactionLogSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    lookup_url_kwarg = "account_id"
+
+    def get_queryset(self):
+        account_id = self.kwargs.get(self.lookup_url_kwarg)
+        transactions = TransactionLog.objects.filter(transact_to=account_id)
+
+        before = self.request.query_params.get('before', None)
+        if before:
+            transactions = transactions.filter(
+                date_transacted__lte=datetime.fromtimestamp(float(before))
+            )
+
+        after = self.request.query_params.get('after', None)
+        if after:
+            transactions = transactions.filter(
+                date_transacted__gte=datetime.fromtimestamp(float(after))
+            )
+        return transactions
+
+
+class TransactionLogEntitySpentPandas(PandasView):
+    """
+    Retrieve outgoing transactions for a given entity
+    """
+    serializer_class = TransactionLogSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    queryset = TransactionLog.objects.all()
+
+    def filter_queryset(self, qs):
+        account_id = self.kwargs.get('account_id')
+        qs = TransactionLog.objects.filter(transact_from=account_id)
+        before = self.request.query_params.get('before', None)
+        if before:
+            qs = qs.filter(
+                date_transacted__lte=datetime.fromtimestamp(float(before))
+            )
+
+        after = self.request.query_params.get('after', None)
+        if after:
+            qs = qs.filter(
+                date_transacted__gte=datetime.fromtimestamp(float(after))
+            )
+        return qs
+
+
+class TransactionLogEntityReceiviedPandas(PandasView):
+    """
+    Retrieve incoming transactions for a given entity
+    """
+    serializer_class = TransactionLogSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    queryset = TransactionLog.objects.all()
+
+    def filter_queryset(self, qs):
+        account_id = self.kwargs.get('account_id')
+        qs = TransactionLog.objects.filter(transact_to=account_id)
+        before = self.request.query_params.get('before', None)
+        if before:
+            qs = qs.filter(
+                date_transacted__lte=datetime.fromtimestamp(float(before))
+            )
+
+        after = self.request.query_params.get('after', None)
+        if after:
+            qs = qs.filter(
+                date_transacted__gte=datetime.fromtimestamp(float(after))
+            )
+        return qs
 
 
 # *** classes ***
@@ -106,9 +253,19 @@ class CreateVendorView(ListView):
     model = User
     template_name = 'tradewave/create-vendor.html'
 
-class DashboardView(LoginRequiredMixin, SessionContextView, ListView):
-    model = User
+class DashboardView(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DashboardView, self).get_context_data(**kwargs)
+        if 'entity_marketplace' in context:
+            context['entity_name'] = context['entity_marketplace']
+        elif 'entity_vendor' in context:
+            context['entity_name'] = context['entity_vendor']
+        else:
+            context['entity_name'] = context['entity_personal']
+
+        return context
 
 
 class LoadDdipView(ListView):
