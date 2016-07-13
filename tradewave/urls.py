@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^transaction-logs/entity/received/(?P<account_id>\d+)/$', views.TransactionLogEntityReceiviedPandas.as_view(), name='transactions-received'),
 
     # template views
-    #url(r'^$', views.LoginView.as_view(), name='root'),
+    url(r'^$', views.LoginView.as_view(), name='root'),
     url(r'^login/(?P<status_msg>.*)/$', views.LoginView.as_view(), name='login'),
     url(r'^send/$', views.SendView.as_view(), name='send'),
     url(r'^confirm-send/$', views.ConfirmSendView.as_view(), name='confirm-send'),
