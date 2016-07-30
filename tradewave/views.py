@@ -356,11 +356,13 @@ class MarketplaceIssuePickCredit(LoginRequiredMixin, SessionContextView, Templat
     def get_context_data(self, **kwargs):
         context = super(MarketplaceIssuePickCredit, self).get_context_data(**kwargs)
 
-        all_credits = dict([
-            (str(credit.uuid), credit.name)
-            for credit in Credit.objects.all()
+        # List only marketplace's credits
+        marketplace_account = Account.objects.get(id=context['account_entity_id'])
+        marketplace_credits = dict([
+            (str(creditmap.credit.uuid), creditmap.credit.name)
+            for creditmap in marketplace_account.creditmap_set.all()
         ])
-        context['all_credits'] = all_credits
+        context['marketplace_credits'] = marketplace_credits
 
         return context
 
@@ -910,6 +912,7 @@ def record_venue(request, venue_id):
 def redeem_credits(request):
     try:
         selected_vendors = request.POST.getlist('vendors')
+        amount_redeemed = 0
 
         for vendor_account_id in selected_vendors:
             logger.info(
@@ -936,7 +939,16 @@ def redeem_credits(request):
                         isRedeemed=True
                     )
 
-        return redirect('tradewave:marketplace-redeem')
+                    amount_redeemed += tw_transaction.amount_last_transacted
+
+        return redirect(
+            'tradewave:transaction-confirmed',
+            tr_amount='%.2f' % amount_redeemed,
+            amount='%.2f' % amount_redeemed,
+            sender_name='selected vendors',
+            recipient_name=request.session['entity_marketplace'],
+            tr_type='marketplace'
+        )
 
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))

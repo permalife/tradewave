@@ -7,7 +7,10 @@
 {% block content %}
   <section id="intro">
     <p class="style1">
-      <strong>${{ amount|floatformat:2 }}</strong> has been {% if tr == 'vendor' %} transferred {% else %} issued {% endif %} from <strong>{{ sender_name }}</strong> to <strong>{{ recipient_name }}</strong>
+      <strong>${{ amount|floatformat:2 }}</strong> has been {% if tr_type == 'vendor' %} transferred {% else %} issued {% endif %} from
+      <br> <strong>{{ sender_name }}</strong>
+      <br> to 
+      <br> <strong>{{ recipient_name }}</strong>
     </p>
 
     {% if tr_type == "vendor" %}
@@ -21,11 +24,7 @@
             <div class="12u">
               <li>
                 <a href="{% url dest_url %}" class="button button-style1 button-big">
-                  {% if tr_type == 'vendor' %}
-                    OK
-                  {% else %}
-                    Done
-                  {% endif %}
+                  OK
                 </a>
               </li>
             </div>
