@@ -88,8 +88,6 @@
 
                         d3.csv(tr_url, function(error, data) {
                           x.domain([0, d3.max(data, function(d) { return Number(d.amount) + 20; })]);
-                          //console.log('data: ' + data);
-                          //console.log("{% url 'tradewave:transactions-spent' account_entity_id %}");
                           chart.attr("height", barHeight * data.length);
 
                           var bar = chart.selectAll("g")
