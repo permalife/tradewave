@@ -34,26 +34,32 @@
 
     <!-- Intro Wrapper -->
     <div id="intro-wrapper" class="wrapper wrapper-style1">
-      <div class="title">Vendor {{ entity_vendor }}</div>
+      <div class="title"> {{ entity_personal }} </div>
       <div class="container">
         <div class="row">
           <div class="12u">
 
             <section id="intro">
-              <h1>Choose Location</h1>
-            					<div class="row half">
-            						{% for featured_venue in featured_venues %}
-            						<div class="4u">
-            							<a href="/record_venue/{{ featured_venue.id }}" class="button button-style3 button-big">{{ featured_venue.name }}  </a>
-            						</div>
-            						{% endfor %}
-            					</div>
+              {% if entity_marketplace %}
+              <div class="row half">
+    						<div class="12u">
+    							<a href="{% url 'tradewave:export_data' %}" class="button button-style3 button-big"> Export Account Data  </a>
+    						</div>
+    					</div>
+              {% else %}
+              <div class="row half">
+                <center>
+                  <p class="style3"> No functionality available for your account at the moment </p>
+                </center>
+              </div>
+              {% endif %}
             </section>
 
           </div>
         </div>
       </div>
     </div>
+    <!-- /Intro Wrapper -->
 
     {% include "tradewave/footer.html" %}
 

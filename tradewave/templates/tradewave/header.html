@@ -1,44 +1,60 @@
-        <!-- Header Wrapper -->
-            <div id="header-wrapper" class="wrapper">
-                <div class="container">
-                    <div class="row">
-                        <div class="12u">
-                        
-                            <!-- Header -->
-                                <div id="header">
-                                    
-                                    <!-- Logo -->
-                                        <div id="logo">
-                                            <h1><a href="#">Trade Wave</a></h1>
-                                            <span class="byline">Creating a Sustainable Economy</span>
-                                        </div>
-                                    <!-- /Logo -->
-                                    
-                                    <!-- Nav -->
-                                        <nav id="nav">
-                                            <ul>
-                                                <li class="current_page_item"><a href="index.html">Home</a></li>
-                                                <li>
-                                                    <span>My Accounts</span>
-                                                    <ul>
-                                                        <li><a href="#">Personal</a></li>
-                                                        <li><a href="#">Vendor</a></li>
-                                                        <li><a href="#">Marketplace</a></li>
-                                                    </ul>
-												</li>
-												<li><a href="#">Settings</a></li>
-                                                    
-                                                </li>
-                                                <li><a href="#">Dashboard</a></li>
-                                            </ul>
-                                        </nav>
-                                    <!-- /Nav -->
+<!-- Header Wrapper -->
+<div id="header-wrapper" class="wrapper">
+  <div class="container">
+    <div class="row">
+      <div class="12u">
 
-                                </div>
-                            <!-- /Header -->
+        <!-- Header -->
+        <div id="header">
 
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <!-- /Header Wrapper -->
+          <!-- Logo -->
+          <div id="logo">
+            <h1><a href="#">Trade Wave</a></h1>
+            <span class="byline">Creating a Sustainable Economy</span>
+            {% if status_msg %}
+              <br/>
+              <p class="style1">{{ status_msg }}</p>
+            {% endif %}
+            {% if selected_venue %}
+              <br/>
+              <p class="style1">Logged in to: {{ selected_venue }} </p>
+            {% endif %}
+          </div>
+          <!-- /Logo -->
+
+          <!-- Nav -->
+          <nav id="nav">
+            <ul>
+              <li class="current_page_item"><a href="{% url 'tradewave:user-home' %}">Home</a></li>
+              {% if entity_personal %}
+                <li>
+                  <span>My Accounts</span>
+                  <ul>
+                    <li><a href="{% url 'tradewave:user-home' %}">Personal</a></li>
+                    {% if entity_vendor %}
+                    <li><a href="/redirect_to_vendor/">Vendor</a></li>
+                    {% endif %}
+                    {% if entity_marketplace %}
+                    <li><a href="/redirect_to_marketplace/">Marketplace</a></li>
+                    {% endif %}
+                  </ul>
+			            </li>
+			            <li><a href="#">Settings</a></li>
+                <li><a href="{% url 'tradewave:dashboard' %}"> Dashboard </a></li>
+                <li><a href="{% url 'tradewave:cust-support' %}"> Support </a></li>                
+                <li><a href="/process_logout"> Logout </a></li>
+              {% else %}
+                <li><a href="/login">Login</a></li>
+              {% endif %}
+            </ul>
+          </nav>
+          <!-- /Nav -->
+
+        </div>
+        <!-- /Header -->
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /Header Wrapper -->

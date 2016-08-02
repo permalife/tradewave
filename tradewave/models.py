@@ -138,7 +138,7 @@ class TradewaveUser(models.Model):
     pin = models.PositiveSmallIntegerField()
 
     # qr image
-    qr_image = models.ImageField(upload_to='qr')
+    qr_string = models.CharField(max_length=1024, blank=True, null=True)
 
     # user's personal entity
     user_entity = models.OneToOneField(Entity)
@@ -169,9 +169,18 @@ class TradewaveUser(models.Model):
 
     def __unicode__(self):
         return ' '.join([
-            'User properties of',
+            'Tradewave user',
             self.user.username,
         ])
+
+
+# define product categories
+# for some credits, transactions are restricted to certain product categories
+class Product(models.Model):
+    name = models.CharField(max_length=256)
+
+    def __unicode__(self):
+        return self.name
 
 
 def one_year_from_now():
@@ -196,6 +205,12 @@ class Credit(models.Model):
 
     # total amount redeemed to date (in USD)
     amount_redeemed = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # is limited to certain product categories
+    is_restricted = models.BooleanField(default=False)
+
+    # product restrictions
+    products = models.ManyToManyField(Product, through='CreditProductMap', blank=True)
 
     # credit rating (e.g. redeemed / issued)
     credit_rating = models.FloatField(default=100)
@@ -351,4 +366,18 @@ class Affiliation(models.Model):
             self.vendor.name,
             'is a vendor at marketplace',
             self.marketplace.name
+        ])
+
+
+# define product categories
+# for some credits, transactions are restricted to certain product categories
+class CreditProductMap(models.Model):
+    credit = models.ForeignKey(Credit)
+    product = models.ForeignKey(Product)
+
+    def __unicode__(self):
+        return ' '.join([
+            self.credit.name,
+            'can be used to buy',
+            self.product.name
         ])
