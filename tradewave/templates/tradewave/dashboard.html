@@ -22,11 +22,29 @@
     <script src="{% static "js/config.js" %}"></script>
     <script src="{% static "js/skel.min.js" %}"></script>
     <script src="{% static "js/skel-panels.min.js" %}"></script>
+
     <!--noscript-->
     <link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
     <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
     <link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
     <!--/noscript-->
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+
+    <style>
+
+    .chart rect {
+      fill: steelblue;
+    }
+
+    .chart text {
+      fill: white;
+      font: 10px sans-serif;
+      text-anchor: end;
+    }
+
+    </style>
+
   </head>
   <body class="homepage">
 
@@ -34,27 +52,91 @@
 
     <!-- Intro Wrapper -->
     <div id="intro-wrapper" class="wrapper wrapper-style1">
-      <div class="title"> {{ entity_personal }} </div>
+      <div class="title"> {{ entity_name }} </div>
       <div class="container">
-        <div class="row">
-          <div class="12u">
+        <div class="row 150%">
 
-            <section id="intro">
-              {% if entity_marketplace %}
-              <div class="row half">
-    						<div class="12u">
-    							<a href="{% url 'tradewave:export_data' %}" class="button button-style3 button-big"> Export Account Data  </a>
-    						</div>
-    					</div>
-              {% else %}
-              <div class="row half">
-                <center>
-                  <p class="style3"> No functionality available for your account at the moment </p>
-                </center>
+          {% include "tradewave/sidebar.html" %}
+
+          <div class="10u 12u(mobile) important(mobile)">
+            <div id="content">
+              <div class="row">
+                <div class="12u">
+
+                  <section id="intro">
+                    {% if entity_marketplace %}
+                    <div class="row half">
+          						<div class="12u">
+          							<a href="{% url 'tradewave:export_data' %}" class="button button-style3 button-big"> Export Account Data  </a>
+          						</div>
+          					</div>
+                    {% endif %}
+
+                    <svg class="chart"></svg>
+
+                    <script>
+                      ["{% url 'tradewave:transactions-spent' account_entity_id %}",
+                       "{% url 'tradewave:transactions-received' account_entity_id %}"].forEach(function (tr_url) {
+                        var width = 420,
+                            barHeight = 20;
+
+                        var x = d3.scale.linear()
+                            .range([0, width]);
+
+                        var chart = d3.select(".chart")
+                            .attr("width", width);
+
+                        d3.csv(tr_url, function(error, data) {
+                          x.domain([0, d3.max(data, function(d) { return Number(d.amount) + 20; })]);
+                          chart.attr("height", barHeight * data.length);
+
+                          var bar = chart.selectAll("g")
+                              .data(data)
+                            .enter().append("g")
+                              .attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+
+                          bar.append("rect")
+                              .attr("width", function(d) { return x(d.amount); })
+                              .attr("height", barHeight - 1)
+                              .style("fill", function (d) {
+                                if (Number(d.transact_to) === {{ account_entity_id }}) {
+                                  console.log(d.transact_to + '=>' + d.transact_from);
+                                  return "lightsteelblue";
+                                }
+                                else {
+                                  console.log(d.transact_to + '=>' + d.transact_from);
+                                  return "lightsalmon";
+                                }
+                              });
+
+                          bar.append("text")
+                              .attr("x", function(d) { return x(d.amount) + 30; })
+                              .attr("y", barHeight / 2)
+                              .attr("dy", ".35em")
+                              .text(function(d) { return d.amount; });
+                        });
+
+                      });
+
+                      function type(d) {
+                        d.amount = +d.amount; // coerce to number
+                        return d;
+                      }
+                    </script>
+
+                    <!--script>
+                      d3.select(".chart")
+                        .selectAll("div")
+                        .csv("http://localhost:8000/transaction-logs/entity/spent/2/?before=1468224984&after=1467879384")
+                        .enter().append("div").
+                        .style
+                    </script-->
+
+                  </section>
+
+                </div>
               </div>
-              {% endif %}
-            </section>
-
+            </div>
           </div>
         </div>
       </div>

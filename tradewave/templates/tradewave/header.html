@@ -38,13 +38,12 @@
                     <li><a href="/redirect_to_marketplace/">Marketplace</a></li>
                     {% endif %}
                   </ul>
-			            </li>
-			            <li><a href="#">Settings</a></li>
-                <li><a href="{% url 'tradewave:dashboard' %}"> Dashboard </a></li>
-                <li><a href="{% url 'tradewave:cust-support' %}"> Support </a></li>                
+			          </li>
+                <li><a href="{% url 'tradewave:dashboard' account_entity_id %}"> Dashboard </a></li>
+                <li><a href="{% url 'tradewave:cust-support' %}"> Support </a></li>
                 <li><a href="/process_logout"> Logout </a></li>
               {% else %}
-                <li><a href="/login">Login</a></li>
+                <li><a href="{% url 'tradewave:login' status_msg='Please login to your account'%}">Login</a></li>
               {% endif %}
             </ul>
           </nav>
