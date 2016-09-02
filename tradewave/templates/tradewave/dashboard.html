@@ -75,8 +75,22 @@
                     <svg class="chart"></svg>
 
                     <script>
-                      ["{% url 'tradewave:transactions-spent' account_entity_id %}",
-                       "{% url 'tradewave:transactions-received' account_entity_id %}"].forEach(function (tr_url) {
+                      // TODO: Make this a reactive select element to allow the user
+                      // to choose whether to display the dashboard for their personal
+                      // or entity accounts
+                      var arraySpentReceivedUrls;
+                      {% if account_entity_id %}
+                        arraySpentReceivedUrls = [
+                          "{% url 'tradewave:transactions-spent' account_entity_id %}",
+                          "{% url 'tradewave:transactions-received' account_entity_id %}"
+                        ];
+                      {% else %}
+                        arraySpentReceivedUrls = [
+                          "{% url 'tradewave:transactions-spent' account_personal_id %}",
+                          "{% url 'tradewave:transactions-received' account_personal_id %}"
+                        ];
+                      {% endif %}
+                      arraySpentReceivedUrls.forEach(function (tr_url) {
                         var width = 420,
                             barHeight = 20;
 
