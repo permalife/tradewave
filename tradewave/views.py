@@ -17,6 +17,7 @@ from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
 from tradewave.serializers import AccountSerializer, TransactionLogSerializer
 from tradewave.forms import AssignCreditToUserForm, CreateUserForm
 from tradewave.transaction import TradewaveTransaction
+from tradewave.exceptions import CustomerInvalidCredentialsException
 
 from collections import OrderedDict
 from datetime import datetime
@@ -36,6 +37,7 @@ from rest_pandas import PandasView
 import time
 import logging
 import uuid
+
 
 logging.basicConfig(level=logging.DEBUG, filename="log/views.log")
 logger = logging.getLogger(__name__)
@@ -573,6 +575,7 @@ def export_data(request):
         logger.error("Server error: %s (%s)", e.message, type(e))
         return redirect('tradewave:login', status_msg=e.message)
 
+
 def login_username_or_qr(request):
     cust_name = request.POST.get('cust_name')
     cust_password = request.POST.get('cust_password')
@@ -610,9 +613,7 @@ def login_username_or_qr(request):
         # return user object to the caller
         return user
     else:
-        # retry
-        status_msg = 'Invalid login / password'
-        return redirect('tradewave:vendor-cust-login', status_msg=status_msg)
+        raise CustomerInvalidCredentialsException('Invalid credentials for customer')
 
 
 # *** handler to process user login ***
@@ -649,26 +650,33 @@ def process_cust_login(request, login_reason):
 
         # login requested from transaction flow
         if login_reason == 'transaction':
-
             redirect_view = 'tradewave:vendor-choose-payment'
 
         # login requested from marketplace issue credit flow
         elif login_reason == 'issue_credit':
-
             redirect_view = 'tradewave:marketplace-issue-pick-credit'
+
         else:
             status_msg = 'Unknown referrer'
             return redirect('tradewave:user-home', status_msg=status_msg)
 
         # TODO: evaluate any security risks here in storing everything in session
-        for key, val in context_obj.iteritems():
-            request.session[key] = val
+        #for key, val in context_obj.iteritems():
+        #    request.session[key] = val
 
         return redirect(redirect_view);
 
+    except CustomerInvalidCredentialsException as e:
+        if login_reason == 'transaction':
+            # TODO: This should redirect to a page that says invalid login, repeat
+            return redirect('tradewave:vendor-transaction')
+        elif login_reason == 'issue_credit':
+            return redirect('tradewave:marketplace-issue-login')
+        else:
+            raise
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
-        return redirect('tradewave:login', status_msg=e.message)
+        return redirect('tradewave:user-home', status_msg=e.message)
 
 
 # *** handler to process user login ***
