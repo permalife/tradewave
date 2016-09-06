@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
+from datetime import datetime
+
 import logging
 
 
@@ -49,6 +51,27 @@ class LoginUserForm(forms.Form):
     cust_qr_string = forms.CharField()
     cust_pin = forms.IntegerField(min_value=1000, max_value=9999)
 
+
+# Market venue and date
+class MarketVenueDateForm(forms.Form):
+    market_venue = forms.CharField()
+    market_date = forms.CharField()
+
+    def clean_market_date(self):
+        data = self.cleaned_data['market_date']
+        try:
+            data = datetime.strptime(data, '%B %d, %Y')
+            return data
+        except:
+            logger.warn('Tried formatting date, but failed once')
+
+        try:
+            data = datetime.strptime(data, '%b. %d, %Y')
+            return data
+        except:
+            logger.warn('Tried formatting date, but failed twice')
+
+        return data
 
 # Assign credit to user form
 class AssignCreditToUserForm(forms.Form):
