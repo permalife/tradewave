@@ -3,6 +3,8 @@
 {% block title %} Issue Credits {% endblock %}
 
 {% block content %}
+  {% include "tradewave/script-qr.html" %}
+  
   <section id="intro">
     <h2>Existing User Login</h2>
 
@@ -10,7 +12,7 @@
     <!-- change / adapt the action link to issuing credits -->
     <form method="post" action="{% url 'tradewave:process_cust_login' login_reason='issue_credit' %}">
       {% csrf_token %}
-      <div>
+      <div id="cust-login-form">
         <div class="row half">
           <div class="12u">
             </br>
@@ -27,10 +29,69 @@
         <div class="row">
           <div class="12u">
             <input type="submit" class="button button-style1 button-big" value="Login" />
-            <a href="#" class="button button-style1 button-big">Scan Card</a>
+            <a id="btn_start" class="button button-style1 button-big">Scan Card</a>
           </div>
         </div>
       </div>
+      
+      <!-- QR Reader Wrapper -->
+      <div class="row">
+        <div class="12u">
+          <center>
+            <!--p class="style1"> Or scan card: </p-->
+            <!-- Web Cam to Scan QR Codes-->
+            <div style="width: 350px; height: 350px;" id="qrcodebox">
+            </div>
+            <!--p>
+              Last QRCode value: <span id="qrcode_result">none</span>
+            </p-->
+            <!--End of WebCam TO Scan QR Codes -->
+          </center>
+        </div>
+      </div>
+
+      <div class="row half">
+        <div class="12u">
+          <p class="style1" id="qr_status"> </p>
+        </div>
+      </div>
+
+      <div class="row half">
+        <div class="3u">
+          <input type="hidden" class="text" name="cust_qr_string" id="qr_string" value="" readonly>
+        </div>
+      </div>
+
+      <div class="row half">
+
+          <div class="3u">
+            <p></p>
+          </div>
+
+          <div class="3u">
+            <p id="label_qr_pin" class="style1" style="visibility:hidden"> Enter your pin: </p>
+          </div>
+
+          <div class="3u">
+            <input type="password" class="text" name="cust_pin" id="qr_pin" value="" style="visibility:hidden" size=4 maxlength=4>
+          </div>
+
+      </div>
+
+      <div class="row half">
+        <div class="12u">
+          <ul class="actions actions-centered">
+            <li><input type="submit" class="button button-style3 button-big" id="button_qr_login" value="Enter" style="visibility:hidden"/></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="row half">
+        <div class="12u">
+          <input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
+        </div>
+      </div>
+      <!-- /QR Reader Wrapper -->
     </form>
     <!-- /Login Form -->
 
