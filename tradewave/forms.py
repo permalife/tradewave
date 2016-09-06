@@ -69,7 +69,7 @@ class MarketVenueDateForm(forms.Form):
             data = datetime.strptime(data, '%b. %d, %Y')
             return data
         except:
-            logger.warn('Tried formatting date, but failed once')
+            logger.warn('Tried formatting date, but failed twice')
 
         return data
 
