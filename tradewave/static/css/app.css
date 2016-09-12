@@ -1,0 +1,151 @@
+/* Foundation revisions */
+
+a:hover, a:focus {
+  color: inherit;
+}
+
+/* Scandalous classes */
+
+.no-margin-bottom {
+    margin-bottom: 0;
+}
+
+.no-margin-top {
+    margin-top: 0;
+}
+
+.half-margin-bottom {
+    margin-bottom: 0.5rem;
+}
+
+.half-margin-top {
+    margin-top: 0.5rem;
+}
+
+.half-margin-left {
+  margin-left: 0.5rem;
+}
+
+.half-margin-right {
+  margin-right: 0.5rem;
+}
+
+.one-margin-bottom {
+    margin-bottom: 1rem;
+}
+
+.one-margin-top {
+    margin-top: 1rem;
+}
+
+.one-margin-left {
+  margin-left: 1rem;
+}
+
+.one-margin-right {
+  margin-right: 1rem;
+}
+
+.three-halves-margin-bottom {
+    margin-bottom: 1.5rem;
+}
+
+.three-halves-margin-top {
+    margin-top: 1.5rem;
+}
+
+.two-margin-bottom {
+    margin-bottom: 2rem;
+}
+
+.two-margin-top {
+    margin-top: 2rem;
+}
+
+.three-margin-bottom {
+    margin-bottom: 3rem;
+}
+
+.three-margin-top {
+    margin-top: 3rem;
+}
+
+.centerText {
+    text-align: center;
+}
+
+.white {
+  color: #ffffff;
+}
+
+/* Header */
+
+.row.full-width {
+  width: 100% !important;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+}
+
+#header {
+  position: fixed;
+  top: 0;
+  height: 60px;
+  background-color: #387a36;
+  color: #ffffff;
+}
+
+#header-small {
+  position: fixed;
+  top: 0;
+  height: 60px;
+  background-color: #387a36;
+  color: #ffffff;
+}
+
+#logo {
+  margin: 0 1.5rem 0;
+  display: inline-block;
+}
+
+#logo-small {
+  margin: 1rem 1rem 0 1rem;
+  line-height: 1.1;
+  display: inline-block;
+}
+
+#tagline {
+  font-size: 1.25rem;
+  margin-top: 0;
+}
+
+#header-menu {
+  margin-top: 1.125rem;
+}
+
+#container {
+  margin-top: 60px;
+}
+
+#menu {
+  background-color: #777777;
+  color: #ffffff;
+}
+
+.list-group-item {
+  position: relative;
+  display: block;
+  padding: 18px 15px;
+  margin-bottom: -1px;
+  border-bottom: 1px solid #ddd;
+}
+
+a.list-group-item {
+  color: #ffffff;
+}
+
+.list-group-item:hover {
+  background-color: #dddddd;
+  color: #555555;
+  transition: background-color 0.25s ease-out, color 0.25s ease-out;
+}
