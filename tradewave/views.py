@@ -15,12 +15,12 @@ from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Marketplace, Affiliation, TransactionLog, Product
 
 from tradewave.serializers import AccountSerializer, TransactionLogSerializer
-from tradewave.forms import AssignCreditToUserForm, CreateUserForm
+from tradewave.forms import AssignCreditToUserForm, CreateUserForm, MarketVenueDateForm
 from tradewave.transaction import TradewaveTransaction
 from tradewave.exceptions import CustomerInvalidCredentialsException
 
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 from import_export import resources
 from operator import attrgetter
@@ -266,6 +266,18 @@ class DashboardView(LoginRequiredMixin, SessionContextView, TemplateView):
             context['entity_name'] = context['entity_vendor']
         else:
             context['entity_name'] = context['entity_personal']
+
+        context['market_venues'] = [
+            venue.name
+            for venue in Venue.objects.all()
+        ]
+
+        context['market_dates'] = [
+            market_date.date() for market_date in TransactionLog.objects.datetimes(
+                'date_transacted',
+                'day'
+            )
+        ]
 
         return context
 
@@ -564,11 +576,44 @@ def export_data(request):
             )
             exclude = ('id',)
 
+    class TransactionLogResource(resources.ModelResource):
+        def get_queryset(self):
+            form = MarketVenueDateForm(request.POST)
+
+            if form.is_valid():
+                market_date = form.cleaned_data['market_date']
+                logger.info(
+                    'Valid market data request for %s',
+                    market_date
+                )
+
+                return TransactionLog.objects.filter(
+                    venue__name=form.cleaned_data['market_venue'],
+                    date_transacted__gte=market_date,
+                    date_transacted__lt=market_date + timedelta(days=1)
+                )
+            else:
+                logger.warning('Invalid request for transaction history: %s', form.errors.as_data())
+                return None
+
+        class Meta:
+            model = TransactionLog
+            fields = (
+                'uuid',
+                'transact_from__entity__name',
+                'transact_to__entity__name',
+                'credit__name',
+                'amount',
+                'venue__name',
+                'date_transacted'
+            )
+            #exclude = ('id',)
+
     try:
-        dataset = CreditMapResource().export()
+        dataset = TransactionLogResource().export()
         response = HttpResponse(dataset.csv, content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=tw-account-data-%s.csv'
-        response['Content-Disposition'] %= datetime.now().strftime('%Y-%M-%d-%H-%M-%S')
+        response['Content-Disposition'] = 'attachment; filename=tw-market-data-%s.csv'
+        response['Content-Disposition'] %= datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         return response
 
     except Exception as e:
@@ -606,7 +651,7 @@ def login_username_or_qr(request):
                 e.message,
                 type(e)
             )
-            return redirect('tradewave:vendor-cust-login', status_msg=status_msg)
+            raise Exception('Invalid QR credentials')
 
     # is existing active user?
     if user is not None and user.is_active:
@@ -658,7 +703,7 @@ def process_cust_login(request, login_reason):
 
         else:
             status_msg = 'Unknown referrer'
-            return redirect('tradewave:user-home', status_msg=status_msg)
+            return redirect('tradewave:user-home-status', status_msg=status_msg)
 
         # TODO: evaluate any security risks here in storing everything in session
         #for key, val in context_obj.iteritems():
@@ -676,7 +721,7 @@ def process_cust_login(request, login_reason):
             raise
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
-        return redirect('tradewave:user-home', status_msg=e.message)
+        return redirect('tradewave:user-home-status', status_msg=e.message)
 
 
 # *** handler to process user login ***
@@ -863,7 +908,10 @@ def redirect_to_vendor(request):
 
         else:
             logger.info('user has no vendor associations')
-            return redirect('tradewave:user-home')
+            return redirect(
+                'tradewave:user-home-status',
+                status_msg='Not associated to a vendor'
+            )
 
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
@@ -886,7 +934,11 @@ def redirect_to_marketplace(request):
                 logger.info('user has not chosen a venue')
                 return redirect('tradewave:marketplace-initial')
         else:
-            return redirect('tradewave:user-home')
+            logger.info('user has no marketplace associations')
+            return redirect(
+                'tradewave:user-home-status',
+                status_msg='Not associated with a marketplace'
+            )
 
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
