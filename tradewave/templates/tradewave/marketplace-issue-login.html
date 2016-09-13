@@ -1,23 +1,18 @@
 {% extends "tradewave/base.html" %}
 
-{% block title %} Issue Credits {% endblock %}
+{% block title %} Existing User Login {% endblock %}
 
 {% block content %}
   {% include "tradewave/script-qr.html" %}
   
   <section id="intro">
-    <h2>Existing User Login</h2>
 
     <!-- Login Form -->
     <!-- change / adapt the action link to issuing credits -->
     <form method="post" action="{% url 'tradewave:process_cust_login' login_reason='issue_credit' %}">
       {% csrf_token %}
       <div id="cust-login-form">
-        <div class="row half">
-          <div class="12u">
-            </br>
-          </div>
-        </div>
+
         <div class="row half">
           <div class="6u">
             <input type="text" class="text" name="cust_name" id="user-email" placeholder="Email" />
@@ -50,43 +45,33 @@
         </div>
       </div>
 
-      <div class="row half">
+      <div class="row">
         <div class="12u">
           <p class="style1" id="qr_status"> </p>
         </div>
       </div>
 
-      <div class="row half">
+      <div class="row">
         <div class="3u">
           <input type="hidden" class="text" name="cust_qr_string" id="qr_string" value="" readonly>
         </div>
       </div>
 
-      <div class="row half">
-
-          <div class="3u">
-            <p></p>
-          </div>
-
-          <div class="3u">
-            <p id="label_qr_pin" class="style1" style="visibility:hidden"> Enter your pin: </p>
-          </div>
-
-          <div class="3u">
-            <input type="password" class="text" name="cust_pin" id="qr_pin" value="" style="visibility:hidden" size=4 maxlength=4>
-          </div>
-
+      <div class="row">
+        <p id="label_qr_pin" class="style1" style="visibility:hidden"> Enter your pin: </p>
       </div>
 
-      <div class="row half">
-        <div class="12u">
-          <ul class="actions actions-centered">
-            <li><input type="submit" class="button button-style3 button-big" id="button_qr_login" value="Enter" style="visibility:hidden"/></li>
-          </ul>
+      <div class="row">
+        <div class="small-6 medium-4 small-centered columns">
+          <input type="password" class="text" name="cust_pin" id="qr_pin" value="" style="visibility:hidden" size=4 maxlength=4>
         </div>
       </div>
 
-      <div class="row half">
+      <div class="row">
+        <input type="submit" class="button" id="button_qr_login" value="Enter" style="visibility:hidden"/>
+      </div>
+
+      <div class="row">
         <div class="12u">
           <input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
         </div>
