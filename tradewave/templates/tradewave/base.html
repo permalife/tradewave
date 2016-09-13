@@ -42,35 +42,24 @@
     {% include "tradewave/header.html" %}
     
     <!-- Needed for menu slider -->
-      <div id="container" canvas="container">
-
-      <!-- Intro Wrapper -->
-      <div id="intro-wrapper" class="wrapper wrapper-style1">
-        <div class="title"> {% block title %} {% endblock %}</div>
-        <div class="container">
-          <div class="row 150%">
-
-            
-
-            <div class="10u 12u(mobile) important(mobile)">
-              <div id="content">
-                <div class="row">
-                  <div class="12u">
-
-                    {% block content %} {% endblock %}
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div id="container" class="js-close-any" canvas="container">
+      <div class="row">
+        <div class="small-10 medium-9 small-centered columns">
+            <div id="title-div" class="lead"> {% block title %} {% endblock %}</div>
+        </div>
+      </div>
+      
+      <div class="row two-margin-bottom">
+        <div class="centerText small-9 medium-8 small-centered columns">  
+          {% block content %} {% endblock %}
         </div>
       </div>
     </div>
-    
     <div off-canvas="menu right shift" id="menu">
       {% include "tradewave/sidebar.html" %}
     </div>
+
+    {% include "tradewave/footer.html" %}
 
     <script>
       ( function ( $ ) {
@@ -93,10 +82,16 @@
 
         // Toggle the Slidebar with id 'id-1'
         controller.toggle( 'menu' );
+        
+        // Close any
+        $( document ).on( 'click', '.js-close-any', function ( event ) {
+          if ( controller.getActiveSlidebar() ) {
+            event.preventDefault();
+            event.stopPropagation();
+            controller.close();
+          }
+        } );
       } );
     </script>
-
-    {% include "tradewave/footer.html" %}
-
   </body>
 </html>

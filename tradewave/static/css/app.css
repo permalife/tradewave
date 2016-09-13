@@ -4,22 +4,34 @@ a:hover, a:focus {
   color: inherit;
 }
 
+body {
+  color: #444444;
+}
+
+.button {
+  font-size: 1rem;
+}
+
+.round {
+  border-radius: 999px;
+}
+
 /* Scandalous classes */
 
 .no-margin-bottom {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .no-margin-top {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .half-margin-bottom {
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .half-margin-top {
-    margin-top: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .half-margin-left {
@@ -31,11 +43,11 @@ a:hover, a:focus {
 }
 
 .one-margin-bottom {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .one-margin-top {
-    margin-top: 1rem;
+  margin-top: 1rem;
 }
 
 .one-margin-left {
@@ -47,31 +59,31 @@ a:hover, a:focus {
 }
 
 .three-halves-margin-bottom {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .three-halves-margin-top {
-    margin-top: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .two-margin-bottom {
-    margin-bottom: 2rem;
+  margin-bottom: 2rem;
 }
 
 .two-margin-top {
-    margin-top: 2rem;
+  margin-top: 2rem;
 }
 
 .three-margin-bottom {
-    margin-bottom: 3rem;
+  margin-bottom: 3rem;
 }
 
 .three-margin-top {
-    margin-top: 3rem;
+  margin-top: 3rem;
 }
 
 .centerText {
-    text-align: center;
+  text-align: center;
 }
 
 .white {
@@ -80,7 +92,7 @@ a:hover, a:focus {
 
 /* Header */
 
-.row.full-width {
+.full-width {
   width: 100% !important;
   margin-left: auto;
   margin-right: auto;
@@ -148,4 +160,13 @@ a.list-group-item {
   background-color: #dddddd;
   color: #555555;
   transition: background-color 0.25s ease-out, color 0.25s ease-out;
+}
+
+#title-div {
+  background-color: #93c47d;
+  color: #ffffff;
+  margin: 2rem 0 1.5rem;
+  padding: 0 1.5rem;
+  border-radius: 4px;
+  text-align: center;
 }
