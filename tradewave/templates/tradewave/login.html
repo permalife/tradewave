@@ -1,6 +1,6 @@
 {% extends "tradewave/base.html" %}
 
-{% block title %} Please login {% endblock %}
+{% block title %} Log in {% endblock %}
 
 {% block content %}
 
@@ -8,24 +8,19 @@
     <!-- Login Form -->
     <form method="post" action="{% url "tradewave:process_login" %}">
       {% csrf_token %}
-      <div>
-        <div class="row half">
-          <div class="6u">
-            <input type="text" class="text" name="user_name" id="user-email" placeholder="Email / Username" />
-          </div>
-          <div class="6u">
-            <input type="password" class="text" name="user_password" id="user-password" placeholder="Password" />
-          </div>
+      <div class="row">
+        <div class="medium-8 small-centered columns ">
+          <input type="text" class="text" name="user_name" id="user-email" placeholder="Email / Username" />
         </div>
-        <div class="row">
-          <div class="12u">
-            <center>
-            <ul class="actions">
-              <li><input type="submit" class="button button-style1 button-big" value="Login" /></li>
-            </ul>
-            </center>
-          </div>
+      </div>
+      <div class="row">
+        <div class="medium-8 small-centered columns">
+          <input type="password" class="text" name="user_password" id="user-password" placeholder="Password" />
         </div>
+      </div>
+      </div>
+      <div class="row center">
+        <input type="submit" class="button" value="Login" />
       </div>
     </form>
     <!-- /Login Form -->

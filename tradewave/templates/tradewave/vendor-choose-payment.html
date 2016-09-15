@@ -2,28 +2,25 @@
 
 {% load tw_extras %}
 
-{% block title %} Paying to {{ entity_vendor }} {% endblock %}
+{% block title %}
+  Paying to {{ entity_vendor }}
+  <h5 class="style1">Transaction total:
+  <strong>$ {{ tr_amount|floatformat:2 }}</strong></h5>
+{% endblock %}
 
 {% block content %}
   <section id="intro">
-
-    <p class="style1">Transaction total: <strong>$ {{ tr_amount|floatformat:2 }}</strong></p>
-
       <!-- Credit Form  This should Auto-populate with recommended credits-->
       <form method="post" action="{% url 'tradewave:process_vendor_payment' %}">
         {% csrf_token %}
         <div>
           <div class="row">
-            <div class="12u">
+            <div class="">
               {% if cust_credits and cust_credits|firstamount >= tr_amount and tr_amount > 0 %}
-                <p class="style3"> <strong>{{ cust_name }}</strong> can pay in <strong>{{ cust_credits|firstname }}</strong> for this transaction </p>
+                <p class=""> <strong>{{ cust_name }}</strong> can pay in <strong>{{ cust_credits|firstname }}</strong> for this transaction </p>
               {% elif cust_credits|length > 1 %}
-                <p class="style3"> The amount can not be paid using a single credit and has to be split across multiple credits </p>
+                <p class=""> The amount can not be paid using a single credit and has to be split across multiple credits </p>
               {% endif %}
-            </div>
-
-            <div class="12u">
-              </br>
             </div>
 
             {% for credit_uuid, credit_data in cust_credits.iteritems %}
@@ -89,7 +86,7 @@
 
             <div class="12u">
               <p class="style3">
-                for "{{ product_category }}"
+                for {{ product_category }}
               </p>
             </div>
           </div>
@@ -110,14 +107,14 @@
           </div>
         </div-->
 
-        <ul class="actions actions-centered">
+        <div class="row one-margin-top">
         <!-- Be sure to verify that the correct amount has been sent -->
-          <li><input type="submit" class="button button-style1 button-big" value="Continue" /></li>
-          <li><input type="reset" class="button button-style1 button-big" value="Reset" /></li>
-        </ul>
+          <input type="submit" class="button" value="Continue" />
+          <input type="reset" class="button secondary" value="Reset" />
+        </div>
 
-        <div class="row half">
-          <div class="12u">
+        <div class="row">
+          <div class="">
             <input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
           </div>
         </div>

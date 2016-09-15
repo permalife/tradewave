@@ -13,35 +13,33 @@
       {% csrf_token %}
       <div id="cust-login-form">
 
-        <div class="row half">
-          <div class="6u">
+        <div class="row">
+          <div class="medium-8 small-centered columns">
             <input type="text" class="text" name="cust_name" id="user-email" placeholder="Email" />
-          </div>
-          <div class="6u">
-            <input type="password" class="text" name="cust_password" id="user-password" placeholder="Password" />
           </div>
         </div>
         <div class="row">
-          <div class="12u">
-            <input type="submit" class="button button-style1 button-big" value="Login" />
-            <a id="btn_start" class="button button-style1 button-big">Scan Card</a>
+          <div class="medium-8 small-centered columns">
+            <input type="password" class="text" name="cust_password" id="user-password" placeholder="Password" />
           </div>
+        </div>
+        <div class="row center">
+          <input type="submit" class="button" value="Login" />
+          <a id="btn_start" class="button">Scan Card</a>
         </div>
       </div>
       
       <!-- QR Reader Wrapper -->
       <div class="row">
-        <div class="12u">
-          <center>
-            <!--p class="style1"> Or scan card: </p-->
-            <!-- Web Cam to Scan QR Codes-->
-            <div style="width: 350px; height: 350px;" id="qrcodebox">
-            </div>
-            <!--p>
-              Last QRCode value: <span id="qrcode_result">none</span>
-            </p-->
-            <!--End of WebCam TO Scan QR Codes -->
-          </center>
+        <div class="small-centered columns">
+          <!--p class="style1"> Or scan card: </p-->
+          <!-- Web Cam to Scan QR Codes-->
+          <div class="center" style="width: 350px; height: 350px;" id="qrcodebox">
+          </div>
+          <!--p>
+            Last QRCode value: <span id="qrcode_result">none</span>
+          </p-->
+          <!--End of WebCam TO Scan QR Codes -->
         </div>
       </div>
 

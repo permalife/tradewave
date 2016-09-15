@@ -10,11 +10,50 @@ body {
 
 .button {
   font-size: 1rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
 }
 
 .round {
   border-radius: 999px;
 }
+
+.full-width {
+  width: 100% !important;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+}
+/* Headers for small screens */
+
+h1 {
+  font-size: 2.5rem; }
+h2 {
+  font-size: 1.9375rem; }
+h3 {
+  font-size: 1.5625rem; }
+h4 {
+  font-size: 1.25rem; }
+h5 {
+  font-size: 1.125rem; }
+h6 {
+  font-size: 1rem;
+}
+
+/* Headers for non-small screens */
+@media screen and (min-width: 40em) {
+  h1 {
+    font-size: 3rem; }
+  h2 {
+    font-size: 2.5rem; }
+  h3 {
+    font-size: 1.9375rem; }
+  h4 {
+    font-size: 1.5625rem; }
+  h5 {
+    font-size: 1.25rem; }
+  h6 {
+    font-size: 1rem; } }
 
 /* Scandalous classes */
 
@@ -82,22 +121,29 @@ body {
   margin-top: 3rem;
 }
 
-.centerText {
-  text-align: center;
-}
-
 .white {
   color: #ffffff;
 }
 
-/* Header */
-
-.full-width {
-  width: 100% !important;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 100%;
+.center {
+  text-align: center;
+  display: block;
+  margin: auto;
 }
+
+.right {
+  text-align: right;
+}
+
+.left {
+  text-align: left;
+}
+
+.inline {
+  display: inline-block;
+}
+
+/* Header */
 
 #header {
   position: fixed;
@@ -116,12 +162,12 @@ body {
 }
 
 #logo {
-  margin: 0 1.5rem 0;
+  margin: 0.125rem 1.5rem 0;
   display: inline-block;
 }
 
 #logo-small {
-  margin: 1rem 1rem 0 1rem;
+  margin: 0.875rem 1rem 0 1rem;
   line-height: 1.1;
   display: inline-block;
 }
@@ -164,6 +210,12 @@ a.list-group-item {
 
 .title-row {
   margin-top: 2rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-align: center;
+}
+
+.table {
+  border: 1px solid #cacaca;
+  border-radius: 4px;
+  padding: 10px 15px;
 }
