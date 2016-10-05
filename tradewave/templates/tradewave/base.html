@@ -8,7 +8,7 @@
 
 <html>
   <head>
-    <title>Trade Wave</title>
+    <title>TradeWave</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
@@ -37,29 +37,33 @@
     <script src="{% static "js/jquery.webcamqrcode.js" %}"></script>
 
   </head>
-  <body class="homepage">
-  
-    {% include "tradewave/header.html" %}
-    
-    <!-- Needed for menu slider -->
-    <div id="container" class="js-close-any" canvas="container">
-      <div class="row title-row">
-        <div class="small-11 medium-8 small-centered columns">
-            <h3> {% block title %} {% endblock %}</h3>
+  <body>
+      {% include "tradewave/header.html" %}
+
+      <div id="container" class="js-close-any" canvas="container">
+        <div class="row title-row">
+          <div class="small-11 medium-8 small-centered columns">
+              <h3> {% block title %} {% endblock %}</h3>
+          </div>
+        </div>
+        
+        <div class="row two-margin-bottom">
+          <div class="center small-11 medium-8 small-centered columns">  
+            {% block content %} {% endblock %}
+          </div>
+        </div>
+        <div id="footer">
+          {% include "tradewave/footer.html" %}
         </div>
       </div>
       
-      <div class="row two-margin-bottom">
-        <div class="center small-11 medium-8 small-centered columns">  
-          {% block content %} {% endblock %}
-        </div>
+    
+      
+      
+      <div off-canvas="menu right shift" id="menu">
+        {% include "tradewave/sidebar.html" %}
       </div>
-    </div>
-    <div off-canvas="menu right shift" id="menu">
-      {% include "tradewave/sidebar.html" %}
-    </div>
-
-    {% include "tradewave/footer.html" %}
+    
 
     <script>
       ( function ( $ ) {

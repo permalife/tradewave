@@ -2101,8 +2101,7 @@ select {
 .dropdown-pane.large {
   width: 400px; }
 
-html,
-body {
+html, body {
   height: 100%; }
 
 .off-canvas-wrapper {
