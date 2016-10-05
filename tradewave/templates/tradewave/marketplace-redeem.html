@@ -1,54 +1,78 @@
 {% extends "tradewave/base.html" %}
 
-{% block title %} Redeem Credits {% endblock %}
+{% block title %}
+  Redeem Credits
+  <h5 class="half-margin-top">Select vendor(s) to redeem credits:</h5>
+{% endblock %}
 
 {% block content %}
-  <section id="intro">
-    <h2> Pick vendor(s) to redeem credits for: </h2>
 
-    <!-- Login Form -->
-    <form method="post" action="{% url 'tradewave:redeem_credits'%}">
-      {% csrf_token %}
-      <div>
-        <div class="row half">
-          <div class="3u">
-            </br>
-          </div>
-        </div>
-
-        <div class="feature-list">
+  <!-- Login Form -->
+  <form method="post" action="{% url 'tradewave:redeem_credits'%}">
+    {% csrf_token %}
+    <div class="row">
+      <div class="medium-10 medium-centered columns">
+        <div class="table">
           <div class="row">
-            {% for vendor_account_id, vendor_data in all_vendors.iteritems %}
-              {% if vendor_data.amount_total %}
-                <div class="3u 12u(mobile)">
-                  </br>
-                </div>
-                <div class="3u 12u(mobile)" align="left">
-                  <input type="checkbox" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}:
-                </div>
-                <div class="2u 12u(mobile)">
-                  <strong>{{vendor_data.amount_total}}</strong>
-                </div>
-                <div class="4u 12u(mobile)">
-                  </br>
-                </div>
-              {% endif %}
-            {% endfor %}
+            <div class="left small-8 columns">
+              <strong>Vendor</strong>
+            </div>
+            
+            <div class="right small-4 columns">
+              <strong>Total</strong>
+            </div>
           </div>
+          
+          <div class="row">
+            <hr class="half-margin-top half-margin-bottom half-margin-left half-margin-right">
+          </div>
+          {% for vendor_account_id, vendor_data in all_vendors.iteritems %}
+            {% if vendor_data.amount_total %}
+              <div class="row">
+                <div class="small-6 columns left">
+                  <input type="checkbox" class="no-margin-bottom half-margin-right" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}
+                </div>
+                
+                <div class="small-6 columns right">
+                  {{vendor_data.amount_total}}
+                </div>
+              </div>
+              
+              
+            {% endif %}
+          {% endfor %}
         </div>
-
-        <ul class="actions actions-centered">
-          <li>
-            <input type="submit" class="button button-style1 button-big" value="Redeem" />
-          </li>
-          <li>
-            <a href="{% url 'tradewave:marketplace-home'%}" class="button button-style1 button-big">Cancel</a>
-          </li>
-        <ul>
-
       </div>
-    </form>
-    <!-- /Login Form -->
+    </div>
+    
+    <div class="row">
+      <div class="column">
+        <button class="redeem-confirm_open button">Redeem</button>
 
-  </section>
+        <a href="{% url 'tradewave:marketplace-home'%}" class="button secondary">Cancel</a>
+      </div>
+    </div>
+    
+    <!-- /Login Form -->
+  
+    <div id="redeem-confirm" class="modal small-12 medium-9 large-7 small-centered columns">
+      <div class="row center">
+        <h3>Confirm credit redemption</h3>
+        <p class="lead">Are you sure you want to redeem credits for these vendors?</p>
+        <input type="submit" class="button" value="Redeem" />
+        <button class="redeem-confirm_close button secondary">Cancel</button>
+      </div>
+    </div>
+  </form>
+  
+  <script>
+    $(document).ready(function() {
+      // Initialize the plugin
+      $('#redeem-confirm').popup({
+          vertical: 'top',
+          transition: 'all 0.75s',
+          scrolllock: true,
+        }); 
+    });
+  </script>
 {% endblock %}

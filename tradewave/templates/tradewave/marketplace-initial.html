@@ -1,10 +1,12 @@
 {% extends "tradewave/base.html" %}
 
-{% block title %} Marketplace {{ name }} {% endblock %}
+{% block title %}
+  Marketplace {{ name }} 
+  <h5 class="half-margin-top">Choose location:</h5>
+{% endblock %}
 
 {% block content %}
   <section id="intro">
-    <p class="lead">Choose location:</p>
 
     {% for featured_venue in featured_venues %}
     <div class="row">

@@ -57,7 +57,7 @@ h6 {
     font-size: 1.25rem; }
   h6 {
     font-size: 1rem; } }
-
+    
 /* Scandalous classes */
 
 .no-margin-bottom {
@@ -235,4 +235,12 @@ a.list-group-item {
   border: 1px solid #cacaca;
   border-radius: 4px;
   padding: 10px 15px;
+  margin-bottom: 1rem;
+}
+
+.modal {
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: #ffffff;
+  margin-top: 5rem;
 }
