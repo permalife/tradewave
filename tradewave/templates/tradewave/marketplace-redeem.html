@@ -55,7 +55,7 @@
     
     <!-- /Login Form -->
   
-    <div id="redeem-confirm" class="modal small-12 medium-9 large-7 small-centered columns">
+    <div id="redeem-confirm" class="modal small-12 medium-9 large-7 small-centered columns" style="display: none">
       <div class="row center">
         <h3>Confirm credit redemption</h3>
         <p class="lead">Are you sure you want to redeem credits for these vendors?</p>
@@ -68,6 +68,9 @@
   <script>
     $(document).ready(function() {
       // Initialize the plugin
+      $('#redeem-confirm').click(function() {
+        document.getElementById("redeem-confirm").style.display="block";
+      });
       $('#redeem-confirm').popup({
           vertical: 'top',
           transition: 'all 0.75s',

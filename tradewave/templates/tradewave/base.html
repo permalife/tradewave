@@ -42,6 +42,13 @@
       {% include "tradewave/header.html" %}
 
       <div id="container" class="js-close-any" canvas="container">
+        
+        {% if status_msg %}
+          <div id="status-msg" class="center row full-width">
+            {{ status_msg }}
+          </div>
+        {% endif %}
+        
         <div class="row title-row">
           <div class="small-11 medium-8 small-centered columns">
               <h3> {% block title %} {% endblock %}</h3>

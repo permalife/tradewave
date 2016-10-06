@@ -15,6 +15,7 @@ body {
   font-size: 1rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
+  margin-top: 1rem;
 }
 
 .round {
@@ -188,6 +189,13 @@ h6 {
 
 #header-menu {
   margin-top: 1.125rem;
+}
+
+#status-msg {
+  background-color: #93c47d;
+  color: #20451f;
+  height: 2rem;
+  line-height: 2rem;
 }
 
 #container {
