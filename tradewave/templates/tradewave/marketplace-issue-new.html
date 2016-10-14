@@ -11,38 +11,37 @@
       <div>
         <div class="row">
           <p>Name and Email</p>
-          <div>
-            <input type="text" required class="text" name="user_firstname" id="user-fname" placeholder="First Name" />
+          <div class="input-left small-6 medium-4 medium-offset-2 columns" tabindex="1">
+            <input type="text" required class="text" name="user_firstname" id="user-fname" placeholder="First Name" tabindex="2" />
           </div>
-          <div>
-            <input type="text" required class="text" name="user_lastname" id="user-lname" placeholder="Last Name" />
+          <div class="input-right small-6 medium-4 columns end">
+            <input type="text" required class="text" name="user_lastname" id="user-lname" placeholder="Last Name" tabindex="3" />
           </div>
-          <div>
-            <input type="email" required class="text" name="user_email" id="user-email" placeholder="Email" />
+          <div class="small-centered small-12 medium-8 columns">
+            <input type="email" required class="text" name="user_email" id="user-email" placeholder="Email" tabindex="4" />
           </div>
+          <div></div>
         </div>
 
         <div class="row">
-          <div>
           <p>Password and PIN</p>
+          <div class="input-left small-6 medium-4 medium-offset-2 columns">
+            <input type="password" required class="text" name="user_password" id="user-password" placeholder="Password" tabindex="5" />
           </div>
-          <div>
-            <input type="password" required class="text" name="user_password" id="user-password" placeholder="Password" />
+          <div class="input-right small-6 medium-4 columns end">
+            <input type="password" required class="text" name="user_password_confirm" id="user-password-confirm" placeholder="Confirm password" tabindex="6" />
           </div>
-          <div>
-            <input type="password" required class="text" name="user_password_confirm" id="user-password-confirm" placeholder="Confirm password" />
+          <div class="input-left small-6 medium-4 medium-offset-2 columns">
+            <input type="password" required class="text" name="user_pin" id="user-pin" placeholder="PIN" tabindex="7" />
           </div>
-          <div>
-            <input type="password" required class="text" name="user_pin" id="user-pin" placeholder="PIN" />
-          </div>
-          <div>
-            <input type="password" required class="text" name="user_pin_confirm" id="user-pin-confirm" placeholder="Confirm PIN" />
+          <div class="input-right small-6 medium-4 columns end">
+            <input type="password" required class="text" name="user_pin_confirm" id="user-pin-confirm" placeholder="Confirm PIN" tabindex="8" />
           </div>
         </div>
 
         <div class="row">
           <div>
-            <input type="submit" class="button large" value="Create" />
+            <input type="submit" class="button" value="Create" tabindex="9" />
           </div>
         </div>
       </div>

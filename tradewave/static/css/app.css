@@ -15,7 +15,6 @@ body {
   font-size: 1rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
-  margin-top: 1rem;
 }
 
 .round {
@@ -28,6 +27,7 @@ body {
   margin-right: auto;
   max-width: 100%;
 }
+
 /* Headings for small screens */
 
 h1 {
@@ -239,11 +239,19 @@ a.list-group-item {
   text-align: center;
 }
 
+.input-left {
+  padding-right: 0.5rem;
+}
+
+.input-right {
+  padding-left: 0.5rem;
+}
+
 .table {
   border: 1px solid #cacaca;
   border-radius: 4px;
   padding: 10px 15px;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .modal {
