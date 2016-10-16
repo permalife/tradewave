@@ -1,0 +1,262 @@
+/* Foundation revisions */
+
+a:hover, a:focus {
+  color: inherit;
+}
+
+body {
+  color: #444444;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.button {
+  font-size: 1rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
+.round {
+  border-radius: 999px;
+}
+
+.full-width {
+  width: 100% !important;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+}
+
+/* Headings for small screens */
+
+h1 {
+  font-size: 2.5rem; }
+h2 {
+  font-size: 1.9375rem; }
+h3 {
+  font-size: 1.5625rem; }
+h4 {
+  font-size: 1.25rem; }
+h5 {
+  font-size: 1.125rem; }
+h6 {
+  font-size: 1rem;
+}
+
+/* Headings for non-small screens */
+@media screen and (min-width: 40em) {
+  h1 {
+    font-size: 3rem; }
+  h2 {
+    font-size: 2.5rem; }
+  h3 {
+    font-size: 1.9375rem; }
+  h4 {
+    font-size: 1.5625rem; }
+  h5 {
+    font-size: 1.25rem; }
+  h6 {
+    font-size: 1rem; } }
+    
+/* Scandalous classes */
+
+.no-margin-bottom {
+  margin-bottom: 0;
+}
+
+.no-margin-top {
+  margin-top: 0;
+}
+
+.half-margin-bottom {
+  margin-bottom: 0.5rem;
+}
+
+.half-margin-top {
+  margin-top: 0.5rem;
+}
+
+.half-margin-left {
+  margin-left: 0.5rem;
+}
+
+.half-margin-right {
+  margin-right: 0.5rem;
+}
+
+.one-margin-bottom {
+  margin-bottom: 1rem;
+}
+
+.one-margin-top {
+  margin-top: 1rem;
+}
+
+.one-margin-left {
+  margin-left: 1rem;
+}
+
+.one-margin-right {
+  margin-right: 1rem;
+}
+
+.three-halves-margin-bottom {
+  margin-bottom: 1.5rem;
+}
+
+.three-halves-margin-top {
+  margin-top: 1.5rem;
+}
+
+.two-margin-bottom {
+  margin-bottom: 2rem;
+}
+
+.two-margin-top {
+  margin-top: 2rem;
+}
+
+.three-margin-bottom {
+  margin-bottom: 3rem;
+}
+
+.three-margin-top {
+  margin-top: 3rem;
+}
+
+.white {
+  color: #ffffff;
+}
+
+.no-padding {
+  padding: 0;
+}
+
+.center {
+  text-align: center;
+  display: block;
+  margin: auto;
+}
+
+.right {
+  text-align: right;
+}
+
+.left {
+  text-align: left;
+}
+
+.inline {
+  display: inline-block;
+}
+
+/* Header */
+
+#header {
+  position: fixed;
+  top: 0;
+  height: 60px;
+  background-color: #387a36;
+  color: #ffffff;
+  flex: 0;
+}
+
+#header-small {
+  position: fixed;
+  top: 0;
+  height: 60px;
+  background-color: #387a36;
+  color: #ffffff;
+  flex: 0;
+}
+
+#logo {
+  margin: 0.125rem 1.5rem 0;
+  display: inline-block;
+}
+
+#logo-small {
+  margin: 0.875rem 1rem 0 1rem;
+  line-height: 1.1;
+  display: inline-block;
+}
+
+#tagline {
+  font-size: 1.25rem;
+  margin-top: 0;
+}
+
+#header-menu {
+  margin-top: 1.125rem;
+}
+
+#status-msg {
+  background-color: #93c47d;
+  color: #20451f;
+  height: 2rem;
+  line-height: 2rem;
+}
+
+#container {
+  margin-top: 60px;
+}
+
+#footer {
+  margin-top: 7rem;
+  padding: 1rem;
+  background: #387a36;
+  color: #ffffff;
+}
+
+
+#menu {
+  background-color: #777777;
+  color: #ffffff;
+}
+
+.list-group-item {
+  position: relative;
+  display: block;
+  padding: 18px 15px;
+  margin-bottom: -1px;
+  border-bottom: 1px solid #ddd;
+}
+
+a.list-group-item {
+  color: #ffffff;
+}
+
+.list-group-item:hover {
+  background-color: #dddddd;
+  color: #555555;
+  transition: background-color 0.25s ease-out, color 0.25s ease-out;
+}
+
+.title-row {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.input-left {
+  padding-right: 0.5rem;
+}
+
+.input-right {
+  padding-left: 0.5rem;
+}
+
+.table {
+  border: 1px solid #cacaca;
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 2rem;
+}
+
+.modal {
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: #ffffff;
+  margin-top: 5rem;
+}

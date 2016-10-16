@@ -4,24 +4,22 @@
 
 {% block content %}
   <section id="intro">
-    <ul class="actions actions-centered">
-      <li>
-        <a href="{% url 'tradewave:marketplace-issue' %}" class="button button-style1 button-big">
-          Issue Credits
-        </a>
-      </li>
+    <div class="row">
+      <a href="{% url 'tradewave:marketplace-issue' %}" class="button">
+        Issue Credits
+      </a>
+    </div>
 
-      <li>
-        <a href="{% url 'tradewave:marketplace-redeem' %}" class="button button-style1 button-big">
-          Redeem Credits
-        </a>
-      </li>
+    <div class="row">
+      <a href="{% url 'tradewave:marketplace-redeem' %}" class="button">
+        Redeem Credits
+      </a>
+    </div>
 
-      <li>
-        <a href="{% url 'tradewave:dashboard' %}" class="button button-style1 button-big">
-          View Dashboard
-        </a>
-      </li>
-    </ul>
+    <div class="row">
+      <a href="{% url 'tradewave:dashboard' %}" class="button">
+        View Dashboard
+      </a>
+    </div>
   </section>
 {% endblock %}

@@ -6,7 +6,7 @@
 
 {% block content %}
   <section id="intro">
-    <p class="style1">
+    <p class="">
       <strong>${{ amount|floatformat:2 }}</strong> has been {% if tr_type == 'vendor' %} transferred {% else %} issued {% endif %} from
       <br> <strong>{{ sender_name }}</strong>
       <br> to 
@@ -18,33 +18,29 @@
     {% endif %}
 
     <div>
-      <ul class="actions actions-centered">
-        {% with "tradewave:"|add:tr_type|add:"-home" as dest_url %}
-          <div class="row-half">
-            <div class="12u">
-              <li>
-                <a href="{% url dest_url %}" class="button button-style1 button-big">
-                  OK
-                </a>
-              </li>
-            </div>
+      {% with "tradewave:"|add:tr_type|add:"-home" as dest_url %}
+        <div class="row">
+          <div class="">
+            <a href="{% url dest_url %}" class="button">
+              OK
+            </a>
           </div>
-        {% endwith %}
+        </div>
+      {% endwith %}
 
-        {% if tr_type == 'marketplace' %}
-          <div class="row-half">
-            <div class="12u">
-              <li><a href="{% url 'tradewave:marketplace-issue-pick-credit' %}" class="button button-style1 button-big">Issue more to this user</a></li>
-            </div>
+      {% if tr_type == 'marketplace' %}
+        <div class="row-half">
+          <div class="12u">
+            <a href="{% url 'tradewave:marketplace-issue-pick-credit' %}" class="button secondary">Issue more to this user</a>
           </div>
+        </div>
 
-          <div class="row-half">
-            <div class="12u">
-              <li><a href="{% url 'tradewave:marketplace-issue' %}" class="button button-style1 button-big">Issue credits to another user</a></li>
-            </div>
+        <div class="row-half">
+          <div class="12u">
+            <a href="{% url 'tradewave:marketplace-issue' %}" class="button secondary">Issue credits to another user</a>
           </div>
-        {% endif %}
-      </ul>
+        </div>
+      {% endif %}
     </div>
   </section>
 {% endblock %}
