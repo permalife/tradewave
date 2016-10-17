@@ -6,6 +6,9 @@ a:hover, a:focus {
 
 body {
   color: #444444;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
 }
 
 .button {
@@ -24,7 +27,8 @@ body {
   margin-right: auto;
   max-width: 100%;
 }
-/* Headers for small screens */
+
+/* Headings for small screens */
 
 h1 {
   font-size: 2.5rem; }
@@ -40,7 +44,7 @@ h6 {
   font-size: 1rem;
 }
 
-/* Headers for non-small screens */
+/* Headings for non-small screens */
 @media screen and (min-width: 40em) {
   h1 {
     font-size: 3rem; }
@@ -54,7 +58,7 @@ h6 {
     font-size: 1.25rem; }
   h6 {
     font-size: 1rem; } }
-
+    
 /* Scandalous classes */
 
 .no-margin-bottom {
@@ -125,6 +129,10 @@ h6 {
   color: #ffffff;
 }
 
+.no-padding {
+  padding: 0;
+}
+
 .center {
   text-align: center;
   display: block;
@@ -151,6 +159,7 @@ h6 {
   height: 60px;
   background-color: #387a36;
   color: #ffffff;
+  flex: 0;
 }
 
 #header-small {
@@ -159,6 +168,7 @@ h6 {
   height: 60px;
   background-color: #387a36;
   color: #ffffff;
+  flex: 0;
 }
 
 #logo {
@@ -181,9 +191,24 @@ h6 {
   margin-top: 1.125rem;
 }
 
+#status-msg {
+  background-color: #93c47d;
+  color: #20451f;
+  height: 2rem;
+  line-height: 2rem;
+}
+
 #container {
   margin-top: 60px;
 }
+
+#footer {
+  margin-top: 7rem;
+  padding: 1rem;
+  background: #387a36;
+  color: #ffffff;
+}
+
 
 #menu {
   background-color: #777777;
@@ -214,8 +239,24 @@ a.list-group-item {
   text-align: center;
 }
 
+.input-left {
+  padding-right: 0.5rem;
+}
+
+.input-right {
+  padding-left: 0.5rem;
+}
+
 .table {
   border: 1px solid #cacaca;
   border-radius: 4px;
   padding: 10px 15px;
+  margin-bottom: 2rem;
+}
+
+.modal {
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: #ffffff;
+  margin-top: 5rem;
 }

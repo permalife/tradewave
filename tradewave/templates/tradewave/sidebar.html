@@ -8,7 +8,7 @@
   {% if entity_vendor %}
 
     <a class="list-group-item" href="/redirect_to_vendor/">
-      <i class="fa-fw fa fa-server"></i> Vendor account 
+      <i class="fa-fw fa fa-server"></i> Vendor account
     </a>
 
   {% endif %}
@@ -16,7 +16,7 @@
   {% if entity_marketplace %}
 
     <a class="list-group-item" href="/redirect_to_marketplace/">
-      <i class="fa-fw fa fa-server"></i> Marketplace account 
+      <i class="fa-fw fa fa-server"></i> Marketplace account
     </a>
 
 
@@ -53,7 +53,7 @@
     {% if selected_venue %}
 
         <a class="list-group-item" href="{% url "tradewave:marketplace-issue" %}">
-            <i class="fa-fw fa fa-edit"></i> Issue credits 
+            <i class="fa-fw fa fa-edit"></i> Issue credits
         </a>
 
 
@@ -65,7 +65,7 @@
     {% else %}
 
         <a class="list-group-item" href="{% url "tradewave:marketplace-initial" %}">
-            <i class="fa-fw fa fa-edit"></i> Issue credits 
+            <i class="fa-fw fa fa-edit"></i> Issue credits
         </a>
 
 
@@ -74,7 +74,10 @@
         </a>
 
     {% endif %}
-
-
   {% endif %}
+
+  <a class="list-group-item" href="{% url "tradewave:process_logout" %}">
+    <i class="fa-fw fa fa-sign-out"></i>Log out
+  </a>
+
 </div>
