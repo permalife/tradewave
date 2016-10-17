@@ -192,6 +192,7 @@ class SessionContextView(View):
         context = super(SessionContextView, self).get_context_data(**kwargs)
         session = self.request.session
         state_vars = [
+            'entity_id'
             'entity_personal',
             'entity_vendor',
             'entity_customer',
@@ -278,6 +279,14 @@ class DashboardView(LoginRequiredMixin, SessionContextView, TemplateView):
                 'day'
             )
         ]
+
+        context['credit_types'] = [
+            credit.name for credit in Credit.objects.filter(issuer=context['entity_id'])
+        ] + ['All']
+
+        context['vendors'] = [
+            vendor.name for vendor in Vendor.objects.all()
+        ] + ['All']
 
         return context
 
@@ -582,16 +591,26 @@ def export_data(request):
 
             if form.is_valid():
                 market_date = form.cleaned_data['market_date']
+                credit_type = form.cleaned_data['credit_type']
+                vendor = form.cleaned_data['vendor']
                 logger.info(
                     'Valid market data request for %s',
                     market_date
                 )
 
-                return TransactionLog.objects.filter(
+                transactions = TransactionLog.objects.filter(
                     venue__name=form.cleaned_data['market_venue'],
                     date_transacted__gte=market_date,
                     date_transacted__lt=market_date + timedelta(days=1)
                 )
+
+                if credit_type != 'All':
+                    transactions = transactions.filter(credit__name=credit_type)
+
+                if vendor != 'All':
+                    transactions = transactions.filter(transact_to__entity__name=vendor)
+
+                return transactions
             else:
                 logger.warning('Invalid request for transaction history: %s', form.errors.as_data())
                 return None
@@ -773,7 +792,7 @@ def process_login(request):
             if is_vendor:
                 user_entity = user_tradewave.vendors.first()
                 request.session['entity_vendor'] = user_entity.name
-                request.session['entity_vendor_id'] = user_entity.id
+                request.session['entity_id'] = user_entity.id
                 logger.info('vendor entity name: %s', user_entity.name)
 
             # session-wide variable user marketplace entity
@@ -781,7 +800,7 @@ def process_login(request):
             if is_marketplace:
                 user_entity = user_tradewave.marketplaces.first()
                 request.session['entity_marketplace'] = user_entity.name
-                request.session['entity_marketplace_id'] = user_entity.id
+                request.session['entity_id'] = user_entity.id
                 logger.info('marketplace entity name: %s', user_entity.name)
 
             # generate the list of vendor / entity entity credits
@@ -1057,7 +1076,13 @@ def create_user(request):
                 user_account.save()
                 logger.info('Account created for %s', entity_personal.name)
 
-            return redirect('tradewave:marketplace-issue-login')
+                # TODO: this in essence is duplicating in part process_cust_login,
+                # so consider using that here, even though it requires the credentials
+                # to present in the request.
+                request.session['cust_account_personal_id'] = user_account.id
+                request.session['entity_customer'] = user.username
+                request.session['entity_customer_id'] = user.id
+                return redirect('tradewave:marketplace-issue-pick-credit')
         else:
             logger.error(
                 'Invalid create user request: %s',
