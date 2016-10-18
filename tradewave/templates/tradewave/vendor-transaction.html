@@ -2,7 +2,7 @@
 
 {% block title %}
   {{ entity_vendor }}
-  <h4 class="half-margin-top">Select product</h4>
+  <h5 class="half-margin-top">Select product</h5>
 {% endblock %}
 
 {% block content %}
@@ -10,10 +10,10 @@
     <!-- Credit Form -->
     <form method="post" action="{% url 'tradewave:process_vendor_transaction' %}">
       {% csrf_token %}
-      <div class="row">
+      <div id="products" class="row">
         <div class="small-6 columns">
           <!--input type="text" class="text" name="product_category" id="product-category" placeholder="Produce" /-->
-          <select name="product_category_id" class="text">
+          <select id="product-category-1" name="product_category_id" class="text">
             {% for product_category in product_categories %}
               <option value="{{ product_category.id }}"> {{ product_category.name }} </option>
             {% endfor %}
@@ -21,8 +21,12 @@
         </div>
 
         <div class="small-6 columns">
-          <input type="number" step="0.01" min="0.01" class="text" name="product_amount" id="product-amount" placeholder="$$$" />
+          <input type="number" step="0.01" min="0.01" class="text" name="product_amount-1" id="product-amount-1" placeholder="$$$" />
         </div>
+      </div>
+      
+      <div class="center row">
+        <a id="add-product">Add product category</a>
       </div>
 
         <!--div class="row half">
@@ -45,5 +49,17 @@
     <!-- /Credit Form -->
 
   </section>
+  
+  <script type="text/javascript">
+  $(document).ready(function(){
+    var num = 1;
+    $('#add-product').click(function(){
+      num++;
+      $('#products').append('<div class="small-6 columns"><select id="product-category-'+num+'" name="product_category_id" class="text">{% for product_category in product_categories %}<option value="{{ product_category.id }}"> {{ product_category.name }} </option>{% endfor %}</select></div><div class="small-6 columns"><input type="number" step="0.01" min="0.01" class="text" name="product_amount-'+num+'" id="product-amount-'+num+'" placeholder="$$$" /></div>');
+      return false;
+    });  
+  }); 
+  
+  </script>
 
 {% endblock %}

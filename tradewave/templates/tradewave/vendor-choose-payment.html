@@ -13,7 +13,6 @@
       <!-- Credit Form  This should Auto-populate with recommended credits-->
       <form method="post" action="{% url 'tradewave:process_vendor_payment' %}">
         {% csrf_token %}
-        <div>
           <div class="row">
             <div class="">
               {% if cust_credits and cust_credits|firstamount >= tr_amount and tr_amount > 0 %}
@@ -22,14 +21,12 @@
                 <p class=""> The amount can not be paid using a single credit and has to be split across multiple credits </p>
               {% endif %}
             </div>
+          </div>
 
             {% for credit_uuid, credit_data in cust_credits.iteritems %}
               {% if forloop.first or tr_amount > cust_credits|firstamount %}
-                <div class="3u">
-                  </br>
-                </div>
-
-                <div class="3u">
+              <div class="row">
+                <div class="left-input small-6 medium-5 medium-offset-1 columns">
                   <select name="credits" readonly>
                     <option
                       type="text"
@@ -44,7 +41,7 @@
                 </div>
 
                 <!-- this is a huge mess, the whole thing needs rewriting -->
-                <div class="3u">
+                <div class="right-input small-6 medium-5 columns end">
                   <input
                     type="number"
                     min="0.01"
@@ -69,30 +66,26 @@
                       {% endif %}
                     {% endspaceless %}">
                 </div>
-
-                <div class="12u">
-                  <br>
-                </div>
+              </div>
 
               {% endif %}
 
             {% empty %}
-              <div class="12u">
+              <div class="row">
                 <p class="style3">
                   <strong> User has no credits in to buy this product </strong>
                 </p>
               </div>
             {% endfor %}
 
-            <div class="12u">
+            <div class="row">
               <p class="style3">
                 for {{ product_category }}
               </p>
             </div>
-          </div>
 
         {% if tr_amount > cust_total %}
-          <div class="12u">
+          <div class="row">
               <p class="style1"> <strong>The remainder of ${{ tr_amount|subtract:cust_total|floatformat:2 }} has to be paid in cash </strong></p>
           </div>
         {% endif %}
