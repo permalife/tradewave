@@ -260,3 +260,15 @@ a.list-group-item {
   background-color: #ffffff;
   margin-top: 5rem;
 }
+
+#other-product {
+  display: inline-block;
+  width: 150px;
+  margin-left: 10px;
+}
+
+#marketplace-code {
+  display: inline-block;
+  width: 150px;
+  margin-left: 10px;
+}
