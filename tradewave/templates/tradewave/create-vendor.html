@@ -1,7 +1,7 @@
 {% extends "tradewave/base.html" %}
 
 {% block title %}
-  New vendor
+  Create vendor
 {% endblock %}
 
 {% block content %}
@@ -28,6 +28,11 @@
     </div>
     
     <div class="row">
+      <p>Marketplace code</p>
+      <input id="marketplace-code" type="text"/>
+    </div>    
+    
+    <div class="row">
       <p>Product categories</p>
       {% for product_category in product_categories %}
         <input type="checkbox" id="{{ product_category.id }}" value="{{ product_category.id }}"/>
@@ -38,10 +43,7 @@
       <input id="other-product" type="text"/>
     </div>
       
-    <div class="row">
-      <span>Marketplace code:</span>
-      <input id="marketplace-code" type="text"/>
-    </div>           
+           
                   
                 <!--  <p>Address</p>
                   
@@ -53,7 +55,8 @@
                   
                     <input type="text" class="text" name="zip" id="vendor-zip" placeholder="Zip Code" />-->
                   
-                    <input type="submit" class="button button-style3 button-big" value="Create" />
+                    <input type="submit" class="button" value="Create" />
+                    <a href=""><button class="button secondary">Use existing vendor</button></a>
                   
   </form>
   <!-- /User Form -->

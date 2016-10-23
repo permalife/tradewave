@@ -50,10 +50,11 @@
           <strong>${{ total|floatformat:2 }}</strong>
         </div>
       </div>
-      {% else %}
-        <p class="">{{ entity_vendor }} has no credits in their account.</p>
-      {% endif %}
     </div>
+    {% else %}
+        <p class="">{{ entity_vendor }} has no credits in their account.</p>
+    {% endif %}
+    
 
     <div class="row">
       <a href="{% url "tradewave:vendor-transaction" %}" class="button">New Transaction</a>

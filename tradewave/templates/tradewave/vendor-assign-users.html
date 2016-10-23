@@ -1,0 +1,32 @@
+{% extends "tradewave/base.html" %}
+
+{% block title %}
+  Assign users to {{ entity_vendor }}
+{% endblock %}
+
+{% block content %}
+            
+  <!-- User Form -->
+  <form method="post" action="#">
+    <div id="assign-emails" class="row">          
+      <p>Add emails of users who can access the {{ entity_vendor }} account:</p>
+      <div class="small-12 columns">
+        <input type="email" name="user-email-1" id="user-email-1" placeholder="User Email"/>
+      </div>
+    </div>
+    <div class="row">
+      <a id="add-user-email">Add user email</a>
+    </div>
+    
+  
+  </form>
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var num = 1;
+      $('#add-user-email').click(function(){
+        num++;
+        $('#assign-emails').append('<div class="small-12 columns"><input type="email" name="user-email-'+num+'" id="user-email-'+num+'" placeholder="User Email"/></div>');
+      });
+    });
+  </script>

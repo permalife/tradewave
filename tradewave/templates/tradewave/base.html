@@ -23,6 +23,7 @@
     <script src="{% static "js/jquery.popupoverlay.js" %}"></script>
     <script src="{% static "js/slidebars.min.js" %}"></script>
     
+    
     <link rel="stylesheet" type="text/css" href="{% static "css/foundation.css" %}"/>
     <link rel="stylesheet" type="text/css" href="{% static "css/app.css" %}"/>
     <link rel="stylesheet" type="text/css" href="{% static "css/font-awesome.min.css" %}"/>
@@ -47,6 +48,12 @@
         {% if status_msg %}
           <div id="status-msg" class="center row full-width">
             {{ status_msg }}
+          </div>
+        {% endif %}
+        
+        {% if featured_venue %}
+          <div class="row add-margin-top">
+            <p>Location: <a href="">{{ featured_venue }}</a></p>
           </div>
         {% endif %}
         
