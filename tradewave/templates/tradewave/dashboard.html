@@ -9,7 +9,6 @@
   <script src="https://d3js.org/d3.v3.min.js"></script>
   <script src="{% static "js/jquery-ui.min.js" %}"></script>
   
-  <link rel="stylesheet" type="text/css" href="{% static "css/jquery-ui.css" %}"/>
   <style>
 
   .chart rect {
@@ -62,21 +61,23 @@
             <label for="market_start_date">
               Start date:
             </label>
-            <input name="market_start_date" class="text" id="market_start_date"/>
+            <input type="text" name="market_start_date" id="market_start_date"/>
           </div>
           
           <div class="relative small-2 columns">
-            <p class="bottom-align">to</p>
+            <p class="two-margin-top">to</p>
           </div>
           
-          <div class="left small-5 columns">
+          <div class="right small-5 columns">
             <label for="market_end_date">
               End date:
             </label>
+            <input type="text" name="market_end_date" id="market_end_date"/>
           </div>
         </div>
-
-          <div class="3u">
+        
+        <div class="row">
+          <div class="left small-6 small-centered columns">
             <label for="credit_type">
               Credit type:
             </label>
@@ -91,15 +92,14 @@
               {% endfor %}
             </select>
           </div>
+        </div>
 
           
 
 
-        <div class="row half">
-          <div class="12u">
-            <input type="submit" class="button button-style1 button-big" id="button_qr_login" value="Export Market Data"/>
-            <!--a href="{% url 'tradewave:export_data' %}" class="button button-style1 button-big"> Export Market Data  </a-->
-          </div>
+        <div class="row half-margin-top one-margin-bottom">
+          <input type="submit" class="button" id="button_qr_login" value="Export Market Data"/>
+          <!--a href="{% url 'tradewave:export_data' %}" class="button button-style1 button-big"> Export Market Data  </a-->
         </div>
       </form>
     {% endif %}
@@ -114,7 +114,7 @@
     <svg class="chart"></svg>
     
     <script type="text/javascript">
-      $('#market_start_date').datepicker();
+      $('#market_start_date, #market_end_date').datepicker();
     </script>
     
     <script>
