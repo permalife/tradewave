@@ -1,11 +1,15 @@
 {% extends "tradewave/base.html" %}
 
+{% load staticfiles %}
+
 {% block title %} {{ entity_name }} {% endblock %}
 
 {% block content %}
 
   <script src="https://d3js.org/d3.v3.min.js"></script>
-
+  <script src="{% static "js/jquery-ui.min.js" %}"></script>
+  
+  <link rel="stylesheet" type="text/css" href="{% static "css/jquery-ui.css" %}"/>
   <style>
 
   .chart rect {
@@ -24,12 +28,8 @@
     {% if entity_marketplace %}
       <form method="post" action="{% url 'tradewave:export_data' %}">
         {% csrf_token %}
-        <div class="row half">
-          <div class="3u">
-            <br>
-          </div>
-
-          <div class="3u">
+        <div class="row">
+          <div class="left input-left small-6 columns">
             <label for="market_venue">
               Market venue:
             </label>
@@ -39,17 +39,42 @@
               {% endfor %}
             </select>
           </div>
-
-          <div class="3u">
-            <label for="market_date">
-              Market date:
+          
+          <div class="left input-right small-6 columns">
+            <label for="vendor">
+              Vendor:
             </label>
-            <select name="market_date" class="text" id="market_date">
-              {% for market_date in market_dates %}
-                  <option class="text" value="{{market_date}}"> {{market_date}} </option>
+            <select name="vendor" class="text">
+              {% for vendor in vendors %}
+                  <option class="text" value="{{vendor}}"
+                    {% if vendor == "All" %}
+                      selected="selected"
+                    {% endif %}>
+                      {{vendor}}
+                  </option>
               {% endfor %}
             </select>
           </div>
+        </div>
+        
+        <div class="row">
+          <div class="left small-5 columns">
+            <label for="market_start_date">
+              Start date:
+            </label>
+            <input name="market_start_date" class="text" id="market_start_date"/>
+          </div>
+          
+          <div class="relative small-2 columns">
+            <p class="bottom-align">to</p>
+          </div>
+          
+          <div class="left small-5 columns">
+            <label for="market_end_date">
+              End date:
+            </label>
+          </div>
+        </div>
 
           <div class="3u">
             <label for="credit_type">
@@ -67,22 +92,8 @@
             </select>
           </div>
 
-          <div class="3u">
-            <label for="vendor">
-              Credit type:
-            </label>
-            <select name="vendor" class="text">
-              {% for vendor in vendors %}
-                  <option class="text" value="{{vendor}}"
-                    {% if vendor == "All" %}
-                      selected="selected"
-                    {% endif %}>
-                      {{vendor}}
-                  </option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
+          
+
 
         <div class="row half">
           <div class="12u">
@@ -101,7 +112,11 @@
       </div>
     </div>
     <svg class="chart"></svg>
-
+    
+    <script type="text/javascript">
+      $('#market_start_date').datepicker();
+    </script>
+    
     <script>
       // TODO: Make this a reactive select element to allow the user
       // to choose whether to display the dashboard for their personal

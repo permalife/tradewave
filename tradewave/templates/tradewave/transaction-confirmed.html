@@ -27,16 +27,20 @@
           </div>
         </div>
       {% endwith %}
+      
+      <div class="row">
+        <button class="button">Email receipt</button>
+      </div>
 
       {% if tr_type == 'marketplace' %}
-        <div class="row-half">
-          <div class="12u">
+        <div class="row">
+          <div class="">
             <a href="{% url 'tradewave:marketplace-issue-pick-credit' %}" class="button secondary">Issue more to this user</a>
           </div>
         </div>
 
-        <div class="row-half">
-          <div class="12u">
+        <div class="row">
+          <div class="">
             <a href="{% url 'tradewave:marketplace-issue' %}" class="button secondary">Issue credits to another user</a>
           </div>
         </div>

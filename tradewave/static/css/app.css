@@ -151,6 +151,15 @@ h6 {
   display: inline-block;
 }
 
+.relative {
+  position: relative;
+}
+
+.bottom-align {
+  position: absolute;
+  bottom: 0;
+}
+
 /* Header */
 
 #header {
