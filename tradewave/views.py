@@ -252,9 +252,16 @@ class CreateUserView(ListView):
     template_name = 'tradewave/create-user.html'
 
 
-class CreateVendorView(ListView):
-    model = User
+class CreateVendorView(SessionContextView, TemplateView):
     template_name = 'tradewave/create-vendor.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(CreateVendorView, self).get_context_data(**kwargs)
+        context['product_categories'] = [
+            item.name for item in Product.objects.all()
+        ]
+
+        return context
 
 class DashboardView(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/dashboard.html'
