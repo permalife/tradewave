@@ -56,6 +56,8 @@ class LoginUserForm(forms.Form):
 class MarketVenueDateForm(forms.Form):
     market_venue = forms.CharField()
     market_date = forms.CharField()
+    credit_type = forms.CharField()
+    vendor = forms.CharField()
 
     def clean_market_date(self):
         data = self.cleaned_data['market_date']
