@@ -8,7 +8,7 @@
 {% block content %}
 
   <!-- Login Form -->
-  <form method="post" action="{% url 'tradewave:redeem_credits'%}">
+  <form id="redeem-form" method="post" action="{% url 'tradewave:redeem_credits'%}">
     {% csrf_token %}
     <div class="row">
       <div class="medium-10 medium-centered columns">
@@ -17,12 +17,12 @@
             <div class="left small-8 columns">
               <strong>Vendor</strong>
             </div>
-            
+
             <div class="right small-4 columns">
               <strong>Total</strong>
             </div>
           </div>
-          
+
           <div class="row">
             <hr class="half-margin-top half-margin-bottom half-margin-left half-margin-right">
           </div>
@@ -32,19 +32,19 @@
                 <div class="small-6 columns left">
                   <input type="checkbox" class="no-margin-bottom half-margin-right" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}
                 </div>
-                
+
                 <div class="small-6 columns right">
                   {{vendor_data.amount_total}}
                 </div>
               </div>
-              
-              
+
+
             {% endif %}
           {% endfor %}
         </div>
       </div>
     </div>
-    
+
     <div class="row">
       <div class="column">
         <button class="redeem-confirm_open button">Redeem</button>
@@ -52,19 +52,19 @@
         <a href="{% url 'tradewave:marketplace-home'%}" class="button secondary">Cancel</a>
       </div>
     </div>
-    
+
     <!-- /Login Form -->
-  
+
     <div id="redeem-confirm" class="modal small-12 medium-9 large-7 small-centered columns" style="display: none">
       <div class="row center">
         <h3>Confirm credit redemption</h3>
         <p class="lead">Are you sure you want to redeem credits for these vendors?</p>
-        <input type="submit" class="button" value="Redeem" />
+        <input id="redeem-submit" type="submit" class="button" value="Redeem" />
         <button class="redeem-confirm_close button secondary">Cancel</button>
       </div>
     </div>
   </form>
-  
+
   <script>
     $(document).ready(function() {
       // Initialize the plugin
@@ -75,7 +75,10 @@
           vertical: 'top',
           transition: 'all 0.75s',
           scrolllock: true,
-        }); 
+      });
+      $('#redeem-submit').click(function () {
+        document.getElementById("redeem-form").submit();
+      });
     });
   </script>
 {% endblock %}

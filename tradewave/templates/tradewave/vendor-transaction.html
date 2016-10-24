@@ -24,9 +24,9 @@
           <input type="number" step="0.01" min="0.01" class="text" name="product_amount-1" id="product-amount-1" placeholder="$$$" />
         </div>
       </div>
-      
+
       <div class="center row">
-        <a id="add-product">Add product category</a>
+        <a id="add-product">Add item</a>
       </div>
 
         <!--div class="row half">
@@ -49,7 +49,7 @@
     <!-- /Credit Form -->
 
   </section>
-  
+
   <script type="text/javascript">
   $(document).ready(function(){
     var num = 1;
@@ -57,9 +57,9 @@
       num++;
       $('#products').append('<div class="small-6 columns"><select id="product-category-'+num+'" name="product_category_id" class="text">{% for product_category in product_categories %}<option value="{{ product_category.id }}"> {{ product_category.name }} </option>{% endfor %}</select></div><div class="small-6 columns"><input type="number" step="0.01" min="0.01" class="text" name="product_amount-'+num+'" id="product-amount-'+num+'" placeholder="$$$" /></div>');
       return false;
-    });  
-  }); 
-  
+    });
+  });
+
   </script>
 
 {% endblock %}
