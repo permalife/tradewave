@@ -5,57 +5,57 @@
 {% endblock %}
 
 {% block content %}
-            
+
   <!-- User Form -->
   <form method="post" action="#">
-    <div class="row">          
+    <div class="row">
       <p>Name and Email</p>
-      <div class="input-left small-6 columns">
-        <input type="text" class="text" name="name" id="vendor-name" placeholder="Vendor Name"/>
-      </div>
-      <div class="input-right small-6 columns">
-        <input type="email" name="vendor-email" id="vendor-email" placeholder="Vendor Email"/>
-      </div>
-      
+      {%if not logged_in %}
+        <div class="input-left small-6 columns">
+          <input type="text" class="text" name="name" id="vendor-name" placeholder="Vendor Name"/>
+        </div>
+        <div class="input-right small-6 columns">
+          <input type="email" name="vendor-email" id="vendor-email" placeholder="Vendor Email"/>
+        </div>
+      {%endif%}
+
       <p>Password</p>
       <div class="input-left small-6 columns">
         <input type="password" placeholder="Password"/>
       </div>
-      
+
       <div class="input-right small-6 columns">
         <input type="password" placeholder="Verify password"/>
       </div>
     </div>
-    
+
     <div class="row">
       <p>Product categories</p>
       {% for product_category in product_categories %}
-        <input type="checkbox" id="{{ product_category.id }}" value="{{ product_category.id }}"/>
-          <label class="" for="{{ product_category.id }}">{{ product_category }}</label>
-          {{ product_category.name }}
+        <input type="checkbox" id="{{ product_category }}" value="{{ product_category }}"/>
+        <label class="" for="{{ product_category }}">{{ product_category }}</label>
       {% endfor %}
-      <span>Other: </span>
-      <input id="other-product" type="text"/>
+      </br>
     </div>
-      
+
     <div class="row">
       <span>Marketplace code:</span>
       <input id="marketplace-code" type="text"/>
-    </div>           
-                  
+    </div>
+
                 <!--  <p>Address</p>
-                  
+
                     <input type="text" class="text" name="address" id="vendor-address" placeholder="Address" />
-                  
+
                     <input type="text" class="text" name="city" id="vendor-city" placeholder="City" />
-                  
+
                     <input type="text" class="text" name="state" id="vendor-region" placeholder="State" />
-                  
+
                     <input type="text" class="text" name="zip" id="vendor-zip" placeholder="Zip Code" />-->
-                  
+
                     <input type="submit" class="button button-style3 button-big" value="Create" />
-                  
+
   </form>
   <!-- /User Form -->
-                            
+
 {% endblock %}
