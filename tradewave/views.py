@@ -538,7 +538,12 @@ class VendorTransaction(LoginRequiredMixin, SessionContextView, TemplateView):
         context = super(VendorTransaction, self).get_context_data(**kwargs)
         context['product_categories'] = Product.objects.all()
         return context
+        
+class VendorAssign(LoginRequiredMixin, SessionContextView, TemplateView):
+    template_name = 'tradewave/vendor-assign-users.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(VendorAssign, self).get_context_data(**kwargs)
 
 class UserHomeView(LoginRequiredMixin, SessionContextView, TemplateView):
     # url args: user_id (django user id)

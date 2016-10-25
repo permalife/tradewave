@@ -48,6 +48,7 @@ urlpatterns = [
     url(r'^vendor-choose-payment/$', views.VendorChoosePayment.as_view(), name='vendor-choose-payment'),
     url(r'^vendor-home/$', views.VendorHome.as_view(), name='vendor-home'),
     url(r'^vendor-transaction/$', views.VendorTransaction.as_view(), name='vendor-transaction'),
+    url(r'^vendor-assign-users/$', views.VendorAssign.as_view(), name='vendor-assign-users'),
     url(r'^user-home/$', views.UserHomeView.as_view(), name='user-home'),
     url(r'^user-home/(?P<status_msg>.*)/$', views.UserHomeView.as_view(), name='user-home-status'),
 
