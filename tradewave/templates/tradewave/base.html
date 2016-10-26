@@ -51,11 +51,13 @@
           </div>
         {% endif %}
         
-        {% if featured_venue %}
-          <div class="row add-margin-top">
-            <p>Location: <a href="">{{ featured_venue }}</a></p>
+        <div class="row one-margin-top">
+          <div class="small-11 medium-9 small-centered columns">
+            {% if selected_venue %}
+              <p>Location: <a href="">{{ selected_venue }}</a></p>
+            {% endif %}
           </div>
-        {% endif %}
+        </div>
         
         <div class="row title-row">
           <div class="small-11 medium-8 small-centered columns">
