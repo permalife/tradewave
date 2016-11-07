@@ -15,7 +15,7 @@ from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Marketplace, Affiliation, TransactionLog, Product
 
 from tradewave.serializers import AccountSerializer, TransactionLogSerializer
-from tradewave.forms import AssignCreditToUserForm, CreateUserForm, MarketVenueDateForm
+from tradewave.forms import AssignCreditToUserForm, CreateUserForm, DataExportForm
 from tradewave.transaction import TradewaveTransaction
 from tradewave.exceptions import CustomerInvalidCredentialsException
 
@@ -457,10 +457,10 @@ class VendorChoosePayment(LoginRequiredMixin, SessionContextView, TemplateView):
                 'amount': float(entry.amount)
             })
             for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
-            if can_buy(entry.credit)
+            #if can_buy(entry.credit)
         ])
 
-        logger.info(cust_credits)
+        logger.info('Customer credits: %s', cust_credits)
         context['cust_credits'] = cust_credits
         context['tr_amount'] = float(context['tr_amount'])
         context['product_category'] = Product.objects.get(
@@ -538,7 +538,7 @@ class VendorTransaction(LoginRequiredMixin, SessionContextView, TemplateView):
         context = super(VendorTransaction, self).get_context_data(**kwargs)
         context['product_categories'] = Product.objects.all()
         return context
-        
+
 class VendorAssign(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/vendor-assign-users.html'
 
@@ -599,21 +599,23 @@ def export_data(request):
 
     class TransactionLogResource(resources.ModelResource):
         def get_queryset(self):
-            form = MarketVenueDateForm(request.POST)
+            form = DataExportForm(request.POST)
 
             if form.is_valid():
-                market_date = form.cleaned_data['market_date']
+                market_start_date = form.cleaned_data['market_start_date']
+                market_end_date = form.cleaned_data['market_end_date']
                 credit_type = form.cleaned_data['credit_type']
                 vendor = form.cleaned_data['vendor']
                 logger.info(
-                    'Valid market data request for %s',
-                    market_date
+                    'Valid market data request between %s and %s',
+                    market_start_date,
+                    market_end_date
                 )
 
                 transactions = TransactionLog.objects.filter(
                     venue__name=form.cleaned_data['market_venue'],
-                    date_transacted__gte=market_date,
-                    date_transacted__lt=market_date + timedelta(days=1)
+                    date_transacted__gte=market_start_date,
+                    date_transacted__lte=market_end_date
                 )
 
                 if credit_type != 'All':
@@ -909,10 +911,22 @@ def process_vendor_transaction(request):
         # TODO'S:
         #   use django forms
         #   track product categories
-        product_category_id = request.POST.get('product_category_id')
-        product_amount = float(request.POST.get('product_amount'))
-        request.session['product_category_id'] = product_category_id
-        request.session['tr_amount'] = product_amount
+        logger.info('product categories: %s', request.POST.getlist('select_product_categories'))
+        logger.info('product amounts: %s', request.POST.getlist('input_product_amounts'))
+
+        product_categories = map(
+            int,
+            request.POST.getlist('select_product_categories')
+        )
+        product_amounts = map(
+            float,
+            request.POST.getlist('input_product_amounts')
+        )
+
+        transaction_data = zip(product_categories, product_amounts)
+
+        request.session['transaction_data'] = transaction_data
+        request.session['tr_amount'] = sum(product_amounts)
 
         return redirect('tradewave:vendor-cust-login', status_msg='')
 
@@ -1036,7 +1050,7 @@ def redeem_credits(request):
             'tradewave:transaction-confirmed',
             tr_amount='%.2f' % amount_redeemed,
             amount='%.2f' % amount_redeemed,
-            sender_name='selected vendors',
+            sender_name='selected vendors' if len(selected_vendors) > 1 else selected_vendors[0],
             recipient_name=request.session['entity_marketplace'],
             tr_type='marketplace'
         )
