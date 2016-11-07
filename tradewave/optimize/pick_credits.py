@@ -2,7 +2,7 @@ from scipy.optimize import minimize
 
 # number of produce items user is buying
 n = 2
-# price of produce items
+# prices of produce items
 A = [5, 9]
 
 # number of credit types
@@ -13,6 +13,7 @@ C = [4, 5, 6]
 print 'Buying items: ' + str(A)
 print 'Wallet contents: ' + str(C)
 
+# main cost function
 def f(x):
     f = 0
     for i in xrange(n):
@@ -22,13 +23,18 @@ def f(x):
         f += (A[i] - s)
     return f
 
+# define the constraints
 cons = []
+
+# pay requested amount (or less) for each item
 for i in xrange(n):
     cons.append({'type': 'ineq', 'fun': lambda x, i=i: A[i] - sum(x[i*m : (i+1)*m])})
 
+# can not exceed the amount of credit held for each credit type
 for j in xrange(m):
     cons.append({'type': 'ineq', 'fun': lambda x, j=j: C[j] - sum(x[j : n*m : m])})
 
+# define bounds and the initial guess
 bnds = []
 x0 = []
 for i in xrange(n):
@@ -36,6 +42,7 @@ for i in xrange(n):
         bnds.append((0, C[j]))
         x0.append(0)
 
+# run the algorithm
 res = minimize(f, x0, method='SLSQP', bounds=bnds, constraints=cons)
 print res
 
