@@ -13,18 +13,7 @@
       <!-- Credit Form  This should Auto-populate with recommended credits-->
       <form method="post" action="{% url 'tradewave:process_vendor_payment' %}">
         {% csrf_token %}
-          <div class="row">
-            <div class="">
-              {% if cust_credits and cust_credits|firstamount >= tr_amount and tr_amount > 0 %}
-                <p class=""> <strong>{{ cust_name }}</strong> can pay in <strong>{{ cust_credits|firstname }}</strong> for this transaction </p>
-              {% elif cust_credits|length > 1 %}
-                <p class=""> The amount can not be paid using a single credit and has to be split across multiple credits </p>
-              {% endif %}
-            </div>
-          </div>
-
             {% for credit_uuid, credit_data in cust_credits.iteritems %}
-              {% if forloop.first or tr_amount > cust_credits|firstamount %}
               <div class="row">
                 <div class="left-input small-6 medium-5 medium-offset-1 columns">
                   <select name="credits" readonly>
@@ -37,10 +26,8 @@
                       {{credit_data.name}}
                     </option>
                   </select>
-
                 </div>
 
-                <!-- this is a huge mess, the whole thing needs rewriting -->
                 <div class="right-input small-6 medium-5 columns end">
                   <input
                     type="number"
@@ -50,39 +37,18 @@
                     class="text"
                     name="amounts"
                     id="credit-{{ credit_uuid }}-amount"
-                    value="{% spaceless %}
-                      {% if forloop.first %}
-                        {% if tr_amount > credit_data.amount %}
-                          {{ credit_data.amount|floatformat:2 }}
-                        {% else %}
-                          {{ tr_amount|floatformat:2 }}
-                        {% endif %}
-                      {% else %}
-                        {% if tr_amount|subtractfirst:cust_credits > amount %}
-                          {{ credit_data.amount|floatformat:2 }}
-                        {% else %}
-                          {{ tr_amount|subtractfirst:cust_credits|floatformat:2 }}
-                        {% endif %}
-                      {% endif %}
-                    {% endspaceless %}">
+                    value="{{credit_data.amount|floatformat:2}}"
+                    readonly>
                 </div>
               </div>
 
-              {% endif %}
-
-            {% empty %}
-              <div class="row">
-                <p class="style3">
-                  <strong> User has no credits in to buy this product </strong>
-                </p>
-              </div>
-            {% endfor %}
-
+          {% empty %}
             <div class="row">
               <p class="style3">
-                for {{ product_category }}
+                <strong> User has no credits to buy this product </strong>
               </p>
             </div>
+          {% endfor %}
 
         {% if tr_amount > cust_total %}
           <div class="row">
@@ -90,27 +56,12 @@
           </div>
         {% endif %}
 
-        <!--div class="row half">
-          <div class="12u">
-          <These controls should allow you to add additional types of credits>
-            <ul class="actions">
-              <li><a href="#" class="button button-style3 button">+</a></li>
-              <li><a href="#" class="button button-style3 button">-</a></li>
-            </ul>
-          </div>
-        </div-->
-
         <div class="row one-margin-top">
         <!-- Be sure to verify that the correct amount has been sent -->
           <input type="submit" class="button" value="Continue" />
           <input type="reset" class="button secondary" value="Reset" />
         </div>
 
-        <div class="row">
-          <div class="">
-            <input type="hidden" class="text" name="tr_amount" id="product-amount" value="{{ tr_amount }}" readonly>
-          </div>
-        </div>
       </div>
     </form>
     <!-- /Credit Form -->
