@@ -550,8 +550,13 @@ class UserHomeView(LoginRequiredMixin, SessionContextView, TemplateView):
 def compute_credit_allocations(request):
     transaction_data = request.session['transaction_data']
     cust_account_personal_id = request.session['cust_account_personal_id']
+    vendor_id = request.session['entity_id']
 
-    allocations = CreditAllocations(transaction_data, cust_account_personal_id)
+    allocations = CreditAllocations(
+        transaction_data,
+        cust_account_personal_id,
+        vendor_id
+    )
     credit_data = allocations.compute()
     logger.info('Credit allocations: %s', credit_data)
 
