@@ -844,7 +844,7 @@ def process_vendor_payment(request):
         amounts = map(Decimal, request.POST.getlist('amounts'))
         logger.info('Credits: %s', request.POST.getlist('credits'))
         logger.info('Amounts: %s', request.POST.getlist('amounts'))
-        tr_amount = float(request.session('tr_amount'))
+        tr_amount = float(request.session['tr_amount'])
 
         sender_account_id = request.session['cust_account_personal_id']
         recipient_account_id = request.session['account_entity_id']
