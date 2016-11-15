@@ -151,6 +151,10 @@ h6 {
   display: inline-block;
 }
 
+.hidden {
+  display: none;
+}
+
 /* Header */
 
 #header {
@@ -203,7 +207,7 @@ h6 {
 }
 
 #footer {
-  margin-top: 7rem;
+  margin-top: 11rem;
   padding: 1rem;
   background: #387a36;
   color: #ffffff;
