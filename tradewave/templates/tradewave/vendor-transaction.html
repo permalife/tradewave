@@ -10,23 +10,27 @@
     <!-- Credit Form -->
     <form method="post" action="{% url 'tradewave:process_vendor_transaction' %}">
       {% csrf_token %}
-      <div id="products" class="row">
-        <div class="small-6 columns">
-          <!--input type="text" class="text" name="product_category" id="product-category" placeholder="Produce" /-->
-          <select id="product-categories-1" name="select_product_categories" class="text">
-            {% for product_category in product_categories %}
-              <option value="{{ product_category.id }}"> {{ product_category.name }} </option>
-            {% endfor %}
-          </select>
-        </div>
 
-        <div class="small-6 columns">
-          <input type="number" step="0.01" min="0.01" class="text" name="input_product_amounts" id="product-amount-1" placeholder="$$$" />
+      <div id="products">
+        <div id="product-row-1" class="row">
+          <div class="small-6 columns">
+            <!--input type="text" class="text" name="product_category" id="product-category" placeholder="Produce" /-->
+            <select id="product-categories-1" name="select_product_categories" class="text">
+              {% for product_category in product_categories %}
+                <option value="{{ product_category.id }}"> {{ product_category.name }} </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="small-6 columns">
+            <input type="number" step="0.01" min="0.01" class="text" name="input_product_amounts" id="product-amount-1" placeholder="$$$" value='0'/>
+          </div>
         </div>
       </div>
 
       <div class="center row">
         <a id="add-product">Add item</a>
+        <a id="remove-product" class="one-margin-left hidden">Remove item</a>
       </div>
 
         <!--div class="row half">
@@ -52,15 +56,42 @@
 
   <script type="text/javascript">
   $(document).ready(function(){
+
     var num = 1;
+
     $('#add-product').click(function(){
-      num++;
-      $('#products').append(
-        '<div class="small-6 columns"><select id="product-category-'+num+'" name="select_product_categories" class="text">{% for product_category in product_categories %}<option value="{{ product_category.id }}"> {{ product_category.name }} </option>{% endfor %}</select></div><div class="small-6 columns"><input type="number" step="0.01" min="0.01" class="text" name="input_product_amounts" id="product-amount-'+num+'" placeholder="$$$" /></div>'
-      );
-      return false;
+      //var selVal = $('#product-category-'+num+'').val();
+      var clone = $('#product-row-'+num+'').clone();
+
+      $('#products').append(clone);
+
+      num ++;
+
+      clone.attr("id", 'product-row-'+num+'');
+      clone.find('select').attr("id", 'product-category-'+num+'').attr("name", 'select_product_categories');
+      clone.find('input').attr("id", 'product-amount-'+num+'').attr("name", 'input_product_amounts');
+      $('#remove-product').css('display', 'inline-block');
+
+      /*$('#product-category-'+num+'').find("option[value='"+selVal+"']").remove();*/
+
+      return;
+    });
+
+    $('#remove-product').click(function() {
+
+      $('#product-row-'+num+'').remove();
+      num --;
+
+      if (num == 1){
+        $('#remove-product').hide();
+      } else {
+        return
+      }
     });
   });
+
+      /*$('#products').append('<div class="small-6 columns"><select id="product-category-'+num+'" name="product_category_id" class="text">{% for product_category in product_categories %}<option value="{{ product_category.id }}"> {{ product_category.name }} </option>{% endfor %}</select></div><div class="small-6 columns"><input type="number" step="0.01" min="0.01" class="text" name="product_amount-'+num+'" id="product-amount-'+num+'" placeholder="$$$" /></div>');*/
+
 
   </script>
 
