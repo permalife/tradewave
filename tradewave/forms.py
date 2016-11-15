@@ -53,25 +53,30 @@ class LoginUserForm(forms.Form):
 
 
 # Market venue and date
-class MarketVenueDateForm(forms.Form):
+class DataExportForm(forms.Form):
     market_venue = forms.CharField()
-    market_date = forms.CharField()
+    market_start_date = forms.CharField()
+    market_end_date = forms.CharField()
     credit_type = forms.CharField()
     vendor = forms.CharField()
 
-    def clean_market_date(self):
-        data = self.cleaned_data['market_date']
+    def clean_market_start_date(self):
+        data = self.cleaned_data['market_start_date']
         try:
-            data = datetime.strptime(data, '%B %d, %Y')
-            return data
+            data = datetime.strptime(data, '%m/%d/%Y')
         except:
-            logger.warn('Tried formatting date, but failed once')
+            logger.warn('Failed formatting date, picking default')
+            data = datetime(2016,1,1)
 
+        return data
+
+    def clean_market_end_date(self):
+        data = self.cleaned_data['market_end_date']
         try:
-            data = datetime.strptime(data, '%b. %d, %Y')
-            return data
+            data = datetime.strptime(data, '%m/%d/%Y')
         except:
-            logger.warn('Tried formatting date, but failed twice')
+            logger.warn('Failed formatting date, picking default')
+            data = datetime(2020,1,1)
 
         return data
 
