@@ -9,12 +9,18 @@
     <p class="">
       <strong>${{ amount|floatformat:2 }}</strong> has been {% if tr_type == 'vendor' %} transferred {% else %} issued {% endif %} from
       <br> <strong>{{ sender_name }}</strong>
-      <br> to 
+      <br> to
       <br> <strong>{{ recipient_name }}</strong>
     </p>
 
     {% if tr_type == "vendor" %}
-      <p class="style1"> The remaining balance for this transaction is <strong>${{ tr_amount|subtract:amount|floatformat:2 }}</strong> </p>
+      {% with tr_amount|subtract:amount|floatformat:2 as tr_balance %}
+        {% if tr_balance > 0 %}
+          <p class="attention"> The remaining balance for this transaction is <strong>$ {{tr_balance}} </strong> </p>
+        {% else %}
+          <p> The remaining balance for this transaction is $0.00 </p>
+        {% endif %}
+      {% endwith %}
     {% endif %}
 
     <div>
@@ -28,15 +34,19 @@
         </div>
       {% endwith %}
 
+      <div class="row">
+        <button class="button">Email receipt</button>
+      </div>
+
       {% if tr_type == 'marketplace' %}
-        <div class="row-half">
-          <div class="12u">
+        <div class="row">
+          <div class="">
             <a href="{% url 'tradewave:marketplace-issue-pick-credit' %}" class="button secondary">Issue more to this user</a>
           </div>
         </div>
 
-        <div class="row-half">
-          <div class="12u">
+        <div class="row">
+          <div class="">
             <a href="{% url 'tradewave:marketplace-issue' %}" class="button secondary">Issue credits to another user</a>
           </div>
         </div>

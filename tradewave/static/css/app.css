@@ -58,7 +58,7 @@ h6 {
     font-size: 1.25rem; }
   h6 {
     font-size: 1rem; } }
-    
+
 /* Scandalous classes */
 
 .no-margin-bottom {
@@ -151,6 +151,10 @@ h6 {
   display: inline-block;
 }
 
+.hidden {
+  display: none;
+}
+
 /* Header */
 
 #header {
@@ -203,7 +207,7 @@ h6 {
 }
 
 #footer {
-  margin-top: 7rem;
+  margin-top: 11rem;
   padding: 1rem;
   background: #387a36;
   color: #ffffff;
@@ -234,7 +238,6 @@ a.list-group-item {
 }
 
 .title-row {
-  margin-top: 2rem;
   margin-bottom: 1rem;
   text-align: center;
 }
@@ -251,7 +254,7 @@ a.list-group-item {
   border: 1px solid #cacaca;
   border-radius: 4px;
   padding: 10px 15px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .modal {
@@ -259,4 +262,20 @@ a.list-group-item {
   border-radius: 4px;
   background-color: #ffffff;
   margin-top: 5rem;
+}
+
+#other-product {
+  display: inline-block;
+  width: 150px;
+  margin-left: 10px;
+}
+
+#marketplace-code {
+  display: inline-block;
+  width: 150px;
+  margin-left: 10px;
+}
+
+.attention {
+  color: #f93906;
 }

@@ -43,6 +43,7 @@ urlpatterns = [
     url(r'^settings-marketplace/$', views.SettingsMarketplace.as_view(), name='settings-marketplace'),
     url(r'^support/$', views.CustomerSupportView.as_view(), name='cust-support'),
     url(r'^transaction-confirmed/(?P<tr_amount>\d+\.\d{2})/(?P<amount>\d+\.\d{2})/(?P<sender_name>.*)/(?P<recipient_name>.*)/(?P<tr_type>\w+)$', views.TransactionConfirmedView.as_view(), name='transaction-confirmed'),
+    url(r'^vendor-assign-users/$', views.VendorAssign.as_view(), name='vendor-assign-users'),
     url(r'^vendor-initial/$', views.VendorInitial.as_view(), name='vendor-initial'),
     url(r'^vendor-cust-login/(?P<status_msg>.*)/$', views.VendorCustLogin.as_view(), name='vendor-cust-login'),
     url(r'^vendor-choose-payment/$', views.VendorChoosePayment.as_view(), name='vendor-choose-payment'),
