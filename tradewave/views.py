@@ -275,8 +275,15 @@ class DashboardView(LoginRequiredMixin, SessionContextView, TemplateView):
             )
         ]
 
+        # If user is associated to any other entity besides personal,
+        # show the dashboard for that entity. Otherwise, show for personal entity.
+        if 'entity_id' in context:
+            credits = Credit.objects.filter(issuer=context['entity_id'])
+        else:
+            credits = Credit.objects.filter(issuer=context['entity_personal_id'])
+
         context['credit_types'] = [
-            credit.name for credit in Credit.objects.filter(issuer=context['entity_id'])
+            credit.name for credit in credits
         ] + ['All']
 
         context['vendors'] = [
@@ -861,16 +868,24 @@ def process_vendor_payment(request):
         with transaction.atomic():
             for credit_uuid, amount in zip(credits, amounts):
                 tr_credit = Credit.objects.get(uuid=credit_uuid)
-                logger.info(
-                    "Transaction from %s to %s in credit %s (%s) requested",
-                    sender_name,
-                    recipient_name,
-                    tr_credit.name,
-                    tr_credit.uuid
-                )
 
-                tw_transaction.transact(tr_credit.uuid, amount)
+                # check if the amount is actually positive
+                if amount > 0:
+                    logger.info(
+                        "Transaction from %s to %s in credit %s (%s) requested",
+                        sender_name,
+                        recipient_name,
+                        tr_credit.name,
+                        tr_credit.uuid
+                    )
 
+                    tw_transaction.transact(tr_credit.uuid, amount)
+                else:
+                    logger.info(
+                        'Amount in credit %s (%s) is not a valid amount - no transaction executed',
+                        tr_credit.name,
+                        tr_credit.uuid
+                    )
             return redirect(
                 'tradewave:transaction-confirmed',
                 tr_amount='%.2f' % tr_amount,
