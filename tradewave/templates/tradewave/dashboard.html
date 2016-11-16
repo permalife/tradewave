@@ -8,7 +8,7 @@
 
   <script src="https://d3js.org/d3.v3.min.js"></script>
   <script src="{% static "js/jquery-ui.min.js" %}"></script>
-  
+
   <style>
 
   .chart rect {
@@ -38,7 +38,7 @@
               {% endfor %}
             </select>
           </div>
-          
+
           <div class="left input-right small-6 columns">
             <label for="vendor">
               Vendor:
@@ -55,7 +55,7 @@
             </select>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="left small-5 columns">
             <label for="market_start_date">
@@ -63,11 +63,11 @@
             </label>
             <input type="text" name="market_start_date" id="market_start_date"/>
           </div>
-          
+
           <div class="relative small-2 columns">
             <p class="two-margin-top">to</p>
           </div>
-          
+
           <div class="right small-5 columns">
             <label for="market_end_date">
               End date:
@@ -75,7 +75,7 @@
             <input type="text" name="market_end_date" id="market_end_date"/>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="left small-6 small-centered columns">
             <label for="credit_type">
@@ -94,11 +94,8 @@
           </div>
         </div>
 
-          
-
-
         <div class="row half-margin-top one-margin-bottom">
-          <input type="submit" class="button" id="button_qr_login" value="Export Market Data"/>
+          <input type="submit" class="button" id="button_export_data" value="Export Market Data"/>
           <!--a href="{% url 'tradewave:export_data' %}" class="button button-style1 button-big"> Export Market Data  </a-->
         </div>
       </form>
@@ -112,11 +109,11 @@
       </div>
     </div>
     <svg class="chart"></svg>
-    
+
     <script type="text/javascript">
       $('#market_start_date, #market_end_date').datepicker();
     </script>
-    
+
     <script>
       // TODO: Make this a reactive select element to allow the user
       // to choose whether to display the dashboard for their personal

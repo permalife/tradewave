@@ -15,8 +15,9 @@ from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
     Marketplace, Affiliation, TransactionLog, Product
 
 from tradewave.serializers import AccountSerializer, TransactionLogSerializer
-from tradewave.forms import AssignCreditToUserForm, CreateUserForm, MarketVenueDateForm
+from tradewave.forms import AssignCreditToUserForm, CreateUserForm, DataExportForm
 from tradewave.transaction import TradewaveTransaction
+from tradewave.allocations import CreditAllocations
 from tradewave.exceptions import CustomerInvalidCredentialsException
 
 from collections import OrderedDict
@@ -191,21 +192,8 @@ class SessionContextView(View):
     def get_context_data(self, **kwargs):
         context = super(SessionContextView, self).get_context_data(**kwargs)
         session = self.request.session
-        state_vars = [
-            'entity_id'
-            'entity_personal',
-            'entity_vendor',
-            'entity_customer',
-            'entity_marketplace',
-            'product_category',
-            'selected_venue'
-        ]
 
-        #for var in state_vars:
-        #    if session.has_key(var):
-        #        context[var] = session[var]
-
-        # TODO: revisit any potential security risks here
+        # TODO: pick just the items used in templates
         for key, val in session.iteritems():
             context[key] = val
 
@@ -441,31 +429,7 @@ class VendorChoosePayment(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(VendorChoosePayment, self).get_context_data(**kwargs)
-
-        # applies any restrictions to a given credit
-        def can_buy(credit):
-            return (not credit.is_restricted) or credit.products.filter(
-                id=context['product_category_id']
-            )
-
-        # generate the list of customer's credits
-        cust_account = Account.objects.get(id=context['cust_account_personal_id'])
-        cust_wallet = CreditMap.objects.filter(account=cust_account)
-        cust_credits = OrderedDict([
-            (entry.credit.uuid, {
-                'name': entry.credit.name,
-                'amount': float(entry.amount)
-            })
-            for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
-            if can_buy(entry.credit)
-        ])
-
-        logger.info(cust_credits)
-        context['cust_credits'] = cust_credits
-        context['tr_amount'] = float(context['tr_amount'])
-        context['product_category'] = Product.objects.get(
-            id=context['product_category_id']
-        ).name
+        logger.info('Customer credits: %s', context['cust_credits'])
 
         return context
 
@@ -538,7 +502,7 @@ class VendorTransaction(LoginRequiredMixin, SessionContextView, TemplateView):
         context = super(VendorTransaction, self).get_context_data(**kwargs)
         context['product_categories'] = Product.objects.all()
         return context
-        
+
 class VendorAssign(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/vendor-assign-users.html'
 
@@ -583,6 +547,30 @@ class UserHomeView(LoginRequiredMixin, SessionContextView, TemplateView):
         return context
 
 
+def compute_credit_allocations(request):
+    transaction_data = request.session['transaction_data']
+    cust_account_personal_id = request.session['cust_account_personal_id']
+    vendor_id = request.session['entity_id']
+
+    allocations = CreditAllocations(
+        transaction_data,
+        cust_account_personal_id,
+        vendor_id
+    )
+    credit_data = allocations.compute()
+    logger.info('Credit allocations: %s', credit_data)
+
+    # we need to include credit names in addition to id's and amounts returned
+    # by the allocator for the template to display those
+    request.session['cust_credits'] = dict([
+        (str(credit_id), {
+            'name': Credit.objects.get(uuid=credit_id).name,
+            'amount': credit_data[credit_id]
+        })
+        for credit_id in credit_data.keys()
+    ])
+    request.session['cust_total'] = sum(credit_data.values())
+
 # *** handler for completing the transaction vendor-user transaction ***
 def export_data(request):
     class CreditMapResource(resources.ModelResource):
@@ -599,21 +587,23 @@ def export_data(request):
 
     class TransactionLogResource(resources.ModelResource):
         def get_queryset(self):
-            form = MarketVenueDateForm(request.POST)
+            form = DataExportForm(request.POST)
 
             if form.is_valid():
-                market_date = form.cleaned_data['market_date']
+                market_start_date = form.cleaned_data['market_start_date']
+                market_end_date = form.cleaned_data['market_end_date']
                 credit_type = form.cleaned_data['credit_type']
                 vendor = form.cleaned_data['vendor']
                 logger.info(
-                    'Valid market data request for %s',
-                    market_date
+                    'Valid market data request between %s and %s',
+                    market_start_date,
+                    market_end_date
                 )
 
                 transactions = TransactionLog.objects.filter(
                     venue__name=form.cleaned_data['market_venue'],
-                    date_transacted__gte=market_date,
-                    date_transacted__lt=market_date + timedelta(days=1)
+                    date_transacted__gte=market_start_date,
+                    date_transacted__lte=market_end_date
                 )
 
                 if credit_type != 'All':
@@ -712,13 +702,6 @@ def process_cust_login(request, login_reason):
         cust_account = cust_personal_entity.account_set.first()
         request.session['cust_account_personal_id'] = cust_account.id
         cust_amount_total = cust_account.amount_total
-        request.session['cust_total'] = float(cust_amount_total)
-
-        # common fields to all requests
-        context_obj = {
-            'cust_name': cust_name,
-            'cust_total': float(cust_amount_total),
-        }
 
         # login_reason determines if this customer login was requested
         # from transaction or issuing credits.
@@ -726,6 +709,7 @@ def process_cust_login(request, login_reason):
 
         # login requested from transaction flow
         if login_reason == 'transaction':
+            compute_credit_allocations(request)
             redirect_view = 'tradewave:vendor-choose-payment'
 
         # login requested from marketplace issue credit flow
@@ -735,10 +719,6 @@ def process_cust_login(request, login_reason):
         else:
             status_msg = 'Unknown referrer'
             return redirect('tradewave:user-home-status', status_msg=status_msg)
-
-        # TODO: evaluate any security risks here in storing everything in session
-        #for key, val in context_obj.iteritems():
-        #    request.session[key] = val
 
         return redirect(redirect_view);
 
@@ -857,12 +837,14 @@ def process_logout(request):
 @login_required
 @transaction.atomic
 def process_vendor_payment(request):
+    # Even though the vendor payment form is readonly right now,
+    # we still want to obtain the credits from the form for future compatibility
     try:
-        logger.info(request.POST.getlist('credits'))
-        logger.info(request.POST.getlist('amounts'))
         credits = request.POST.getlist('credits')
         amounts = map(Decimal, request.POST.getlist('amounts'))
-        tr_amount = float(request.POST.get('tr_amount'))
+        logger.info('Credits: %s', request.POST.getlist('credits'))
+        logger.info('Amounts: %s', request.POST.getlist('amounts'))
+        tr_amount = float(request.session['tr_amount'])
 
         sender_account_id = request.session['cust_account_personal_id']
         recipient_account_id = request.session['account_entity_id']
@@ -909,10 +891,24 @@ def process_vendor_transaction(request):
         # TODO'S:
         #   use django forms
         #   track product categories
-        product_category_id = request.POST.get('product_category_id')
-        product_amount = float(request.POST.get('product_amount'))
-        request.session['product_category_id'] = product_category_id
-        request.session['tr_amount'] = product_amount
+        logger.info('product categories: %s', request.POST.getlist('select_product_categories'))
+        logger.info('product amounts: %s', request.POST.getlist('input_product_amounts'))
+
+        product_categories = map(
+            int,
+            request.POST.getlist('select_product_categories')
+        )
+        product_amounts = map(
+            float,
+            request.POST.getlist('input_product_amounts')
+        )
+
+        transaction_data = dict(zip(product_categories, product_amounts))
+
+        request.session['transaction_data'] = transaction_data
+        request.session['tr_amount'] = sum(product_amounts)
+        logger.info('transaction_data: %s', transaction_data)
+        logger.info('tr_amount: %s', sum(product_amounts))
 
         return redirect('tradewave:vendor-cust-login', status_msg='')
 
@@ -1036,7 +1032,7 @@ def redeem_credits(request):
             'tradewave:transaction-confirmed',
             tr_amount='%.2f' % amount_redeemed,
             amount='%.2f' % amount_redeemed,
-            sender_name='selected vendors',
+            sender_name='selected vendors' if len(selected_vendors) > 1 else selected_vendors[0],
             recipient_name=request.session['entity_marketplace'],
             tr_type='marketplace'
         )
