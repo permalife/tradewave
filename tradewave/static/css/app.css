@@ -58,7 +58,7 @@ h6 {
     font-size: 1.25rem; }
   h6 {
     font-size: 1rem; } }
-    
+
 /* Scandalous classes */
 
 .no-margin-bottom {
@@ -274,4 +274,8 @@ a.list-group-item {
   display: inline-block;
   width: 150px;
   margin-left: 10px;
+}
+
+.attention {
+  color: #f93906;
 }

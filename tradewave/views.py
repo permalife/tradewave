@@ -576,7 +576,11 @@ def compute_credit_allocations(request):
         })
         for credit_id in credit_data.keys()
     ])
-    request.session['cust_total'] = sum(credit_data.values())
+
+    if credit_data:
+        request.session['cust_total'] = sum(credit_data.values())
+    else:
+        request.session['cust_total'] = 0
 
 # *** handler for completing the transaction vendor-user transaction ***
 def export_data(request):
