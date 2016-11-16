@@ -9,6 +9,7 @@ logger.setLevel(logging.DEBUG)
 
 class CreditAllocations(object):
     def __init__(self, transaction_data, cust_account_personal_id, vendor_id):
+        # TODO: give the variables more meaningful names
         # transaction_data is a dict mapping product_id's to product amounts
         self.A = transaction_data.values()
         self.n = len(self.A)
@@ -83,14 +84,16 @@ class CreditAllocations(object):
                 f += (self.A[i] - s)
             return f
 
-        # run the algorithm
-        res = minimize(
-            f,
-            self.x0,
-            method='SLSQP',
-            bounds=self.bnds,
-            constraints=self.cons
-        )
+        # optimize if and only if customer has any credits at all
+        if self.cust_credits:
+            # run the algorithm
+            res = minimize(
+                f,
+                self.x0,
+                method='SLSQP',
+                bounds=self.bnds,
+                constraints=self.cons
+            )
 
         i = 0
         credit_data = {}

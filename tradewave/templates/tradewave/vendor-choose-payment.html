@@ -52,7 +52,7 @@
 
         {% if tr_amount > cust_total %}
           <div class="row">
-              <p class="style1"> <strong>The remainder of ${{ tr_amount|subtract:cust_total|floatformat:2 }} has to be paid in cash </strong></p>
+              <p class="attention"> <strong>The remainder of ${{ tr_amount|subtract:cust_total|floatformat:2 }} has to be paid in cash </strong></p>
           </div>
         {% endif %}
 
