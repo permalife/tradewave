@@ -1,0 +1,37 @@
+{% extends "tradewave/base.html" %}
+
+{% block title %}
+  Oops! Something went wrong.
+  <h4 class="half-margin-top">It's not you, it's us.</h4>
+{% endblock %}
+
+{% block content %}
+  <section id="intro">
+
+    <p class="lead">Try refreshing the page, or contact us if the problem persists.</p>
+    
+    <button class="contact-popup_open button">Contact</button>
+
+  </section>
+  
+  <div id="contact-popup" class="modal center small-12 medium-9 large-7 small-centered columns">
+    <div class="row">
+      <div class="center small-centered columns">
+        <h3>Contact us</h3>
+        <form method="post" action="">
+          <input type="text" name="subject" value="Something went wrong" placeholder="Subject"/>
+          <textarea name="description" rows="3" placeholder="What happened?"></textarea>
+          <input type="submit" class="button" value="Send"/>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script type="text/javascript">
+    $('#contact-popup').popup({
+      vertical: 'top',
+      transition: 'all 0.75s',
+      scrolllock: false,
+    });
+  </script>
+{% endblock %}

@@ -51,6 +51,8 @@ urlpatterns = [
     url(r'^vendor-transaction/$', views.VendorTransaction.as_view(), name='vendor-transaction'),
     url(r'^user-home/$', views.UserHomeView.as_view(), name='user-home'),
     url(r'^user-home/(?P<status_msg>.*)/$', views.UserHomeView.as_view(), name='user-home-status'),
+    url(r'^500/$', views.ErrorView.as_view(), name='500'),
+    url(r'^404/$', views.NotFoundView.as_view(), name='404'),
 
     # functional views
     url(r'^assign_credit_to_user/$', views.assign_credit_to_user, name='assign_credit_to_user'),
@@ -66,7 +68,7 @@ urlpatterns = [
     url(r'^redirect_to_marketplace/$', views.redirect_to_marketplace, name='redirect_to_marketplace'),
 ]
 
-#handler404 = 'mysite.views.my_custom_page_not_found_view'
-#handler500 = 'mysite.views.my_custom_error_view'
+handler404 = 'mysite.views.my_custom_page_not_found_view'
+handler500 = 'mysite.views.my_custom_error_view'
 #handler403 = 'mysite.views.my_custom_permission_denied_view'
 #handler400 = 'mysite.views.my_custom_bad_request_view'
