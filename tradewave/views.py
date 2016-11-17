@@ -205,6 +205,14 @@ class LoginView(SessionContextView, TemplateView):
     template_name = 'tradewave/login.html'
 
 
+class ErrorView(SessionContextView, TemplateView):
+    template_name = 'tradewave/500.html'
+
+
+class NotFoundView(SessionContextView, TemplateView):
+    template_name = 'tradewave/404.html'
+
+
 class SendView(ListView):
     model = User
     template_name = 'tradewave/send.html'
