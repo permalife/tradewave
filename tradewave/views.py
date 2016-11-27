@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect
 from django.template import RequestContext, loader
 from django.views.generic import View, ListView, TemplateView
@@ -1177,3 +1177,7 @@ def assign_credit_to_user(request):
     else:
         logger.error('Invalid form: %s', form.errors.as_data())
         return redirect('tradewave:marketplace-home')
+
+
+def return_404(request):
+    return HttpResponseNotFound('Not found')
