@@ -1,0 +1,20 @@
+{% extends "tradewave/base.html" %}
+
+{% block title %} Vendor {{ entity_vendor }} {% endblock %}
+
+{% block content %}
+  <section id="intro">
+    <h1>Choose location:</h1>
+
+      <div class="row">
+        {% for featured_venue in featured_venues %}
+          <div class="12u">
+            <a href="/record_venue/{{ featured_venue.id }}" class="button button-style1 button-big">
+              {{ featured_venue.name }}
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+
+  </section>
+{% endblock %}

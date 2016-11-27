@@ -1,0 +1,127 @@
+<!DOCTYPE HTML>
+<!--
+    Escape Velocity 2.5 by HTML5 UP
+    html5up.net | @n33co
+    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+{% load staticfiles %}
+<html>
+    <head>
+        <title>Trade Wave</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="description" content="" />
+        <meta name="keywords" content="" />
+        
+        <!-- Global Variable for js -->
+        <script language="javascript">var STATIC_URL = "{{ STATIC_URL|escapejs }}";</script>
+        
+        <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900" rel="stylesheet" />
+        <!--[if lte IE 8]><script src="js/html5shiv.js"></script><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+        <script src="{% static "js/jquery.min.js" %}"></script>
+        <script src="{% static "js/jquery.dropotron.min.js" %}"></script>
+        <script src="{% static "js/config.js" %}"></script>
+        <script src="{% static "js/skel.min.js" %}"></script>
+        <script src="{% static "js/skel-panels.min.js" %}"></script>
+        <noscript>
+        <link rel="stylesheet" type="text/css" href="{% static "css/skel-noscript.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "css/style-desktop.css" %}"/>
+        </noscript>
+    </head>
+    <body class="homepage">
+
+		{% include "tradewave/header.html" %}
+
+        <!-- Intro Wrapper -->
+            <div id="intro-wrapper" class="wrapper wrapper-style1">
+                <div class="title">Vendor Settings</div>
+                <div class="container">
+                    <div class="row">
+                        <div class="12u">
+                        <!-- Settings Form -->
+                            <form method="post" action="#">
+                                <div>
+                                    <div class="row half">
+                                        <div class="12u">
+                                        <h2>Business</h2>
+                                        </div>
+                                        <div class="12u">
+                                            <input type="text" class="text" name="name" id="vendor-name" placeholder="Business Name" />
+                                        </div>
+                                        <div class="6u">
+                                            <input type="text" class="text" name="name" id="vendor-cat" placeholder="Category" />
+                                        </div>
+                                        <div class="6u">
+                                            <input type="text" class="text" name="name" id="vendor-subcat" placeholder="Subcategory" />
+                                        </div>
+                                    </div>                                        
+                                    <div class="12u">
+                                    <h2>Admins and Managers</h2>
+                                    </div>
+                                    <div class="row half">
+                                    <div class="12u">
+                                         <input type="email" class="text" name="name" id="vendor-admin" placeholder="Admin" />                                            
+                                         <input type="email" class="text" name="name" id="manager-1" placeholder="Manager" />
+                                         <!-- These controls should allow you to add additional Managers-->
+                                         <ul class="actions">
+                                             <li><a href="#" class="button button-style3 button">+</a></li>
+                                             <li><a href="#" class="button button-style3 button">-</a></li>
+                                         </ul>
+                                    </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="12u">
+                                            <input type="submit" class="button button-style3 button-big" value="Save Changes" /></li>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        <!-- /settings Form -->                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- /Intro Wrapper -->
+        
+
+        <!-- Footer Wrapper -->
+            <div id="footer-wrapper" class="wrapper">
+                <div class="title">Our Mission</div>
+                <div class="container">
+                    <div class="row">
+                        <div class="12u">
+
+                            <!-- Footer -->
+                                <div id="footer">
+                                    <header class="style1">
+                                        <h2>An Economy of Abundance</h2>
+                                        <p class="byline">
+                                            Right now there are 23 homes on the market for every homeless person.<br />
+                                            Just one example of an economy gone awry.
+                                        </p>
+                                        <p class="style3"><br/>
+                                        Trade Wave is working to bring about an <strong>economic revolution</strong>;<br/>
+                                         a way of doing business that works for <strong>people</strong> and the <strong>planet</strong> and not just <strong>profit</strong>.<br/>
+                                         The first step is to create a platform of commerce that promotes abundance<br/> 
+                                         and connects people rather than rewarding greed and scarcity.</p>
+                                    </header>
+                                    <hr />
+                            <!-- /Footer -->
+
+                            <!-- Copyright -->
+                                <div id="copyright">
+                                    <span>
+                                        &copy; Endeavor Marketing Solutions 2014. Design by <a href="http://html5up.net/">HTML5 UP</a>.
+                                    </span>
+                                </div>
+                            <!-- /Copyright -->
+                        
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- /Footer Wrapper -->
+
+    </body>
+</html>

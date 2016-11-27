@@ -1,0 +1,27 @@
+{% extends "tradewave/base.html" %}
+
+{% block title %} Marketplace {{ name }} {% endblock %}
+
+{% block content %}
+  <section id="intro">
+    <ul class="actions actions-centered">
+      <li>
+        <a href="{% url 'tradewave:marketplace-issue' %}" class="button button-style1 button-big">
+          Issue Credits
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'tradewave:marketplace-redeem' %}" class="button button-style1 button-big">
+          Redeem Credits
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'tradewave:dashboard' %}" class="button button-style1 button-big">
+          View Dashboard
+        </a>
+      </li>
+    </ul>
+  </section>
+{% endblock %}
