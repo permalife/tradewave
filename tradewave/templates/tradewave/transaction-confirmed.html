@@ -9,12 +9,18 @@
     <p class="">
       <strong>${{ amount|floatformat:2 }}</strong> has been {% if tr_type == 'vendor' %} transferred {% else %} issued {% endif %} from
       <br> <strong>{{ sender_name }}</strong>
-      <br> to 
+      <br> to
       <br> <strong>{{ recipient_name }}</strong>
     </p>
 
     {% if tr_type == "vendor" %}
-      <p class="style1"> The remaining balance for this transaction is <strong>${{ tr_amount|subtract:amount|floatformat:2 }}</strong> </p>
+      {% with tr_amount|subtract:amount|floatformat:2 as tr_balance %}
+        {% if tr_balance > 0 %}
+          <p class="attention"> The remaining balance for this transaction is <strong>$ {{tr_balance}} </strong> </p>
+        {% else %}
+          <p> The remaining balance for this transaction is $0.00 </p>
+        {% endif %}
+      {% endwith %}
     {% endif %}
 
     <div>
@@ -27,7 +33,7 @@
           </div>
         </div>
       {% endwith %}
-      
+
       <div class="row">
         <button class="button">Email receipt</button>
       </div>

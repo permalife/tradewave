@@ -1055,11 +1055,19 @@ def redeem_credits(request):
 
                     amount_redeemed += tw_transaction.amount_last_transacted
 
+        if len(selected_vendors) > 1:
+            sender_name = 'selected vendors'
+        elif len(selected_vendors) == 1:
+            vendor_account_id = selected_vendors[0]
+            sender_name = Account.objects.get(id=vendor_account_id).entity.name
+        else:
+            sender_name = ''
+
         return redirect(
             'tradewave:transaction-confirmed',
             tr_amount='%.2f' % amount_redeemed,
             amount='%.2f' % amount_redeemed,
-            sender_name='selected vendors' if len(selected_vendors) > 1 else selected_vendors[0],
+            sender_name=sender_name,
             recipient_name=request.session['entity_marketplace'],
             tr_type='marketplace'
         )
