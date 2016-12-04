@@ -1,66 +1,82 @@
 {% extends "tradewave/base.html" %}
 
 {% block title %}
-  Create vendor
+  New Vendor
 {% endblock %}
 
 {% block content %}
 
   <!-- User Form -->
-  <form method="post" action="#">
+  <form method="post" action="{% url 'tradewave:create_vendor' %}">
+    {% csrf_token %}
+
     <div class="row">
       <p>Name and Email</p>
-      {%if not logged_in %}
         <div class="input-left small-6 columns">
-          <input type="text" class="text" name="name" id="vendor-name" placeholder="Vendor Name"/>
+          <input type="text" class="text" name="vendor_name" id="vendor-name" placeholder="Vendor Name"/>
         </div>
         <div class="input-right small-6 columns">
-          <input type="email" name="vendor-email" id="vendor-email" placeholder="Vendor Email"/>
+          <input type="email" name="vendor_email" id="vendor-email" placeholder="Vendor Email"/>
         </div>
-      {%endif%}
 
+      <!--
       <p>Password</p>
       <div class="input-left small-6 columns">
-        <input type="password" placeholder="Password"/>
+        <input type="vendor_password" placeholder="Password"/>
       </div>
 
       <div class="input-right small-6 columns">
-        <input type="password" placeholder="Verify password"/>
+        <input type="vendor_password_confirm" placeholder="Verify password"/>
       </div>
+      -->
     </div>
 
     <div class="row">
-      <p>Marketplace code</p>
-      <input id="marketplace-code" type="text"/>
-    </div>    
-    
+      <p>Market venues</p>
+        <select name="vendor_venues" multiple>
+          {% for venue_id, venue_name in marketplace_venues.iteritems %}
+            <option value="{{ venue_id }}"> {{venue_name}} </option>
+          {% endfor %}
+        </select>
+      </br>
+    </div>
+
     <div class="row">
       <p>Product categories</p>
-      {% for product_category in product_categories %}
-        <input type="checkbox" id="{{ product_category }}" value="{{ product_category }}"/>
-        <label class="" for="{{ product_category }}">{{ product_category }}</label>
+      {% for cat_id, cat_name in product_categories.iteritems %}
+        <input type="checkbox" id="product-category-{{ cat_id }}" name="vendor_product_categories" value="{{ cat_id }}"/>
+        <label class="" for="product-category-{{ cat_id }}">{{ cat_name }}</label>
       {% endfor %}
       </br>
     </div>
 
     <div class="row">
-      <span>Marketplace code:</span>
-      <input id="marketplace-code" type="text"/>
+      <p>Do you have a CSA program:</p>
+      <select name="vendor_has_csa">
+          <option value="{{ 1 }}"> Yes </option>
+          <option value="{{ 0 }}"> No </option>
+      </select>
+      </br>
     </div>
 
-                <!--  <p>Address</p>
+    <div class="row">
+      <p>Marketplace code</p>
+      <input name="vendor_invite_code" type="text"/>
+    </div>
 
-                    <input type="text" class="text" name="address" id="vendor-address" placeholder="Address" />
+    <!--  <p>Address</p>
 
-                    <input type="text" class="text" name="city" id="vendor-city" placeholder="City" />
+        <input type="text" class="text" name="address" id="vendor-address" placeholder="Address" />
 
-                    <input type="text" class="text" name="state" id="vendor-region" placeholder="State" />
+        <input type="text" class="text" name="city" id="vendor-city" placeholder="City" />
 
-                    <input type="text" class="text" name="zip" id="vendor-zip" placeholder="Zip Code" />-->
-                  
-                    <input type="submit" class="button" value="Create" />
-                    <a href=""><button class="button secondary">Use existing vendor</button></a>
-                  
+        <input type="text" class="text" name="state" id="vendor-region" placeholder="State" />
+
+        <input type="text" class="text" name="zip" id="vendor-zip" placeholder="Zip Code" />-->
+
+    <input type="submit" class="button" value="Create" />
+    <a href=""><button class="button secondary">Use existing vendor</button></a>
+
   </form>
   <!-- /User Form -->
 

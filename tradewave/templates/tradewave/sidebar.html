@@ -1,87 +1,99 @@
 <div class="list-group">
 
-    <a class="list-group-item" href="{% url "tradewave:user-home" %}">
-      <i class="fa-fw fa fa-server"></i> Personal account
-    </a>
-
-
-  {% if entity_vendor %}
-
-    <a class="list-group-item" href="/redirect_to_vendor/">
-      <i class="fa-fw fa fa-server"></i> Vendor account
-    </a>
-
-  {% endif %}
-
-  {% if entity_marketplace %}
-
-    <a class="list-group-item" href="/redirect_to_marketplace/">
-      <i class="fa-fw fa fa-server"></i> Marketplace account
-    </a>
-
-
-
-    <a class="list-group-item" href="{% url "tradewave:marketplace-initial" %}">
-      <i class="fa-fw fa fa-building"></i> Pick venue
-    </a>
-
-  {% endif %}
-
-  {% if entity_vendor %}
-    {% if selected_venue %}
-
-        <a class="list-group-item" href="{% url "tradewave:vendor-transaction" %}">
-          <i class="fa-fw fa fa-exchange"></i> New transaction
-        </a>
-
-    {% else %}
-
-        <a class="list-group-item" href="{% url "tradewave:vendor-initial" %}">
-          <i class="fa-fw fa fa-exchange"></i> New transaction
-        </a>
-
-    {% endif %}
-
-
-      <a class="list-group-item" href="{% url "tradewave:vendor-initial" %}">
-        <i class="fa-fw fa fa-building"></i> Change venue
+  {% if entity_personal %}
+      <a class="list-group-item" href="{% url "tradewave:user-home" %}">
+        <i class="fa-fw fa fa-server"></i> Personal account
       </a>
 
-  {% endif %}
 
-  {% if entity_marketplace %}
-    {% if selected_venue %}
+    {% if entity_vendor %}
 
-        <a class="list-group-item" href="{% url "tradewave:marketplace-issue" %}">
-            <i class="fa-fw fa fa-edit"></i> Issue credits
-        </a>
+      <a class="list-group-item" href="/redirect_to_vendor/">
+        <i class="fa-fw fa fa-server"></i> Vendor account
+      </a>
 
+    {% endif %}
 
+    {% if entity_marketplace %}
 
-        <a class="list-group-item" href="{% url "tradewave:marketplace-redeem" %}">
-          <i class="fa-fw fa fa-check-circle"></i>Redeem credits
-        </a>
-
-    {% else %}
-
-        <a class="list-group-item" href="{% url "tradewave:marketplace-initial" %}">
-            <i class="fa-fw fa fa-edit"></i> Issue credits
-        </a>
+      <a class="list-group-item" href="/redirect_to_marketplace/">
+        <i class="fa-fw fa fa-server"></i> Marketplace account
+      </a>
 
 
-        <a class="list-group-item" href="{% url "tradewave:marketplace-initial" %}">
-            <i class="fa-fw fa fa-edit"></i> Redeem credits
+
+      <a class="list-group-item" href="{% url "tradewave:marketplace-initial" %}">
+        <i class="fa-fw fa fa-building"></i> Pick venue
+      </a>
+
+    {% endif %}
+
+    {% if entity_vendor %}
+      {% if selected_venue %}
+
+          <a class="list-group-item" href="{% url "tradewave:vendor-transaction" %}">
+            <i class="fa-fw fa fa-exchange"></i> New transaction
+          </a>
+
+      {% else %}
+
+          <a class="list-group-item" href="{% url "tradewave:vendor-initial" %}">
+            <i class="fa-fw fa fa-exchange"></i> New transaction
+          </a>
+
+      {% endif %}
+
+
+        <a class="list-group-item" href="{% url "tradewave:vendor-initial" %}">
+          <i class="fa-fw fa fa-building"></i> Change venue
         </a>
 
     {% endif %}
+
+    {% if entity_marketplace %}
+      {% if selected_venue %}
+
+          <a class="list-group-item" href="{% url "tradewave:marketplace-issue" %}">
+              <i class="fa-fw fa fa-edit"></i> Issue credits
+          </a>
+
+
+
+          <a class="list-group-item" href="{% url "tradewave:marketplace-redeem" %}">
+            <i class="fa-fw fa fa-check-circle"></i>Redeem credits
+          </a>
+
+      {% else %}
+
+          <a class="list-group-item" href="{% url "tradewave:marketplace-initial" %}">
+              <i class="fa-fw fa fa-edit"></i> Issue credits
+          </a>
+
+
+          <a class="list-group-item" href="{% url "tradewave:marketplace-initial" %}">
+              <i class="fa-fw fa fa-edit"></i> Redeem credits
+          </a>
+
+      {% endif %}
+
+      <a class="list-group-item" href="{% url "tradewave:create-vendor" %}">
+          <i class="fa-fw fa fa-user-plus"></i> New vendor
+      </a>
+    {% endif %}
+
+    <a class="list-group-item" href="{% url "tradewave:dashboard" %}">
+      <i class="fa-fw fa fa-bar-chart"></i>Dashboard
+    </a>
+
+    <a class="list-group-item" href="{% url "tradewave:process_logout" %}">
+      <i class="fa-fw fa fa-sign-out"></i>Log out
+    </a>
+
+  {% else %}
+
+    <a class="list-group-item" href="{% url "tradewave:root" %}">
+      <i class="fa-fw fa fa-sign-in"></i>Log in
+    </a>
   {% endif %}
-
-  <a class="list-group-item" href="{% url "tradewave:dashboard" %}">
-    <i class="fa-fw fa fa-bar-chart"></i>Dashboard
-  </a>
-
-  <a class="list-group-item" href="{% url "tradewave:process_logout" %}">
-    <i class="fa-fw fa fa-sign-out"></i>Log out
-  </a>
 
 </div>

@@ -10,12 +10,24 @@ from django.shortcuts import render, redirect
 from django.template import RequestContext, loader
 from django.views.generic import View, ListView, TemplateView
 
-from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
-    Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
-    Marketplace, Affiliation, TransactionLog, Product
+from tradewave.models import \
+    City, Venue, \
+    TradewaveUser, \
+    Entity, EntityVenues, \
+    Vendor, \
+    Marketplace, MarketplaceVendors, \
+    Credit, Account, CreditMap, TransactionLog, \
+    Product, CreditProductMap, \
+    Relationship
+
+
+from tradewave.forms import \
+    AssignCreditToUserForm, \
+    CreateUserForm, \
+    CreateVendorForm, \
+    DataExportForm
 
 from tradewave.serializers import AccountSerializer, TransactionLogSerializer
-from tradewave.forms import AssignCreditToUserForm, CreateUserForm, DataExportForm
 from tradewave.transaction import TradewaveTransaction
 from tradewave.allocations import CreditAllocations
 from tradewave.exceptions import CustomerInvalidCredentialsException
@@ -253,9 +265,14 @@ class CreateVendorView(SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(CreateVendorView, self).get_context_data(**kwargs)
-        context['product_categories'] = [
-            item.name for item in Product.objects.all()
-        ]
+
+        marketplace = Marketplace.objects.get(id=context['entity_id'])
+        context['marketplace_venues'] = dict([
+            (item.id, item.name) for item in marketplace.venues.all()
+        ])
+        context['product_categories'] = dict([
+            (item.id, item.name) for item in Product.objects.all()
+        ])
 
         return context
 
@@ -311,7 +328,7 @@ class MarketplaceInitial(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(MarketplaceInitial, self).get_context_data(**kwargs)
-        context['featured_venues'] = Venue.objects.all()
+        context['featured_venues'] = Marketplace.objects.get(id=context['entity_id']).venues.all()
         return context
 
 
@@ -506,7 +523,7 @@ class VendorInitial(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(VendorInitial, self).get_context_data(**kwargs)
-        context['featured_venues'] = Venue.objects.all()
+        context['featured_venues'] = Vendor.objects.get(id=context['entity_id']).venues.all()
         return context
 
 
@@ -1121,7 +1138,7 @@ def create_user(request):
 
                 # TODO: this in essence is duplicating in part process_cust_login,
                 # so consider using that here, even though it requires the credentials
-                # to present in the request.
+                # to be present in the request.
                 request.session['cust_account_personal_id'] = user_account.id
                 request.session['entity_customer'] = user.username
                 request.session['entity_customer_id'] = user.id
@@ -1143,6 +1160,86 @@ def create_user(request):
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
         return redirect('tradewave:login', status_msg=e.message)
+
+
+# *** handler for creating a new vendor ***
+@login_required
+@transaction.atomic
+def create_vendor(request):
+    form = CreateVendorForm(request.POST)
+
+    if form.is_valid():
+        vendor_name = form.cleaned_data['vendor_name']
+        vendor_email = form.cleaned_data['vendor_email']
+        vendor_has_csa = form.cleaned_data['vendor_has_csa']
+        vendor_product_categories = form.cleaned_data['vendor_product_categories']
+        vendor_venues = form.cleaned_data['vendor_venues']
+
+        with transaction.atomic():
+            vendor = Vendor(
+                name=vendor_name,
+                email=vendor_email,
+                has_csa=vendor_has_csa,
+            )
+            vendor.save()
+            logger.info('New vendor %s created', vendor_name)
+
+            for category_id in vendor_product_categories:
+                product = Product.objects.get(id=category_id)
+                vendor.products.add(product)
+                logger.info(
+                    'Vendor %s now offers product %s', vendor_name, product.name
+                )
+
+            for venue_id in vendor_venues:
+                venue = Venue.objects.get(id=venue_id)
+                ev = EntityVenues(
+                    entity=vendor,
+                    venue=venue
+                )
+                ev.save()
+                logger.info(
+                    'Vendor %s is now affiliated with venue %s', vendor_name, venue.name
+                )
+
+            # associate vendor to the current marketplace
+            if not form.cleaned_data['vendor_invite_code']:
+                marketplace = Marketplace.objects.get(id=request.session['entity_id'])
+                mv = MarketplaceVendors(
+                    marketplace=marketplace,
+                    vendor=vendor
+                )
+                mv.save()
+                logger.info(
+                    'Vendor %s is now a member of marketplace %s',
+                    vendor_name,
+                    marketplace.name
+                )
+            # or use the invite code to determine the right association
+            else:
+                # TODO:
+                #   compare the invite code with the stored one and add vendor to
+                #   the corresponding marketplace
+                pass
+
+            return redirect(
+                'tradewave:marketplace-home-status',
+                status_msg='Vendor ' + vendor_name + ' successfully created'
+            )
+
+    else:
+        logger.error(
+            'Invalid create vendor request: %s',
+            form.errors.as_data()
+        )
+
+        # just report the first validation error
+        errors = [
+            '%s: %s' % (field, error)
+            for field, le in form.errors.as_data().iteritems()
+            for error in le
+        ]
+        return redirect('tradewave:create-vendor-status', status_msg=errors[0])
 
 
 # *** handler for creating a new user ***
