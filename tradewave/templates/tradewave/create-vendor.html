@@ -31,36 +31,36 @@
       -->
     </div>
 
-    <div class="row">
+    <div class="row one-margin-bottom">
       <p>Market venues</p>
-        <select name="vendor_venues" multiple>
-          {% for venue_id, venue_name in marketplace_venues.iteritems %}
-            <option value="{{ venue_id }}"> {{venue_name}} </option>
-          {% endfor %}
-        </select>
-      </br>
+        {% for venue_id, venue_name in marketplace_venues.iteritems %}
+          <div class="inline">
+            <input type="checkbox" id="venue-{{ venue_id }}" name="venues" value="{{ venue_id }}"/>
+            <label class="" for="venue-{{ venue_id }}">{{ venue_name }}</label>
+          </div>
+        {% endfor %}
     </div>
 
-    <div class="row">
+    <div class="row one-margin-bottom">
       <p>Product categories</p>
       {% for cat_id, cat_name in product_categories.iteritems %}
-        <input type="checkbox" id="product-category-{{ cat_id }}" name="vendor_product_categories" value="{{ cat_id }}"/>
-        <label class="" for="product-category-{{ cat_id }}">{{ cat_name }}</label>
+        <div class="inline">
+          <input type="checkbox" id="product-category-{{ cat_id }}" name="vendor_product_categories" value="{{ cat_id }}"/>
+          <label class="" for="product-category-{{ cat_id }}">{{ cat_name }}</label>
+        </div>
       {% endfor %}
       </br>
     </div>
 
-    <div class="row">
-      <p>Do you have a CSA program:</p>
-      <select name="vendor_has_csa">
+    <div class="row one-margin-bottom">
+      <span>Do you have a CSA program?</span>
+      <select id="vendor-has-csa" name="vendor_has_csa">
           <option value="{{ 1 }}"> Yes </option>
           <option value="{{ 0 }}"> No </option>
       </select>
-      </br>
     </div>
 
-    <div class="row">
-      <p>Marketplace code</p>
+    <div class="row hidden">
       <input name="vendor_invite_code" type="text"/>
     </div>
 
