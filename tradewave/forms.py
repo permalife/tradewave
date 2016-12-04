@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
+from tradewave.models import Product, Venue
+
 from datetime import datetime
 
 import logging
@@ -42,6 +44,36 @@ class CreateUserForm(forms.Form):
         user_pin_confirm = cleaned_data.get('user_pin_confirm')
         if user_pin and user_pin_confirm and user_pin != user_pin_confirm:
             raise ValidationError(_('Pins don\'t match'))
+
+
+# Create new user form
+class CreateVendorForm(forms.Form):
+    vendor_name = forms.CharField()
+    vendor_email = forms.EmailField()
+    vendor_invite_code = forms.CharField(required=False)
+
+    # vendor product categories
+    product_categories = [
+        item.id for item in Product.objects.all()
+    ]
+    vendor_product_categories = forms.MultipleChoiceField(
+        choices=[
+            (item_id, item_id) for item_id in product_categories
+        ]
+    )
+
+    # vendor venues
+    venues = [
+        item.id for item in Venue.objects.all()
+    ]
+    vendor_venues = forms.MultipleChoiceField(
+        choices=[
+            (item_id, item_id) for item_id in venues
+        ]
+    )
+
+    # vendor csa
+    vendor_has_csa = forms.BooleanField()
 
 
 # Login existing user form

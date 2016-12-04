@@ -41,6 +41,19 @@ class Venue(models.Model):
         ])
 
 
+
+# define product categories
+# for some credits, transactions are restricted to certain product categories
+class Product(models.Model):
+    name = models.CharField(max_length=256)
+
+    def __unicode__(self):
+        return ' '.join([
+            'Product',
+            self.name
+        ])
+
+
 # defines entity
 # Nota:
 #   Entities are objects that can be either personal, vendors or marketplaces
@@ -59,19 +72,11 @@ class Entity(models.Model):
     # contact email for the entity
     email = models.EmailField()
 
-    # link to entity's credit account
-    # Nota:
-    #   If this is a personal entity associated with user's account, this will
-    #   to user's personal credit Account
-    #   If this is a vendor / marketplace entity, this will link to
-    #   vendor's / markplace's credit account
-    #account = models.ForeignKey('Account', related_name='holder')
-
     # allowed to issue credits
     can_issue = models.BooleanField(default=False)
 
     # venues the entity is affiliated with
-    venues = models.ManyToManyField(Venue, through='VenueMap')
+    venues = models.ManyToManyField(Venue, through='EntityVenues')
 
     # entity reputation
     rating = models.FloatField(default=100.)
@@ -96,8 +101,6 @@ class Entity(models.Model):
 
 # define vendor
 class Vendor(Entity):
-    industry = models.ForeignKey('Industry')
-
     # does vendor has a CSA
     has_csa = models.BooleanField(default=False)
 
@@ -106,6 +109,21 @@ class Vendor(Entity):
     # for now default is not to allow the vendors to issue credits
     max_credits_to_issue = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
+    # product categories
+    products = models.ManyToManyField(Product, blank=True)
+
+    def __unicode__(self):
+        return ' '.join([
+            'Vendor',
+            self.name,
+            '(a member of ',
+            ', '.join([
+                marketplace.name
+                for marketplace in self.marketplace_set.all()
+            ]),
+            ')'
+        ])
+
 
 # define marketplace
 class Marketplace(Entity):
@@ -113,19 +131,23 @@ class Marketplace(Entity):
     city = models.ForeignKey(City)
 
     # vendors that operate at the marketplace
-    vendors = models.ManyToManyField(Vendor, through='Affiliation')
+    vendors = models.ManyToManyField(Vendor, through='MarketplaceVendors')
 
     def __unicode__(self):
         return ' '.join([
             'Marketplace',
             self.name,
+            'with',
+            str(len(self.vendors.all())),
+            'members',
             'located in',
             self.city.name + ',',
             self.city.state
         ])
 
 
-# defines registered users and their properties
+# defines tradewave users and their properties
+# TODO: consider deriving from django user class directly
 # notes:
 #   We use Django's built-in user object for authentication.
 #   Every user has a personal credit account through their personal entity
@@ -175,15 +197,6 @@ class TradewaveUser(models.Model):
             'Tradewave user',
             self.user.username,
         ])
-
-
-# define product categories
-# for some credits, transactions are restricted to certain product categories
-class Product(models.Model):
-    name = models.CharField(max_length=256)
-
-    def __unicode__(self):
-        return self.name
 
 
 def one_year_from_now():
@@ -315,12 +328,16 @@ class TransactionLog(models.Model):
             'from',
             self.transact_from.entity.name,
             'to',
-            self.transact_to.entity.name
+            self.transact_to.entity.name,
+            'at',
+            self.venue.name,
+            'on',
+            str(self.date_transacted)
         ])
 
 
 # maps entities to venues
-class VenueMap(models.Model):
+class EntityVenues(models.Model):
     entity = models.ForeignKey(Entity)
     venue = models.ForeignKey(Venue)
 
@@ -332,17 +349,6 @@ class VenueMap(models.Model):
             self.venue.name
         ])
 
-
-# industry types
-# (e.g. Food, Construction, Law, Medical, Etc.)
-class Industry(models.Model):
-    name = models.CharField(max_length=64, unique=True)
-
-    def __unicode__(self):
-        return ' '.join([
-            'Industry',
-            self.name
-        ])
 
 # define relationships
 # (e.g. 'like', 'follow', etc)
@@ -358,8 +364,8 @@ class Relationship(models.Model):
     class Meta:
         unique_together = ('user', 'entity', 'relationship')
 
-# maps affiliations between a vendor and marketplace
-class Affiliation(models.Model):
+# affiliations between a vendor and marketplace
+class MarketplaceVendors(models.Model):
     marketplace = models.ForeignKey(Marketplace)
     vendor = models.ForeignKey(Vendor)
 
@@ -369,8 +375,9 @@ class Affiliation(models.Model):
 
     def __unicode__(self):
         return ' '.join([
+            'Vendor',
             self.vendor.name,
-            'is a vendor at marketplace',
+            'at marketplace',
             self.marketplace.name
         ])
 

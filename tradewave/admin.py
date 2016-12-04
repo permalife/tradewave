@@ -1,12 +1,18 @@
 from django.contrib import admin
 
 # Register your models here.
-from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
-    Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
-    Marketplace, Affiliation, TransactionLog, Product, CreditProductMap
+from tradewave.models import \
+    City, Venue, \
+    TradewaveUser, \
+    Entity, EntityVenues, \
+    Vendor, \
+    Marketplace, MarketplaceVendors, \
+    Credit, Account, CreditMap, TransactionLog, \
+    Product, CreditProductMap, \
+    Relationship
+    #VendorProducts, \
 
 from import_export import resources
-#from import_export.admin import ImportExportActionModelAdmin
 from import_export.admin import ImportExportModelAdmin
 
 
@@ -29,18 +35,17 @@ class CreditMapAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(City)
-admin.site.register(Entity)
 admin.site.register(Venue)
-admin.site.register(VenueMap)
+admin.site.register(TradewaveUser)
+admin.site.register(Entity)
+admin.site.register(EntityVenues)
+admin.site.register(Vendor)
+admin.site.register(Marketplace)
+admin.site.register(MarketplaceVendors)
 admin.site.register(Credit)
 admin.site.register(Account)
 admin.site.register(CreditMap)
-admin.site.register(TradewaveUser)
-admin.site.register(Relationship)
-admin.site.register(Industry)
-admin.site.register(Vendor)
-admin.site.register(Marketplace)
-admin.site.register(Affiliation)
 admin.site.register(TransactionLog)
 admin.site.register(Product)
 admin.site.register(CreditProductMap)
+admin.site.register(Relationship)
