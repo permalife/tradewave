@@ -1,8 +1,8 @@
 {% load staticfiles %}
 
 <div id="header" class="row full-width hide-for-small-only" canvas="h1">
-  <div id="header-left" class="medium-11 columns">
-    <h2 id="logo">TradeWave</h2>
+  <div id="header-left" class="medium-10 medium-offset-1 columns">
+    <img src="{% static "./images/tw-header.svg" %}"/>
     <span id="tagline">Creating a sustainable economy</span>
   </div>
   <div id="header-menu" class="medium-1 columns end">
@@ -12,7 +12,7 @@
 
 <div id="header-small" class="row full-width show-for-small-only" canvas="h2">
   <div id="header-left-small" class="header-left small-10 show-for-small-only columns">
-    <h2 id="logo-small">TradeWave</h2>
+    <img src="{% static "./images/tw-header.svg" %}"/>
   </div>
   <div id="header-menu" class="small-2 columns end">
      <a class="white toggle-menu" href=""><i class="fa fa-lg fa-bars"></i></a>

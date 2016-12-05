@@ -166,6 +166,10 @@ h6 {
   flex: 0;
 }
 
+#header img {
+  margin-right: 2rem;
+}
+
 #header-small {
   position: fixed;
   top: 0;
@@ -187,12 +191,13 @@ h6 {
 }
 
 #tagline {
-  font-size: 1.25rem;
-  margin-top: 0;
+  font-size: 1.125rem;
+  position: absolute;
+  top: 1.0625rem;
 }
 
 #header-menu {
-  margin-top: 1.125rem;
+  margin-top: 1rem;
 }
 
 #status-msg {
@@ -278,4 +283,10 @@ a.list-group-item {
 
 .attention {
   color: #f93906;
+}
+
+#vendor-has-csa {
+  display: inline-block;
+  width: 70px;
+  margin-left: 0.5rem;
 }
