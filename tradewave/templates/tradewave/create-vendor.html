@@ -35,7 +35,7 @@
       <p>Market venues</p>
         {% for venue_id, venue_name in marketplace_venues.iteritems %}
           <div class="inline">
-            <input type="checkbox" id="venue-{{ venue_id }}" name="venues" value="{{ venue_id }}"/>
+            <input type="checkbox" id="venue-{{ venue_id }}" name="vendor_venues" value="{{ venue_id }}"/>
             <label class="" for="venue-{{ venue_id }}">{{ venue_name }}</label>
           </div>
         {% endfor %}
