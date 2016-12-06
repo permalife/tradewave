@@ -5,14 +5,14 @@
 {% endblock %}
 
 {% block content %}
-            
+
   <!-- User Form -->
-  <form method="post" action="#">
+  <form method="post" action="{% url 'tradewave:vendor_assign_users' %}">
     <div class="row">
       <p>Add emails of users who can access the {{ entity_vendor }} account:</p>
     </div>
-    
-    <div id="assign-emails" class="row">          
+
+    <div id="assign-emails" class="row">
       <div class="medium-8 medium-offset-2 column end">
         <input type="email" name="user-email-1" id="user-email-1" placeholder="User Email"/>
       </div>
@@ -20,13 +20,14 @@
     <div class="row">
       <p><a id="add-user-email">Add user email</a></p>
     </div>
-    
+
     <div class="row">
       <input type="submit" class="button" value="Submit"/>
+      <a href="{% url 'tradewave:marketplace-home' %}" class="button secondary">Cancel</a>
     </div>
-  
+
   </form>
-  
+
   <script type="text/javascript">
     $(document).ready(function(){
       var num = 1;
