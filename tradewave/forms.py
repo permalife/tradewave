@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
+from tradewave.models import Product, Venue, Entity
+
 from datetime import datetime
 
 import logging
@@ -21,6 +23,8 @@ class CreateUserForm(forms.Form):
     user_password_confirm = forms.CharField(min_length=8)
     user_pin = forms.IntegerField(min_value=1000, max_value=9999)
     user_pin_confirm = forms.IntegerField(min_value=1000, max_value=9999)
+    user_vendor_id = forms.IntegerField(required=False)
+    user_vendor_name = forms.CharField(required=False)
 
     def clean(self):
         cleaned_data = super(CreateUserForm, self).clean()
@@ -42,6 +46,45 @@ class CreateUserForm(forms.Form):
         user_pin_confirm = cleaned_data.get('user_pin_confirm')
         if user_pin and user_pin_confirm and user_pin != user_pin_confirm:
             raise ValidationError(_('Pins don\'t match'))
+
+
+# Create new user form
+class CreateVendorForm(forms.Form):
+    vendor_name = forms.CharField()
+    vendor_email = forms.EmailField()
+    vendor_invite_code = forms.CharField(required=False)
+
+    # vendor product categories
+    product_categories = [
+        item.id for item in Product.objects.all()
+    ]
+    vendor_product_categories = forms.MultipleChoiceField(
+        choices=[
+            (item_id, item_id) for item_id in product_categories
+        ]
+    )
+
+    # vendor venues
+    venues = [
+        item.id for item in Venue.objects.all()
+    ]
+    vendor_venues = forms.MultipleChoiceField(
+        choices=[
+            (item_id, item_id) for item_id in venues
+        ]
+    )
+
+    # vendor csa
+    vendor_has_csa = forms.BooleanField()
+
+    def clean(self):
+        cleaned_data = super(CreateVendorForm, self).clean()
+
+        # check if user with given email exists
+        vendor_name = cleaned_data.get('vendor_name')
+        if Entity.objects.filter(name=vendor_name):
+            logger.warning('Entity %s already exists', vendor_name)
+            raise ValidationError(_('Entity with given name already exists'))
 
 
 # Login existing user form

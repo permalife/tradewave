@@ -5,17 +5,29 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect
 from django.template import RequestContext, loader
 from django.views.generic import View, ListView, TemplateView
 
-from tradewave.models import City, Venue, Entity, VenueMap, Credit, \
-    Account, CreditMap, TradewaveUser, Relationship, Industry, Vendor, \
-    Marketplace, Affiliation, TransactionLog, Product
+from tradewave.models import \
+    City, Venue, \
+    TradewaveUser, \
+    Entity, EntityVenues, \
+    Vendor, \
+    Marketplace, MarketplaceVendors, \
+    Credit, Account, CreditMap, TransactionLog, \
+    Product, CreditProductMap, \
+    Relationship
+
+
+from tradewave.forms import \
+    AssignCreditToUserForm, \
+    CreateUserForm, \
+    CreateVendorForm, \
+    DataExportForm
 
 from tradewave.serializers import AccountSerializer, TransactionLogSerializer
-from tradewave.forms import AssignCreditToUserForm, CreateUserForm, DataExportForm
 from tradewave.transaction import TradewaveTransaction
 from tradewave.allocations import CreditAllocations
 from tradewave.exceptions import CustomerInvalidCredentialsException
@@ -205,6 +217,14 @@ class LoginView(SessionContextView, TemplateView):
     template_name = 'tradewave/login.html'
 
 
+class ErrorView(SessionContextView, TemplateView):
+    template_name = 'tradewave/500.html'
+
+
+class NotFoundView(SessionContextView, TemplateView):
+    template_name = 'tradewave/404.html'
+
+
 class SendView(ListView):
     model = User
     template_name = 'tradewave/send.html'
@@ -235,19 +255,28 @@ class TransactionConfirmedView(LoginRequiredMixin, SessionContextView, TemplateV
         return context
 
 
-class CreateUserView(ListView):
-    model = User
+
+class CreateUser(LoginRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/create-user.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(CreateUser, self).get_context_data(**kwargs)
+        return context
 
-class CreateVendorView(SessionContextView, TemplateView):
+
+class CreateVendor(SessionContextView, TemplateView):
     template_name = 'tradewave/create-vendor.html'
 
     def get_context_data(self, **kwargs):
-        context = super(CreateVendorView, self).get_context_data(**kwargs)
-        context['product_categories'] = [
-            item.name for item in Product.objects.all()
-        ]
+        context = super(CreateVendor, self).get_context_data(**kwargs)
+
+        marketplace = Marketplace.objects.get(id=context['entity_id'])
+        context['marketplace_venues'] = dict([
+            (item.id, item.name) for item in marketplace.venues.all()
+        ])
+        context['product_categories'] = dict([
+            (item.id, item.name) for item in Product.objects.all()
+        ])
 
         return context
 
@@ -303,7 +332,7 @@ class MarketplaceInitial(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(MarketplaceInitial, self).get_context_data(**kwargs)
-        context['featured_venues'] = Venue.objects.all()
+        context['featured_venues'] = Marketplace.objects.get(id=context['entity_id']).venues.all()
         return context
 
 
@@ -356,14 +385,6 @@ class MarketplaceIssue(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(MarketplaceIssue, self).get_context_data(**kwargs)
-        return context
-
-
-class MarketplaceIssueNew(LoginRequiredMixin, SessionContextView, TemplateView):
-    template_name = 'tradewave/marketplace-issue-new.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(MarketplaceIssueNew, self).get_context_data(**kwargs)
         return context
 
 
@@ -498,7 +519,7 @@ class VendorInitial(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(VendorInitial, self).get_context_data(**kwargs)
-        context['featured_venues'] = Venue.objects.all()
+        context['featured_venues'] = Vendor.objects.get(id=context['entity_id']).venues.all()
         return context
 
 
@@ -1078,13 +1099,20 @@ def create_user(request):
 
         if form.is_valid():
             with transaction.atomic():
+                user_name = form.cleaned_data['user_email']
+                user_email = form.cleaned_data['user_email']
+                user_firstname = form.cleaned_data['user_firstname']
+                user_lastname = form.cleaned_data['user_lastname']
+                user_password = form.cleaned_data['user_password']
+                user_vendor_id = form.cleaned_data['user_vendor_id']
+
                 user = User(
-                    username=form.cleaned_data['user_email'],
-                    email=form.cleaned_data['user_email'],
-                    first_name=form.cleaned_data['user_firstname'],
-                    last_name=form.cleaned_data['user_lastname']
+                    username=user_name,
+                    email=user_email,
+                    first_name=user_firstname,
+                    last_name=user_lastname
                 )
-                user.set_password(form.cleaned_data['user_password'])
+                user.set_password(user_password)
                 user.save()
                 logger.info('New user %s created', user.email)
 
@@ -1111,13 +1139,32 @@ def create_user(request):
                 user_account.save()
                 logger.info('Account created for %s', entity_personal.name)
 
-                # TODO: this in essence is duplicating in part process_cust_login,
-                # so consider using that here, even though it requires the credentials
-                # to present in the request.
-                request.session['cust_account_personal_id'] = user_account.id
-                request.session['entity_customer'] = user.username
-                request.session['entity_customer_id'] = user.id
-                return redirect('tradewave:marketplace-issue-pick-credit')
+                if user_vendor_id:
+                    user_vendor = Vendor.objects.get(id=user_vendor_id)
+                    tradewaveuser.vendors.add(user_vendor)
+                    tradewaveuser.save()
+                    logger.info(
+                        'User %s is now linked to vendor entity %s',
+                        user.email,
+                        user_vendor.name
+                    )
+                    return redirect(
+                        'tradewave:marketplace-home-status',
+                        status_msg=' '.join([
+                            'User',
+                            user.email,
+                            'is now linked to vendor',
+                            user_vendor.name
+                        ])
+                    )
+                else:
+                    # TODO: this in essence is duplicating in part process_cust_login,
+                    # so consider using that here, even though it requires the credentials
+                    # to be present in the request.
+                    request.session['cust_account_personal_id'] = user_account.id
+                    request.session['entity_customer'] = user.username
+                    request.session['entity_customer_id'] = user.id
+                    return redirect('tradewave:marketplace-issue-pick-credit')
         else:
             logger.error(
                 'Invalid create user request: %s',
@@ -1135,6 +1182,99 @@ def create_user(request):
     except Exception as e:
         logger.error("Server error: %s (%s)", e.message, type(e))
         return redirect('tradewave:login', status_msg=e.message)
+
+
+# *** handler for creating a new vendor ***
+@login_required
+@transaction.atomic
+def create_vendor(request):
+    form = CreateVendorForm(request.POST)
+
+    if form.is_valid():
+        vendor_name = form.cleaned_data['vendor_name']
+        vendor_email = form.cleaned_data['vendor_email']
+        vendor_has_csa = form.cleaned_data['vendor_has_csa']
+        vendor_product_categories = form.cleaned_data['vendor_product_categories']
+        vendor_venues = form.cleaned_data['vendor_venues']
+
+        with transaction.atomic():
+            vendor = Vendor(
+                name=vendor_name,
+                email=vendor_email,
+                has_csa=vendor_has_csa,
+            )
+            vendor.save()
+            logger.info('New vendor %s created', vendor_name)
+
+            # assign products to vendor
+            for category_id in vendor_product_categories:
+                product = Product.objects.get(id=category_id)
+                vendor.products.add(product)
+                logger.info(
+                    'Vendor %s now offers product %s', vendor_name, product.name
+                )
+
+            # assign venues to vendor
+            for venue_id in vendor_venues:
+                venue = Venue.objects.get(id=venue_id)
+                ev = EntityVenues(
+                    entity=vendor,
+                    venue=venue
+                )
+                ev.save()
+                logger.info(
+                    'Vendor %s is now affiliated with venue %s', vendor_name, venue.name
+                )
+
+            # create vendor account
+            vendor_account = Account(entity=vendor, amount_total=0)
+            vendor_account.save()
+            logger.info('Account created for %s', vendor.name)
+
+            # associate vendor to the current marketplace
+            if not form.cleaned_data['vendor_invite_code']:
+                marketplace = Marketplace.objects.get(id=request.session['entity_id'])
+                mv = MarketplaceVendors(
+                    marketplace=marketplace,
+                    vendor=vendor
+                )
+                mv.save()
+                logger.info(
+                    'Vendor %s is now a member of marketplace %s',
+                    vendor_name,
+                    marketplace.name
+                )
+            # or use the invite code to determine the right association
+            else:
+                # TODO:
+                #   compare the invite code with the stored one and add vendor to
+                #   the corresponding marketplace
+                pass
+
+            return redirect(
+                'tradewave:create-user-vendor',
+                vendor_id=vendor.id,
+                vendor_name=vendor.name,
+                status_msg=' '.join([
+                    'Create your personal account to join',
+                    vendor_name,
+                    'organization'
+                ])
+            )
+
+    else:
+        logger.error(
+            'Invalid create vendor request: %s',
+            form.errors.as_data()
+        )
+
+        # just report the first validation error
+        errors = [
+            '%s: %s' % (field, error)
+            for field, le in form.errors.as_data().iteritems()
+            for error in le
+        ]
+        return redirect('tradewave:create-vendor-status', status_msg=errors[0])
 
 
 # *** handler for creating a new user ***
@@ -1169,3 +1309,7 @@ def assign_credit_to_user(request):
     else:
         logger.error('Invalid form: %s', form.errors.as_data())
         return redirect('tradewave:marketplace-home')
+
+
+def return_404(request):
+    return HttpResponseNotFound('Not found')
