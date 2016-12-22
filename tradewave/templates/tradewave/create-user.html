@@ -11,13 +11,13 @@
       <div>
         <div class="row">
           <p>Name and Email</p>
-          <div class="input-left small-6 medium-4 medium-offset-2 columns">
+          <div class="input-left small-6 columns">
             <input type="text" required class="text" name="user_firstname" id="user-fname" placeholder="First Name"/>
           </div>
-          <div class="input-right small-6 medium-4 columns end">
+          <div class="input-right small-6 columns end">
             <input type="text" required class="text" name="user_lastname" id="user-lname" placeholder="Last Name"/>
           </div>
-          <div class="small-centered small-12 medium-8 columns">
+          <div class="small-centered small-12 columns">
             <input type="email" required class="text" name="user_email" id="user-email" placeholder="Email"/>
           </div>
           <div></div>
@@ -25,16 +25,16 @@
 
         <div class="row">
           <p>Password and PIN</p>
-          <div class="input-left small-6 medium-4 medium-offset-2 columns">
+          <div class="input-left small-6 columns">
             <input type="password" required class="text" name="user_password" id="user-password" placeholder="Password"/>
           </div>
-          <div class="input-right small-6 medium-4 columns end">
+          <div class="input-right small-6 columns end">
             <input type="password" required class="text" name="user_password_confirm" id="user-password-confirm" placeholder="Confirm password"/>
           </div>
-          <div class="input-left small-6 medium-4 medium-offset-2 columns">
+          <div class="input-left small-6 columns">
             <input type="password" required class="text" name="user_pin" id="user-pin" placeholder="PIN"/>
           </div>
-          <div class="input-right small-6 medium-4 columns end">
+          <div class="input-right small-6 columns end">
             <input type="password" required class="text" name="user_pin_confirm" id="user-pin-confirm" placeholder="Confirm PIN"/>
           </div>
         </div>
@@ -42,11 +42,11 @@
         {% if vendor_id %}
           <div class="row">
             <p>Vendor association</p>
-            <div class="small-centered small-12 medium-8 columns">
+            <div class="small-centered small-12 columns">
               <input type="text" readonly class="text" name="user_vendor_name" id="vendor-name" value={{vendor_name}}>
             </div>
 
-            <div class="small-centered small-12 medium-8 columns">
+            <div class="small-centered small-12 columns">
               <input type="hidden" class="text" name="user_vendor_id" id="vendor-id" value={{vendor_id}}>
             </div>
           </div>
