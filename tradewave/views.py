@@ -18,11 +18,13 @@ from tradewave.models import \
     Marketplace, MarketplaceVendors, \
     Credit, Account, CreditMap, TransactionLog, \
     Product, CreditProductMap, \
-    Relationship
+    Relationship, \
+    Token
 
 
 from tradewave.forms import \
     AssignCreditToUserForm, \
+    AssignUsersToVendorForm, \
     CreateUserForm, \
     CreateVendorForm, \
     DataExportForm
@@ -31,6 +33,8 @@ from tradewave.serializers import AccountSerializer, TransactionLogSerializer
 from tradewave.transaction import TradewaveTransaction
 from tradewave.allocations import CreditAllocations
 from tradewave.exceptions import CustomerInvalidCredentialsException
+
+from tradewave.tasks import sendTransactionalEmail
 
 from collections import OrderedDict
 from datetime import datetime, date, timedelta
@@ -47,6 +51,7 @@ from rest_framework import permissions
 
 from rest_pandas import PandasView
 
+import mandrill
 import time
 import logging
 import uuid
@@ -261,6 +266,14 @@ class CreateUser(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(CreateUser, self).get_context_data(**kwargs)
+        return context
+
+
+class CreateUserNew(SessionContextView, TemplateView):
+    template_name = 'tradewave/create-user.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(CreateUserNew, self).get_context_data(**kwargs)
         return context
 
 
@@ -1090,7 +1103,36 @@ def redeem_credits(request):
         return redirect('tradewave:login', status_msg=e.message)
 
 
-# *** handler for creating a new user ***
+# *** view handler for creating a new user ***
+# Describe all pathways this handler is called from:
+#
+#   1. Marketplace creates a new user to issue credits to
+#       a. calling sequence: marketplace-issue => create-user
+#       b. authentication: login_required
+#       c. context (incoming): n/a
+#       d. context (outgoing):
+#           * cust_account_personal_id
+#           * entity_customer
+#           * entity_customer_id
+#       e. redirect: marketplace-issue-pick-credit
+#
+#   2. New vendor flow (create vendor user account)
+#       a. calling sequence: create-vendor => create-user
+#       b. authentication: login_required
+#       c. context (incoming):
+#           * user_vendor_id
+#           * user_vendor_name
+#       d. context (outgoing):
+#           * status_msg
+#       e. redirect: marketplace-home
+#
+#   3. New user signing up with an invite code
+#       a. calling sequence: direct request
+#       b. authentication: none
+#       c. context (incoming):
+#           * user_invite_code
+#       d. context (outgoing): n/a
+#       e. redirect: login
 @login_required
 @transaction.atomic
 def create_user(request):
@@ -1098,13 +1140,75 @@ def create_user(request):
         form = CreateUserForm(request.POST)
 
         if form.is_valid():
+            invite_token = form.cleaned_data['user_invite_code']
+            user_vendor_id = None
+            user_marketplace_id = None
+
+            # if pathway 3
+            if invite_token:
+                invite_record = Invite.objects.get(
+                    token=invite_token,
+                    invite_type='user'
+                )
+
+                # check this is a valid invite code
+                if invite_record:
+                    logger.info(
+                        'Invite record retrieved for token %s',
+                        invite_token
+                    )
+                    invite_date_expires = invite_record.date_expires
+                    if invite_date_expires > datetime.now():
+                        logger.info(
+                            'Invite token is valid'
+                        )
+
+                        # invite records may contain requested entity associations
+                        if invite_record.vendor:
+                            user_vendor_id = invite_record.vendor.id
+                            logger.info(
+                                'Vendor %s association requested',
+                                invite_record.vendor.name
+                            )
+
+                        if invite_record.marketplace:
+                            user_marketplace_id = invite_record.marketplace.id
+                            logger.info(
+                                'Marketplace %s association requested',
+                                invite_record.marketplace.name
+                            )
+
+                    else:
+                        logger.info(
+                            'Invite token has expired on %s',
+                            str(invite_date_expires)
+                        )
+                        return redirect(
+                            'tradewave:login',
+                            status_msg='This signup token has expired.'
+                        )
+                else:
+                    logger.warning(
+                        'Invite record not found for token %s',
+                        invite_token
+                    )
+                    return redirect(
+                        'tradewave:login',
+                        status_msg='Invalid signup token attempt!'
+                    )
+
+            # proceed with creating the models now
+            # TODO: refactor into function
             with transaction.atomic():
                 user_name = form.cleaned_data['user_email']
                 user_email = form.cleaned_data['user_email']
                 user_firstname = form.cleaned_data['user_firstname']
                 user_lastname = form.cleaned_data['user_lastname']
                 user_password = form.cleaned_data['user_password']
-                user_vendor_id = form.cleaned_data['user_vendor_id']
+
+                # record user_vendor_id in order to check for pathway 2 below
+                if not user_vendor_id:
+                    user_vendor_id = form.cleaned_data['user_vendor_id']
 
                 user = User(
                     username=user_name,
@@ -1139,6 +1243,7 @@ def create_user(request):
                 user_account.save()
                 logger.info('Account created for %s', entity_personal.name)
 
+                # create vendor association, if requested
                 if user_vendor_id:
                     user_vendor = Vendor.objects.get(id=user_vendor_id)
                     tradewaveuser.vendors.add(user_vendor)
@@ -1148,6 +1253,26 @@ def create_user(request):
                         user.email,
                         user_vendor.name
                     )
+
+                # create marketplace association, if requested
+                if user_marketplace_id:
+                    user_marketplace = Marketplace.objects.get(id=user_marketplace_id)
+                    tradewaveuser.marketplaces.add(user_marketplace)
+                    tradewaveuser.save()
+                    logger.info(
+                        'User %s is now linked to marketplace entity %s',
+                        user.email,
+                        user_marketplace.name
+                    )
+
+                # pathway 3 redirect
+                if invite_token:
+                    return redirect(
+                        'tradewave:login',
+                        status_msg='User successfully created'
+                    )
+                # pathway 2 redirect
+                elif user_vendor_id:
                     return redirect(
                         'tradewave:marketplace-home-status',
                         status_msg=' '.join([
@@ -1157,14 +1282,16 @@ def create_user(request):
                             user_vendor.name
                         ])
                     )
+                # pathway 1 redirect
                 else:
-                    # TODO: this in essence is duplicating in part process_cust_login,
-                    # so consider using that here, even though it requires the credentials
-                    # to be present in the request.
+                    # part of credit issue to user flow
+                    # TODO: refactor into function
                     request.session['cust_account_personal_id'] = user_account.id
                     request.session['entity_customer'] = user.username
                     request.session['entity_customer_id'] = user.id
                     return redirect('tradewave:marketplace-issue-pick-credit')
+
+        # fail with form validation error
         else:
             logger.error(
                 'Invalid create user request: %s',
@@ -1309,6 +1436,73 @@ def assign_credit_to_user(request):
     else:
         logger.error('Invalid form: %s', form.errors.as_data())
         return redirect('tradewave:marketplace-home')
+
+
+# *** view handler for assigning users to vendor ***
+@login_required
+@transaction.atomic
+def entity_assign_users(request, entity_id):
+    form = AssignUsersToVendorForm(request.POST)
+
+    if form.is_valid():
+        entity = Entity.objects.get(id=entity_id)
+        data = form.cleaned_data
+        user_emails = data['user_emails']
+
+        for user_email in user_emails:
+            logger.info(
+                'Request to assign user %s to entity %s',
+                user_email,
+                entity.name
+            )
+
+            twuser = TradewaveUser.objects.get(user__email=user_email)
+            if twuser:
+                if entity.vendor:
+                    twuser.vendors.add(entity.vendor)
+                elif entity.marketplace:
+                    twuser.marketplaces.add(entity.marketplace)
+                twuser.save()
+                logger.info(
+                    'Assigned existing user %s to entity %s',
+                    twuser.user.email,
+                    entity.name
+                )
+            else:
+                # generate and store the token
+                token = uuid.uuid4()
+                one_week_from_now = datetime.now() + timedelta(days=7)
+                token_record = Token(
+                    email=user_email,
+                    token=token,
+                    token_type='vendor-add-user',
+                    vendor=vendor,
+                    date_expires=one_week_from_now
+                )
+                token_record.save()
+
+                # send an email to the prospective user asking to join
+                tasks.sendTransactionalEmail.apply_async(
+                    [
+                        'vendor-add-user',
+                        None,
+                        [
+                            {
+                                'name': VENDOR_NAME,
+                                'content': vendor.name
+                            },
+                            {
+                                'name': TOKEN,
+                                'content': token
+                            }
+                        ],
+                        user_email
+                    ],
+                    expires=one_week_from_now
+                )
+    else:
+        logger.error('Invalid form: %s', form.errors.as_data())
+        return redirect('tradewave:vendor-home')
 
 
 def return_404(request):
