@@ -394,3 +394,20 @@ class CreditProductMap(models.Model):
             'can be used to buy',
             self.product.name
         ])
+
+
+def one_week_from_now():
+    return timezone.now() + timedelta(days=7)
+
+# user invite
+class Token(models.Model):
+    email = models.EmailField()
+    is_verified = models.BooleanField(default=False)
+    token = models.UUIDField(default=uuid4)
+    token_type = models.CharField(max_length=20)
+    vendor = models.ForeignKey(Vendor, null=True, blank=True)
+    marketplace=models.ForeignKey(Marketplace, null=True, blank=True)
+    date_expires = models.DateTimeField(
+        'date invite token expires',
+        default=one_week_from_now
+    )

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
-from tradewave.models import Product, Venue, Entity
+from tradewave.models import Product, Venue, Entity, TradewaveUser
 
 from datetime import datetime
 
@@ -25,6 +25,7 @@ class CreateUserForm(forms.Form):
     user_pin_confirm = forms.IntegerField(min_value=1000, max_value=9999)
     user_vendor_id = forms.IntegerField(required=False)
     user_vendor_name = forms.CharField(required=False)
+    user_invite_code = forms.UUIDField(required=False)
 
     def clean(self):
         cleaned_data = super(CreateUserForm, self).clean()
@@ -127,3 +128,29 @@ class DataExportForm(forms.Form):
 class AssignCreditToUserForm(forms.Form):
     credit_uuid = forms.UUIDField()
     credit_amount = forms.DecimalField(max_digits=12, decimal_places=2)
+
+
+# Assign Users to Vendor
+class AssignUsersToVendorForm(forms.Form):
+    # vendor product categories
+    user_emails_all = [
+        twuser.user.email for twuser in TradewaveUser.objects.all()
+    ]
+    user_emails = forms.MultipleChoiceField(
+        choices=[
+            (user_email, user_email) for user_email in user_emails_all
+        ]
+    )
+
+    def clean(self):
+        cleaned_data = super(AssignUsersToVendorForm, self).clean()
+
+        # check if user with given email exists
+        user_emails = cleaned_data.get('user_emails')
+        for user_email in user_emails:
+            if '@' not in user_email:
+                error_msg = 'Invalid email address submitted: %s' % user_email
+                logger.warning(error_msg)
+                raise ValidationError(_('error_msg'))
+
+        return cleaned_data

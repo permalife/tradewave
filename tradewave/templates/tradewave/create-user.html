@@ -52,6 +52,15 @@
           </div>
         {% endif %}
 
+        {% if invite_token %}
+          <div class="row">
+            <p>Invite code:</p>
+            <div class="small-centered small-12 medium-8">
+              <input readonly name="user_invite_code" type="text" placeholder="{{invite_token}}"/>
+            </div>
+          </div>
+        {% endif %}
+
         <div class="row">
           <div>
             <input type="submit" class="button" value="Create"/>
