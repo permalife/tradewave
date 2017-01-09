@@ -54,6 +54,7 @@ from rest_pandas import PandasView
 import mandrill
 import time
 import logging
+import pytz
 import uuid
 
 
@@ -274,6 +275,10 @@ class CreateUserNew(SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(CreateUserNew, self).get_context_data(**kwargs)
+        if Token.objects.filter(token=context['invite_token']):
+            token_record = Token.objects.get(token=context['invite_token'])
+            context['user_email'] = token_record.email
+
         return context
 
 
@@ -1141,14 +1146,14 @@ def create_user(request):
 
         if form.is_valid():
             invite_token = form.cleaned_data['user_invite_code']
+            logger.info('Request with invite token: %s', invite_token)
             user_vendor_id = None
             user_marketplace_id = None
 
             # if pathway 3
             if invite_token:
-                invite_record = Invite.objects.get(
+                invite_record = Token.objects.get(
                     token=invite_token,
-                    invite_type='user'
                 )
 
                 # check this is a valid invite code
@@ -1158,7 +1163,7 @@ def create_user(request):
                         invite_token
                     )
                     invite_date_expires = invite_record.date_expires
-                    if invite_date_expires > datetime.now():
+                    if invite_date_expires > datetime.now(pytz.utc):
                         logger.info(
                             'Invite token is valid'
                         )
@@ -1442,6 +1447,7 @@ def assign_credit_to_user(request):
 @login_required
 @transaction.atomic
 def entity_assign_users(request, entity_id):
+    logger.info('request.POST:' + str(request.POST))
     form = AssignUsersToVendorForm(request.POST)
 
     if form.is_valid():
@@ -1456,8 +1462,8 @@ def entity_assign_users(request, entity_id):
                 entity.name
             )
 
-            twuser = TradewaveUser.objects.get(user__email=user_email)
-            if twuser:
+            if TradewaveUser.objects.filter(user__email=user_email):
+                twuser = TradewaveUser.objects.get(user__email=user_email)
                 if entity.vendor:
                     twuser.vendors.add(entity.vendor)
                 elif entity.marketplace:
@@ -1472,38 +1478,66 @@ def entity_assign_users(request, entity_id):
                 # generate and store the token
                 token = uuid.uuid4()
                 one_week_from_now = datetime.now() + timedelta(days=7)
-                token_record = Token(
-                    email=user_email,
-                    token=token,
-                    token_type='vendor-add-user',
-                    vendor=vendor,
-                    date_expires=one_week_from_now
-                )
-                token_record.save()
 
-                # send an email to the prospective user asking to join
-                tasks.sendTransactionalEmail.apply_async(
-                    [
-                        'vendor-add-user',
-                        None,
+                # vendor-add-user
+                if entity.vendor:
+                    token_record = Token(
+                        email=user_email,
+                        token=token,
+                        token_type='vendor-add-user',
+                        vendor=entity.vendor,
+                        date_expires=one_week_from_now
+                    )
+                    token_record.save()
+
+                    # send an email to the prospective user asking to join
+                    sendTransactionalEmail.apply_async(
                         [
-                            {
-                                'name': VENDOR_NAME,
-                                'content': vendor.name
-                            },
-                            {
-                                'name': TOKEN,
-                                'content': token
-                            }
+                            'vendor-add-user',
+                            None,
+                            [
+                                {
+                                    'name': 'VENDOR_NAME',
+                                    'content': entity.vendor.name
+                                },
+                                {
+                                    'name': 'TOKEN',
+                                    'content': token
+                                }
+                            ],
+                            user_email
                         ],
-                        user_email
-                    ],
-                    expires=one_week_from_now
-                )
+                        expires=one_week_from_now
+                    )
+
+        status_msg = 'Invite email%s have been sent out to the '
+        num_emails = len(user_emails)
+
+        if num_emails > 1:
+            status_msg %= 's'
+            status_msg += '%d specified addresses' % num_emails
+        else:
+            status_msg %= ''
+            status_msg += 'specified address'
+        return redirect(
+            'tradewave:vendor-home-status',
+            status_msg=status_msg
+        )
     else:
         logger.error('Invalid form: %s', form.errors.as_data())
         return redirect('tradewave:vendor-home')
 
+
+def process_invite(request, token):
+    if Token.objects.filter(token=token):
+        logger.info('Verification record found for token %s', token)
+        token_record = Token.objects.get(token=token)
+        if token_record.date_expires > datetime.now(pytz.utc):
+            token_record.is_verified = True
+            return redirect('tradewave:create-user')
+        else:
+            logger.warning('Token %s has already expired', token)
+            return redirect('tradewave:login')
 
 def return_404(request):
     return HttpResponseNotFound('Not found')
