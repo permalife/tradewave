@@ -9,10 +9,12 @@
   <section id="intro">
 
     {% for featured_venue in featured_venues %}
-    <div class="row">
-      <a href="/record_venue/{{ featured_venue.id }}" class="button">
-        {{ featured_venue.name }}
-      </a>
+    <div class="row half-margin-bottom">
+      <div class="medium-10 small-centered columns">
+        <a href="/record_venue/{{ featured_venue.id }}" class="button full-width">
+          {{ featured_venue.name }}
+        </a>
+      </div>
     </div>
     {% endfor %}
 

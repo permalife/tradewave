@@ -8,9 +8,9 @@
 {% block content %}
   <section id="intro">
     {% for featured_venue in featured_venues %}
-      <div class="row">
-        <div class="medium-10 columns">
-          <a href="/record_venue/{{ featured_venue.id }}" class="button expand">
+      <div class="row half-margin-bottom">
+        <div class="medium-10 small-centered columns">
+          <a href="/record_venue/{{ featured_venue.id }}" class="button full-width">
             {{ featured_venue.name }}
           </a>
         </div>
