@@ -7,7 +7,7 @@
 {% block content %}
 
   <!-- User Form -->
-  <form method="post" action="{% url 'tradewave:entity_assign_users' entity_id=53 %}">
+  <form method="post" action="{% url 'tradewave:entity_assign_users' entity_id=vendor_id %}">
     {% csrf_token %}
     <div class="row">
       <p>Add emails of users who will have access to vendor {{ entity_vendor }}'s account:</p>

@@ -554,6 +554,7 @@ class VendorAssign(LoginRequiredMixin, SessionContextView, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(VendorAssign, self).get_context_data(**kwargs)
+        return context
 
 class UserHomeView(LoginRequiredMixin, SessionContextView, TemplateView):
     # url args: user_id (django user id)
