@@ -124,23 +124,28 @@ class DataExportForm(forms.Form):
 
         return data
 
+
 # Assign credit to user form
 class AssignCreditToUserForm(forms.Form):
     credit_uuid = forms.UUIDField()
     credit_amount = forms.DecimalField(max_digits=12, decimal_places=2)
 
 
+class NotValidatedMultipleChoiceFiled(forms.TypedMultipleChoiceField):
+    """Field that do not validate if the field values are in self.choices"""
+
+    def to_python(self, value):
+        """Override checking method"""
+        return map(self.coerce, value)
+
+    def validate(self, value):
+        """Nothing to do here"""
+        pass
+
+
 # Assign Users to Vendor
 class AssignUsersToVendorForm(forms.Form):
-    # vendor product categories
-    user_emails_all = [
-        twuser.user.email for twuser in TradewaveUser.objects.all()
-    ]
-    user_emails = forms.MultipleChoiceField(
-        choices=[
-            (user_email, user_email) for user_email in user_emails_all
-        ]
-    )
+    user_emails = NotValidatedMultipleChoiceFiled()
 
     def clean(self):
         cleaned_data = super(AssignUsersToVendorForm, self).clean()

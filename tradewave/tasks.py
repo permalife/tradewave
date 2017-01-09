@@ -21,10 +21,12 @@ def sendTransactionalEmail(self, template_name, template_content, merge_vars, re
     mandrill_client = mandrill.Mandrill(config.MANDRILL_API_KEY)
     message = {
         'from_email': 'info@tradewave.co',
+        'from_name': 'Tradewave',
         'to': [{
             'email': recipient_email,
             'type': 'to'
         }],
+        'subject': 'Join vendor %s on Tradewave' % merge_vars[0]['content'],
         'global_merge_vars': merge_vars
     }
 

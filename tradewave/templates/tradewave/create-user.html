@@ -18,7 +18,11 @@
             <input type="text" required class="text" name="user_lastname" id="user-lname" placeholder="Last Name"/>
           </div>
           <div class="small-centered small-12 medium-8 columns">
-            <input type="email" required class="text" name="user_email" id="user-email" placeholder="Email"/>
+            {% if user_email %}
+              <input type="email" readonly class="text" name="user_email" id="user-email" value="{{user_email}}"/>
+            {% else %}
+              <input type="email" required class="text" name="user_email" id="user-email" placeholder="Email"/>
+            {% endif %}
           </div>
           <div></div>
         </div>
@@ -56,7 +60,7 @@
           <div class="row">
             <p>Invite code:</p>
             <div class="small-centered small-12 medium-8">
-              <input readonly name="user_invite_code" type="text" placeholder="{{invite_token}}"/>
+              <input readonly name="user_invite_code" type="text" value="{{invite_token}}"/>
             </div>
           </div>
         {% endif %}
