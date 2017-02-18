@@ -7,14 +7,15 @@
 {% block content %}
 
   <!-- User Form -->
-  <form method="post" action="{% url 'tradewave:vendor_assign_users' %}">
+  <form method="post" action="{% url 'tradewave:entity_assign_users' entity_id=vendor_id %}">
+    {% csrf_token %}
     <div class="row">
-      <p>Add emails of users who can access the {{ entity_vendor }} account:</p>
+      <p>Add emails of users who will have access to vendor {{ entity_vendor }}'s account:</p>
     </div>
 
     <div id="assign-emails" class="row">
       <div class="medium-8 medium-offset-2 column end">
-        <input type="email" name="user-email-1" id="user-email-1" placeholder="User Email"/>
+        <input type="email" name="user_emails" id="user-email-1" placeholder="User Email"/>
       </div>
     </div>
     <div class="row">
@@ -33,7 +34,7 @@
       var num = 1;
       $('#add-user-email').click(function(){
         num++;
-        $('#assign-emails').append('<div class="medium-8 medium-offset-2 column end"><input type="email" name="user-email-'+num+'" id="user-email-'+num+'" placeholder="User Email"/></div>');
+        $('#assign-emails').append('<div class="medium-8 medium-offset-2 column end"><input type="email" name="user_emails" id="user-email-'+num+'" placeholder="User Email"/></div>');
       });
     });
   </script>
