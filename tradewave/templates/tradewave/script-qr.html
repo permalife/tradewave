@@ -1,10 +1,12 @@
 <script>
 (function($){
-  $('document').ready(function(){
+  $(document).ready(function(){
     $('#qrcodebox').WebcamQRCode({
       onQRCodeDecode: function( p_data ) {
         //window.alert("QR Code read: " + p_data);
         //$('#qrcode_result').html( p_data );
+        $('#qrcodebox').WebcamQRCode().stop();
+        document.getElementById("qrcodebox").style.display="none";
         document.getElementById("qr_status").innerHTML="<strong> Code scanned </strong>";
         document.getElementById("qr_string").value=p_data;
         document.getElementById("qr_pin").style.visibility="visible";
