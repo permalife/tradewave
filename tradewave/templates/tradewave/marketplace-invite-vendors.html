@@ -5,34 +5,35 @@
 {% endblock %}
 
 {% block content %}
-            
+
   <!-- User Form -->
-  <form method="post" action="#">
+  <form method="post" action="{% url 'tradewave:entity_invite_or_assign_users' entity_id=entity_id is_vendor=True %}">
+    {% csrf_token %}
     <div class="row">
       <p>Add emails of vendors you wish to invite:</p>
     </div>
-    
-    <div id="assign-emails" class="row">          
+
+    <div id="assign-emails" class="row">
       <div class="medium-8 medium-offset-2 column end">
-        <input type="email" name="vendor-email-1" id="vendor-email-1" placeholder="Vendor Email"/>
+        <input type="email" name="user_emails" id="user-email-1" placeholder="Vendor Email"/>
       </div>
     </div>
     <div class="row">
       <p><a id="add-user-email">Add vendor email</a></p>
     </div>
-    
+
     <div class="row">
       <input type="submit" class="button" value="Invite"/>
     </div>
-  
+
   </form>
-  
+
   <script type="text/javascript">
     $(document).ready(function(){
       var num = 1;
       $('#add-user-email').click(function(){
         num++;
-        $('#assign-emails').append('<div class="medium-8 medium-offset-2 column end"><input type="email" name="vendor-email-'+num+'" id="vendor-email-'+num+'" placeholder="Vendor Email"/></div>');
+        $('#assign-emails').append('<div class="medium-8 medium-offset-2 column end"><input type="email" name="user_emails" id="user-email-'+num+'" placeholder="Vendor Email"/></div>');
       });
     });
   </script>

@@ -8,7 +8,7 @@
 {% block content %}
 <section id="intro">
   <div class="table">
-    {% if user_total > 0 %}
+    {% if total > 0 %}
       <div class="row">
         <div class="left small-8 columns">
           <strong>Credit type</strong>
@@ -23,7 +23,7 @@
         <hr class="half-margin-top half-margin-bottom half-margin-left half-margin-right">
       </div>
       <!-- list credit in account -->
-      {% for credit, amount in user_credits.items %}
+      {% for credit, amount in credits.items %}
         <div class="row half-margin-bottom">
           <div class="left small-8 columns">
             {{ credit }}:
@@ -47,7 +47,7 @@
         <strong>Total:</strong>
       </div>
       <div class="right small-4 columns">
-        <strong>${{ user_total|floatformat:2 }}</strong>
+        <strong>${{ total|floatformat:2 }}</strong>
       </div>
     </div>
   </div>

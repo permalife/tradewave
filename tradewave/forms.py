@@ -90,10 +90,19 @@ class CreateVendorForm(forms.Form):
 
 # Login existing user form
 class LoginUserForm(forms.Form):
-    cust_name = forms.CharField()
-    cust_password = forms.CharField()
-    cust_qr_string = forms.CharField()
-    cust_pin = forms.IntegerField(min_value=1000, max_value=9999)
+    cust_name = forms.CharField(required=False)
+    cust_password = forms.CharField(required=False)
+    cust_qr_string = forms.CharField(required=False)
+    cust_pin = forms.IntegerField(min_value=1000, max_value=9999, required=False)
+
+    def clean(self):
+        cleaned_data = super(LoginUserForm, self).clean()
+        login_password = 'cust_name' in cleaned_data and 'cust_password' in cleaned_data
+        login_qr = 'cust_qr_string' in cleaned_data and 'cust_pin' in cleaned_data
+        if not (login_password or login_qr):
+            raise ValidationError(_('Either login or qr must be provided'))
+
+        return cleaned_data
 
 
 # Market venue and date
@@ -144,11 +153,11 @@ class NotValidatedMultipleChoiceFiled(forms.TypedMultipleChoiceField):
 
 
 # Assign Users to Vendor
-class AssignUsersToVendorForm(forms.Form):
+class EntityInviteOrAssignUsersForm(forms.Form):
     user_emails = NotValidatedMultipleChoiceFiled()
 
     def clean(self):
-        cleaned_data = super(AssignUsersToVendorForm, self).clean()
+        cleaned_data = super(EntityInviteOrAssignUsersForm, self).clean()
 
         # check if user with given email exists
         user_emails = cleaned_data.get('user_emails')

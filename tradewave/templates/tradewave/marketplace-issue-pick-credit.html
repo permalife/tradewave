@@ -16,8 +16,8 @@
       <div class="row one-margin-bottom">
         <div class="small-12 medium-6 columns">
           <select name="credit_uuid" >
-            {% for credit_uuid, credit_name in marketplace_credits.items %}
-                <option class="text" value="{{credit_uuid}}"> {{credit_name}} </option>
+            {% for credit_uuid, credit_data in marketplace_credits.items %}
+                <option class="text" value="{{credit_uuid}}"> {{credit_data.name}} </option>
             {% endfor %}
           </select>
         </div>
