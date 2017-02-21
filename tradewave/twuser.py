@@ -1,7 +1,7 @@
-from Tradewave.models import TradewaveUser
-from Tradewave.wallet import Wallet
+from tradewave.models import TradewaveUser
+from tradewave.wallet import Wallet
 
-class TradewaveUser(object):
+class TwUser(object):
     def __init__(self, userid):
         self.tw_user = TradewaveUser.objects.get(user_id=userid)
         self.entity_user = self.tw_user.user_entity
@@ -12,10 +12,10 @@ class TradewaveUser(object):
         if self.is_vendor():
             self.entity = self.tw_user.vendors.first()
 
-        self.wallet_user = Wallet(self.entity_user)
+        self.wallet_user = Wallet(self.entity_user.id)
         self.wallet_entity = None
         if self.entity:
-            self.wallet_entity = Wallet(self.entity)
+            self.wallet_entity = Wallet(self.entity.id)
 
     def get_username(self):
         return tw_user.user.username

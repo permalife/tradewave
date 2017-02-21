@@ -33,13 +33,13 @@ from tradewave.serializers import AccountSerializer, TransactionLogSerializer
 from tradewave.tasks import sendTransactionalEmail
 from tradewave.token import TokenRecord
 from tradewave.transaction import TradewaveTransaction
+from tradewave.twuser import TwUser
 from tradewave.wallet import Wallet
 
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from decimal import Decimal
 from import_export import resources
-from operator import attrgetter
 
 from rest_framework import generics
 from rest_framework import permissions
@@ -795,17 +795,39 @@ def process_login(request):
     form = LoginUserForm(request.POST)
 
     if form.is_valid():
-        user_name = form.cleaned_data['user_name']
-        user_password = form.cleaned_data['user_password']
-        user = authenticate(
-            username=user_name,
-            password=user_password
-        )
+        user = None
+        if form.cleaned_data['login_qr']:
+            try:
+                user = TradewaveUser.objects.get(
+                    qr_string = form.cleaned_data['user_qr_string'],
+                    pin = form.cleaned_data['user_pin']
+                )
+            except:
+                logger.warning(
+                    'Invalid qr login attempt: %s',
+                    form.cleaned_data['user_qr_string']
+                )
+        else:
+            user_name = form.cleaned_data['user_name']
+            user_password = form.cleaned_data['user_password']
+            user = authenticate(
+                username=user_name,
+                password=user_password
+            )
+            if user:
+                logger.info(
+                    'Authentication using username / password: %s',
+                    user_name
+                )
+            else:
+                logger.warning(
+                    'Invalid user / password login attempt: %s',
+                    form.cleaned_data['user_name']
+                )
 
-        # is existing user?
         if user is not None and user.is_active:
             login(request, user)
-            logger.info('Logged in as user [%s]', user.username)
+            logger.info('Succusseful login: %s', user.username)
             tw_user = TwUser(user.id)
 
             # user's personal entity
@@ -817,17 +839,17 @@ def process_login(request):
             logger.info('personal entity name: %s', user_personal_entity.name)
 
             if tw_user.is_vendor():
-                request.session['entity_vendor'] = tw_user.get_entity_name
+                request.session['entity_vendor'] = tw_user.get_entity_name()
                 dest_url = 'vendor-initial'
             elif tw_user.is_marketplace():
-                request.session['entity_marketplace'] = user_entity.name
+                request.session['entity_marketplace'] = tw_user.get_entity_name()
                 dest_url = 'marketplace-initial'
             else:
                 dest_url = 'user-home'
 
             if tw_user.is_vendor() or tw_user.is_marketplace():
                 request.session['entity_id'] = tw_user.get_entity_id()
-                logger.info('entity name: %s', user_entity.name)
+                logger.info('entity name: %s', tw_user.get_entity_name())
 
             return redirect('tradewave:%s' % dest_url)
 

@@ -90,17 +90,22 @@ class CreateVendorForm(forms.Form):
 
 # Login existing user form
 class LoginUserForm(forms.Form):
-    cust_name = forms.CharField(required=False)
-    cust_password = forms.CharField(required=False)
-    cust_qr_string = forms.CharField(required=False)
-    cust_pin = forms.IntegerField(min_value=1000, max_value=9999, required=False)
+    user_name = forms.CharField(required=False)
+    user_password = forms.CharField(required=False)
+    user_qr_string = forms.CharField(required=False)
+    user_pin = forms.IntegerField(min_value=1000, max_value=9999, required=False)
 
     def clean(self):
         cleaned_data = super(LoginUserForm, self).clean()
-        login_password = 'cust_name' in cleaned_data and 'cust_password' in cleaned_data
-        login_qr = 'cust_qr_string' in cleaned_data and 'cust_pin' in cleaned_data
+        login_password = cleaned_data['user_name'] and cleaned_data['user_password']
+        login_qr = cleaned_data['user_qr_string'] and cleaned_data['user_pin']
         if not (login_password or login_qr):
             raise ValidationError(_('Either login or qr must be provided'))
+
+        if login_qr:
+            cleaned_data['login_qr'] = True
+        else:
+            cleaned_data['login_qr'] = False
 
         return cleaned_data
 
