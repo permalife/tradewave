@@ -56,9 +56,13 @@ class CreateVendorForm(forms.Form):
     vendor_invite_code = forms.CharField(required=False)
 
     # vendor product categories
-    product_categories = [
-        item.id for item in Product.objects.all()
-    ]
+    try:
+        product_categories = [
+            item.id for item in Product.objects.all()
+        ]
+    except:
+        product_categories = []
+
     vendor_product_categories = forms.MultipleChoiceField(
         choices=[
             (item_id, item_id) for item_id in product_categories
@@ -66,9 +70,13 @@ class CreateVendorForm(forms.Form):
     )
 
     # vendor venues
-    venues = [
-        item.id for item in Venue.objects.all()
-    ]
+    try:
+        venues = [
+            item.id for item in Venue.objects.all()
+        ]
+    except:
+        venues = []
+
     vendor_venues = forms.MultipleChoiceField(
         choices=[
             (item_id, item_id) for item_id in venues
