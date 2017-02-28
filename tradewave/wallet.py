@@ -27,7 +27,7 @@ class Wallet(object):
         credits = dict([
             (
                 str(entry.credit.uuid),
-                {'name': entry.credit.name, 'amount': entry.credit.amount}
+                {'name': entry.credit.name, 'amount': entry.amount}
             )
             for entry in self.get_wallet()
         ])

@@ -4,21 +4,28 @@ from tradewave.wallet import Wallet
 class TwUser(object):
     def __init__(self, userid):
         self.tw_user = TradewaveUser.objects.get(user_id=userid)
+
+        # user entity
         self.entity_user = self.tw_user.user_entity
 
+        # determine marketplace or vendor entity
+        self.entity = None
         if self.is_marketplace():
             self.entity = self.tw_user.marketplaces.first()
 
         if self.is_vendor():
             self.entity = self.tw_user.vendors.first()
 
+        # user wallet
         self.wallet_user = Wallet(self.entity_user.id)
         self.wallet_entity = None
+
+        # entity wallet
         if self.entity:
             self.wallet_entity = Wallet(self.entity.id)
 
     def get_username(self):
-        return tw_user.user.username
+        return self.tw_user.user.username
 
     def get_entity_personal(self):
         return self.entity_user

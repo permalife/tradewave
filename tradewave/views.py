@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from django.views.generic import View, ListView, TemplateView
 
 from tradewave.models import \
@@ -25,7 +25,8 @@ from tradewave.forms import \
     CreateUserForm, \
     CreateVendorForm, \
     DataExportForm, \
-    LoginUserForm
+    LoginUserForm, \
+    RedeemVendorsForm
 
 from tradewave.allocations import CreditAllocations
 from tradewave.exceptions import CustomerInvalidCredentialsException
@@ -330,6 +331,15 @@ class DashboardView(LoginRequiredMixin, SessionContextView, TemplateView):
         else:
             context['entity_name'] = context['entity_personal']
 
+        # entity account id
+        tw_user = TwUser(context['user_id'])
+        wallet_entity = tw_user.get_entity_wallet()
+        if wallet_entity:
+            context['account_entity_id'] = wallet_entity.get_account_id()
+        else:
+            wallet_personal = tw_user.get_personal_wallet()
+            context['account_entity_id'] = wallet_personal.get_account_id()
+
         context['market_venues'] = [
             venue.name
             for venue in Venue.objects.all()
@@ -433,11 +443,12 @@ class MarketplaceRedeem(LoginRequiredMixin, PermissionRequiredMixin, SessionCont
         marketplace = tw_user.get_entity()
 
         # pass all marketplace vendors that have a non-zero balance
-        for vendor in marketplace.vendors():
-            vendor_wallet = Wallet(vendor.entity_ptr.id)
+        for vendor in marketplace.vendors.all():
+            vendor_id = vendor.entity_ptr.id
+            vendor_wallet = Wallet(vendor_id)
             amount_total = vendor_wallet.get_total()
             if amount_total:
-                marketplace_vendors[vendor_wallet.get_account_id] = {
+                marketplace_vendors[vendor_id] = {
                     'name': vendor.name,
                     'amount_total': amount_total
                 }
@@ -578,7 +589,7 @@ class UserHomeView(LoginRequiredMixin, SessionContextView, TemplateView):
         tw_user = TwUser(context['user_id'])
 
         # generate the list of user personal credits
-        wallet = TwUser.get_personal_wallet()
+        wallet = tw_user.get_personal_wallet()
 
         # pass down the list of credits by name and the amount total
         context['total'] = wallet.get_total()
@@ -686,60 +697,69 @@ def export_data(request):
         return redirect('tradewave:login', status_msg=e.message)
 
 
-def login_username_or_qr(input):
-    cust_name = input.get('cust_name')
-    cust_password = input.get('cust_password')
-    cust_qr_string = input.get('cust_qr_string')
-    cust_pin = input.get('cust_pin')
-
-    user = None
-    if cust_name and cust_password:
-        # login user django user credentials
-        user = authenticate(
-            username=cust_name,
-            password=cust_password
-        )
-    elif cust_qr_string and cust_pin:
-        # login using qr and pin
+def login_username_or_qr(form_data):
+    if form_data['login_qr']:
         try:
-            cust_twuser = TradewaveUser.objects.get(
-                qr_string=cust_qr_string,
-                pin=cust_pin
+            user = TradewaveUser.objects.get(
+                qr_string = form_data['user_qr_string'],
+                pin = form_data['user_pin']
             )
-            user = cust_twuser.user
-            logger.info('Authenticated customer as [%s]', user.username)
-        except Exception as e:
-            status_msg = 'Invalid authentication attempt using QR'
+        except:
             logger.warning(
-                '%s: %s (%s)',
-                status_msg,
-                e.message,
-                type(e)
+                'Invalid qr login attempt: %s',
+                form_data['user_qr_string']
             )
-            raise Exception('Invalid QR credentials')
+    else:
+        user_name = form_data['user_name']
+        user_password = form_data['user_password']
+        user = authenticate(
+            username=user_name,
+            password=user_password
+        )
 
     # is existing active user?
     if user is not None and user.is_active:
+        logger.info(
+            'Successful authentication: %s',
+            user.username
+        )
         # return user object to the caller
         return user
     else:
-        raise CustomerInvalidCredentialsException('Invalid credentials for customer')
+        if form_data['login_qr']:
+            logger.warning(
+                'Invalid authentication attempt using QR: %s',
+                form_data['user_qr_string']
+            )
+        else:
+            logger.warning(
+                'Invalid authentication attempt using login/password: %s',
+                form_data['user_name']
+            )
+        return None
 
 
 # *** handler to process user login ***
 def process_cust_login(request, login_reason):
+    def redirect_back(login_reason, reject_reason):
+        if login_reason == 'transaction':
+            return redirect('tradewave:vendor-cust-login', reject_reason)
+        elif login_reason == 'issue_credit':
+            return redirect('tradewave:marketplace-issue-login', reject_reason)
+
     form = LoginUserForm(request.POST)
 
     if form.is_valid():
-        try:
-            # athenticate customer within the master entity session
-            cust_user = login_username_or_qr(request.POST)
+        # athenticate customer within the master entity session
+        cust_user = login_username_or_qr(form.cleaned_data)
+        if cust_user:
             cust_twuser = TwUser(cust_user.id)
 
             # customer's personal entity
             cust_personal_entity = cust_twuser.get_entity_personal()
 
             # set session-wide variable defining customer entity
+            request.session['entity_customer'] = cust_twuser.user.username
             request.session['entity_customer_id'] = cust_personal_entity.id
             logger.info('customer entity name: %s', cust_personal_entity.name)
 
@@ -756,23 +776,12 @@ def process_cust_login(request, login_reason):
             elif login_reason == 'issue_credit':
                 redirect_view = 'tradewave:marketplace-issue-pick-credit'
 
-            else:
-                status_msg = 'Unknown referrer'
-                return redirect('tradewave:user-home-status', status_msg=status_msg)
-
             return redirect(redirect_view)
-
-        except CustomerInvalidCredentialsException as e:
-            if login_reason == 'transaction':
-                # TODO: This should redirect to a page that says invalid login, repeat
-                return redirect('tradewave:vendor-transaction')
-            elif login_reason == 'issue_credit':
-                return redirect('tradewave:marketplace-issue-login')
-            else:
-                raise
-        except Exception as e:
-            logger.error("Server error: %s (%s)", e.message, type(e))
-            return redirect('tradewave:user-home-status', status_msg=e.message)
+        else:
+            return redirect_back(
+                login_reason,
+                'Invalid login credentials'
+            )
 
     # fail with form validation error
     else:
@@ -787,7 +796,10 @@ def process_cust_login(request, login_reason):
             for field, le in form.errors.as_data().iteritems()
             for error in le
         ]
-        return redirect('tradewave:vendor-cust-login', status_msg=errors[0])
+        return redirect_back(
+            login_reason,
+            status_msg=errors[0]
+        )
 
 
 # *** handler to process user login ***
@@ -795,46 +807,15 @@ def process_login(request):
     form = LoginUserForm(request.POST)
 
     if form.is_valid():
-        user = None
-        if form.cleaned_data['login_qr']:
-            try:
-                user = TradewaveUser.objects.get(
-                    qr_string = form.cleaned_data['user_qr_string'],
-                    pin = form.cleaned_data['user_pin']
-                )
-            except:
-                logger.warning(
-                    'Invalid qr login attempt: %s',
-                    form.cleaned_data['user_qr_string']
-                )
-        else:
-            user_name = form.cleaned_data['user_name']
-            user_password = form.cleaned_data['user_password']
-            user = authenticate(
-                username=user_name,
-                password=user_password
-            )
-            if user:
-                logger.info(
-                    'Authentication using username / password: %s',
-                    user_name
-                )
-            else:
-                logger.warning(
-                    'Invalid user / password login attempt: %s',
-                    form.cleaned_data['user_name']
-                )
-
+        user = login_username_or_qr(form.cleaned_data)
         if user is not None and user.is_active:
             login(request, user)
-            logger.info('Succusseful login: %s', user.username)
+            logger.info('Successful login: %s', user.username)
             tw_user = TwUser(user.id)
 
             # user's personal entity
             user_personal_entity = tw_user.get_entity_personal()
-
-            # session-wide variable user personal entity
-            # (save it user_name for now because we use it for page title)
+            request.session['entity_personal'] = user_personal_entity.name
             request.session['entity_personal_id'] = user_personal_entity.id
             logger.info('personal entity name: %s', user_personal_entity.name)
 
@@ -978,30 +959,27 @@ def process_vendor_transaction(request):
 # *** handler to redirect to the vendor page, if applicable ***
 @login_required
 def redirect_to_vendor(request):
-    try:
-        if 'entity_vendor' in request.session:
-            logger.info('user has a vendor association')
-            if 'selected_venue' in request.session():
-                logger.info(
-                    'user has already chosen a venue: %s',
-                    request.session['selected_venue']
-                )
-                return redirect('tradewave:vendor-home')
+    tw_user = TwUser(request.user.id)
 
-            else:
-                logger.info('user has not chosen a venue')
-                return redirect('tradewave:vendor-initial')
+    if tw_user.is_vendor():
+        logger.info('user has a vendor association')
+        if 'selected_venue' in request.session():
+            logger.info(
+                'user has already chosen a venue: %s',
+                request.session['selected_venue']
+            )
+            return redirect('tradewave:vendor-home')
 
         else:
-            logger.info('user has no vendor associations')
-            return redirect(
-                'tradewave:user-home-status',
-                status_msg='Not associated to a vendor'
-            )
+            logger.info('user has not chosen a venue')
+            return redirect('tradewave:vendor-initial')
 
-    except Exception as e:
-        logger.error("Server error: %s (%s)", e.message, type(e))
-        return redirect('tradewave:login', status_msg=e.message)
+    else:
+        logger.info('user has no vendor associations')
+        return redirect(
+            'tradewave:user-home-status',
+            status_msg='Not associated to a vendor'
+        )
 
 
 # *** handler to redirect to the marketplace page, if applicable ***
@@ -1055,24 +1033,38 @@ def record_venue(request, venue_id):
 
 # *** handler to redirect to the marketplace page, if applicable ***
 @login_required
+@transaction.atomic
 def redeem_credits(request):
-    try:
-        selected_vendors = request.POST.getlist('vendors')
+    if not request.user.has_perm('tradewave.entity_marketplace'):
+        return redirect(
+            'tradewave:marketplace-redeem',
+            status_msg='Unauthorized request'
+        )
+
+    logger.info(request.POST)
+    form = RedeemVendorsForm(request.POST)
+    if form.is_valid():
+        logger.info(form.cleaned_data)
+        vendors = form.cleaned_data['vendors']
+        marketplace_wallet = Wallet(form.cleaned_data['entity_marketplace_id'])
+        marketplace_account_id = marketplace_wallet.get_account_id()
         amount_redeemed = 0
 
-        for vendor_account_id in selected_vendors:
+        for vendor_id in vendors:
+            vendor_wallet = Wallet(vendor_id)
+            vendor_account_id = vendor_wallet.get_account_id()
             logger.info(
                 'Redeeming credits for vendor account id %s',
                 vendor_account_id
             )
             tw_transaction = TradewaveTransaction(
                 sender_account_id=vendor_account_id,
-                recipient_account_id=request.session['account_entity_id'],
+                recipient_account_id=marketplace_account_id,
                 venue_id=request.session['selected_venue_id']
             )
 
             with transaction.atomic():
-                vendor_credits = CreditMap.objects.filter(account_id=vendor_account_id)
+                vendor_credits = vendor_wallet.get_wallet()
                 for item in vendor_credits:
                     logger.info(
                         'Redeeming credit %s (%s)',
@@ -1087,26 +1079,35 @@ def redeem_credits(request):
 
                     amount_redeemed += tw_transaction.amount_last_transacted
 
-        if len(selected_vendors) > 1:
-            sender_name = 'selected vendors'
-        elif len(selected_vendors) == 1:
-            vendor_account_id = selected_vendors[0]
-            sender_name = Account.objects.get(id=vendor_account_id).entity.name
-        else:
-            sender_name = ''
+        if len(vendors) > 1:
+            vendors_name = 'selected vendors'
+        elif len(vendors) == 1:
+            vendor = Vendor.objects.get(id=vendors[0])
+            vendors_name = vendor.name
 
         return redirect(
             'tradewave:transaction-confirmed',
             tr_amount='%.2f' % amount_redeemed,
             amount='%.2f' % amount_redeemed,
-            sender_name=sender_name,
+            sender_name=vendors_name,
             recipient_name=request.session['entity_marketplace'],
             tr_type='marketplace'
         )
 
-    except Exception as e:
-        logger.error("Server error: %s (%s)", e.message, type(e))
-        return redirect('tradewave:login', status_msg=e.message)
+    # fail with form validation error
+    else:
+        logger.error(
+            'Invalid login %s',
+            form.errors.as_data()
+        )
+
+        # just report the first validation error
+        errors = [
+            '%s: %s' % (field, error)
+            for field, le in form.errors.as_data().iteritems()
+            for error in le
+        ]
+        return redirect('tradewave:marketplace-redeem', status_msg=errors[0])
 
 
 # *** view handler for creating a new user ***
@@ -1141,179 +1142,182 @@ def redeem_credits(request):
 #       e. redirect: login
 @transaction.atomic
 def create_user(request):
-    try:
-        form = CreateUserForm(request.POST)
+    form = CreateUserForm(request.POST)
 
-        if form.is_valid():
-            invite_token = form.cleaned_data['user_invite_code']
+    if form.is_valid():
+        invite_token = form.cleaned_data['user_invite_code']
+        if invite_token:
             logger.info('Request with invite token: %s', invite_token)
-            user_vendor_id = None
-            user_marketplace_id = None
-
-            # if pathway 3
-            if invite_token:
-                invite_record = Token.objects.get(
-                    token=invite_token,
-                )
-
-                # check this is a valid invite code
-                if invite_record:
-                    logger.info(
-                        'Invite record retrieved for token %s',
-                        invite_token
-                    )
-                    invite_date_expires = invite_record.date_expires
-                    if invite_date_expires > datetime.now(pytz.utc):
-                        logger.info(
-                            'Invite token is valid'
-                        )
-
-                        # invite records may contain requested entity associations
-                        if invite_record.vendor:
-                            user_vendor_id = invite_record.vendor.id
-                            logger.info(
-                                'Vendor %s association requested',
-                                invite_record.vendor.name
-                            )
-
-                        if invite_record.marketplace:
-                            user_marketplace_id = invite_record.marketplace.id
-                            logger.info(
-                                'Marketplace %s association requested',
-                                invite_record.marketplace.name
-                            )
-
-                    else:
-                        logger.info(
-                            'Invite token has expired on %s',
-                            str(invite_date_expires)
-                        )
-                        return redirect(
-                            'tradewave:login',
-                            status_msg='This signup token has expired.'
-                        )
-                else:
-                    logger.warning(
-                        'Invite record not found for token %s',
-                        invite_token
-                    )
-                    return redirect(
-                        'tradewave:login',
-                        status_msg='Invalid signup token attempt!'
-                    )
-
-            # proceed with creating the models now
-            # TODO: refactor into function
-            with transaction.atomic():
-                user_name = form.cleaned_data['user_email']
-                user_email = form.cleaned_data['user_email']
-                user_firstname = form.cleaned_data['user_firstname']
-                user_lastname = form.cleaned_data['user_lastname']
-                user_password = form.cleaned_data['user_password']
-
-                # record user_vendor_id in order to check for pathway 2 below
-                if not user_vendor_id:
-                    user_vendor_id = form.cleaned_data['user_vendor_id']
-
-                user = User(
-                    username=user_name,
-                    email=user_email,
-                    first_name=user_firstname,
-                    last_name=user_lastname
-                )
-                user.set_password(user_password)
-                user.save()
-                logger.info('New user %s created', user.email)
-
-                entity_personal = Entity(
-                    name='Personal entity of %s' % user.email,
-                    email=user.email
-                )
-                entity_personal.save()
-                logger.info('%s created', entity_personal.name)
-
-                tradewaveuser = TradewaveUser(
-                    user=user,
-                    user_entity=entity_personal,
-                    pin=form.cleaned_data['user_pin'],
-                    qr_string=str(uuid.uuid4())
-                )
-                tradewaveuser.save()
-                logger.info('Tradewave user created for %s', user.email)
-
-                user_account = Account(
-                    entity=entity_personal,
-                    amount_total=0
-                )
-                user_account.save()
-                logger.info('Account created for %s', entity_personal.name)
-
-                # create vendor association, if requested
-                if user_vendor_id:
-                    user_vendor = Vendor.objects.get(id=user_vendor_id)
-                    tradewaveuser.vendors.add(user_vendor)
-                    tradewaveuser.save()
-                    logger.info(
-                        'User %s is now linked to vendor entity %s',
-                        user.email,
-                        user_vendor.name
-                    )
-
-                # create marketplace association, if requested
-                if user_marketplace_id:
-                    user_marketplace = Marketplace.objects.get(id=user_marketplace_id)
-                    tradewaveuser.marketplaces.add(user_marketplace)
-                    tradewaveuser.save()
-                    logger.info(
-                        'User %s is now linked to marketplace entity %s',
-                        user.email,
-                        user_marketplace.name
-                    )
-
-                # pathway 3 redirect
-                if invite_token:
-                    return redirect(
-                        'tradewave:login',
-                        status_msg='User successfully created'
-                    )
-                # pathway 2 redirect
-                elif user_vendor_id:
-                    return redirect(
-                        'tradewave:marketplace-home-status',
-                        status_msg=' '.join([
-                            'User',
-                            user.email,
-                            'is now linked to vendor',
-                            user_vendor.name
-                        ])
-                    )
-                # pathway 1 redirect
-                else:
-                    # part of credit issue to user flow
-                    # TODO: refactor into function
-                    request.session['cust_account_personal_id'] = user_account.id
-                    request.session['entity_customer'] = user.username
-                    request.session['entity_customer_id'] = user.id
-                    return redirect('tradewave:marketplace-issue-pick-credit')
-
-        # fail with form validation error
         else:
-            logger.error(
-                'Invalid create user request: %s',
-                form.errors.as_data()
+            logger.info('Request without an invite token')
+
+            # authorization: must be a marketplace
+            if not request.user.has_perm('tradewave.entity_marketplace'):
+                return redirect(
+                    'tradewave:login',
+                    'Unauthorized request'
+                )
+
+        user_vendor_id = None
+        user_marketplace_id = None
+
+        # if pathway 3
+        if invite_token:
+            invite_record = TokenRecord(invite_token)
+
+            # check this is a valid invite code
+            if invite_record:
+                logger.info(
+                    'Invite record retrieved for token %s',
+                    invite_token
+                )
+
+                if invite_token.is_valid():
+                    logger.info('Invite token is valid')
+
+                    # invite records may contain requested entity associations
+                    vendor = invite_record.get_vendor()
+                    if vendor:
+                        user_vendor_id = vendor.id
+                        logger.info(
+                            'Vendor %s association requested',
+                            vendor.name
+                        )
+
+                    marketplace = invite_record.get_marketplace()
+                    if marketplace:
+                        user_marketplace_id = marketplace.id
+                        logger.info(
+                            'Marketplace %s association requested',
+                            marketplace.name
+                        )
+
+                else:
+                    logger.warning('Invite token is no longer valid')
+                    return redirect(
+                        'tradewave:login',
+                        status_msg='Invalid signup token'
+                    )
+            else:
+                logger.warning(
+                    'Invite record not found for token %s',
+                    invite_token
+                )
+                return redirect(
+                    'tradewave:login',
+                    status_msg='Invalid signup token'
+                )
+
+        # proceed with creating the models now
+        # TODO: refactor into function
+        with transaction.atomic():
+            user_name = form.cleaned_data['user_email']
+            user_email = form.cleaned_data['user_email']
+            user_firstname = form.cleaned_data['user_firstname']
+            user_lastname = form.cleaned_data['user_lastname']
+            user_password = form.cleaned_data['user_password']
+
+            # record user_vendor_id in order to check for pathway 2 below
+            if not user_vendor_id:
+                user_vendor_id = form.cleaned_data['user_vendor_id']
+
+            user = User(
+                username=user_name,
+                email=user_email,
+                first_name=user_firstname,
+                last_name=user_lastname
             )
+            user.set_password(user_password)
+            user.save()
+            logger.info('New user %s created', user.email)
 
-            # just report the first validation error
-            errors = [
-                '%s: %s' % (field, error)
-                for field, le in form.errors.as_data().iteritems()
-                for error in le
-            ]
+            entity_personal = Entity(
+                name='Personal entity of %s' % user.email,
+                email=user.email
+            )
+            entity_personal.save()
+            logger.info('%s created', entity_personal.name)
+
+            tradewaveuser = TradewaveUser(
+                user=user,
+                user_entity=entity_personal,
+                pin=form.cleaned_data['user_pin'],
+                qr_string=str(uuid.uuid4())
+            )
+            tradewaveuser.save()
+            logger.info('Tradewave user created for %s', user.email)
+
+            user_account = Account(
+                entity=entity_personal,
+                amount_total=0
+            )
+            user_account.save()
+            logger.info('Account created for %s', entity_personal.name)
+
+            # create vendor association, if requested
+            if user_vendor_id:
+                user_vendor = Vendor.objects.get(id=user_vendor_id)
+                tradewaveuser.vendors.add(user_vendor)
+                tradewaveuser.save()
+                logger.info(
+                    'User %s is now linked to vendor entity %s',
+                    user.email,
+                    user_vendor.name
+                )
+
+            # create marketplace association, if requested
+            if user_marketplace_id:
+                user_marketplace = Marketplace.objects.get(id=user_marketplace_id)
+                tradewaveuser.marketplaces.add(user_marketplace)
+                tradewaveuser.save()
+                logger.info(
+                    'User %s is now linked to marketplace entity %s',
+                    user.email,
+                    user_marketplace.name
+                )
+
+            # pathway 3 redirect
+            if invite_token:
+                return redirect(
+                    'tradewave:login',
+                    status_msg='User successfully created'
+                )
+            # pathway 2 redirect
+            elif user_vendor_id:
+                return redirect(
+                    'tradewave:marketplace-home-status',
+                    status_msg=' '.join([
+                        'User',
+                        user.email,
+                        'is now linked to vendor',
+                        user_vendor.name
+                    ])
+                )
+            # pathway 1 redirect
+            else:
+                # set customer sessions vars to conduct the transaction
+                request.session['entity_customer'] = user.username
+                request.session['entity_customer_id'] = tradewaveuser.user_entity_id
+                return redirect('tradewave:marketplace-issue-pick-credit')
+
+    # fail with form validation error
+    else:
+        logger.error(
+            'Invalid create user request: %s',
+            form.errors.as_data()
+        )
+
+        # just report the first validation error
+        errors = [
+            '%s: %s' % (field, error)
+            for field, le in form.errors.as_data().iteritems()
+            for error in le
+        ]
+
+        if request.user.has_perm('tradewave.entity_marketplace'):
             return redirect('tradewave:marketplace-issue-new', status_msg=errors[0])
-
-    except Exception as e:
-        logger.error("Server error: %s (%s)", e.message, type(e))
-        return redirect('tradewave:login', status_msg=e.message)
+        else:
+            return redirect('tradewave:login', status_msg=errors[0])
 
 
 # *** handler for creating a new vendor ***
@@ -1444,23 +1448,30 @@ def assign_credit_to_user(request):
     form = AssignCreditToUserForm(request.POST)
 
     if form.is_valid():
-        data = form.cleaned_data
-        tw_transaction = TradewaveTransaction(
-            sender_account_id=request.session['account_entity_id'],
-            recipient_account_id=request.session['cust_account_personal_id'],
+        marketplace_wallet = Wallet(request.session['entity_id'])
+        customer_wallet = Wallet(request.session['entity_customer_id'])
+
+        transaction = TradewaveTransaction(
+            sender_account_id=marketplace_wallet.get_account_id(),
+            recipient_account_id=customer_wallet.get_account_id(),
             venue_id=request.session['selected_venue_id']
         )
 
+        data = form.cleaned_data
         try:
-            tw_transaction.transact(data['credit_uuid'], data['credit_amount'])
+            transaction.transact(data['credit_uuid'], data['credit_amount'])
 
         except Exception as e:
             logger.error('Transaction error: %s (%s)', e.message, type(e))
+            return redirect(
+                'tradewave:marketplace-home',
+                status_msg='Transaction did not succeed'
+            )
 
         return redirect(
             'tradewave:transaction-confirmed',
             tr_amount='%.2f' % data['credit_amount'],
-            amount='%.2f' % tw_transaction.amount_last_transacted,
+            amount='%.2f' % transaction.amount_last_transacted,
             sender_name=str(request.session['entity_marketplace']),
             recipient_name=str(request.session['entity_customer']),
             tr_type='marketplace'

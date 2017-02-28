@@ -26,11 +26,11 @@
           <div class="row">
             <hr class="half-margin-top half-margin-bottom half-margin-left half-margin-right">
           </div>
-          {% for vendor_account_id, vendor_data in marketplace_vendors.iteritems %}
+          {% for vendor_id, vendor_data in marketplace_vendors.iteritems %}
             {% if vendor_data.amount_total %}
               <div class="row">
                 <div class="small-6 columns left">
-                  <input type="checkbox" class="no-margin-bottom half-margin-right" name="vendors" value="{{vendor_account_id}}"> {{vendor_data.name}}
+                  <input type="checkbox" class="no-margin-bottom half-margin-right" name="vendors" value="{{vendor_id}}"> {{vendor_data.name}}
                 </div>
 
                 <div class="small-6 columns right">
@@ -53,6 +53,7 @@
       </div>
     </div>
 
+    <input type="hidden" name=entity_marketplace_id value={{entity_id}} />
     <!-- /Login Form -->
 
     <div id="redeem-confirm" class="modal small-12 medium-9 large-7 small-centered columns" style="display: none">
