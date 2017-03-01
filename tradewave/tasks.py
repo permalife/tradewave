@@ -17,7 +17,7 @@ def add(self, x, y):
 
 
 @shared_task(bind=True)
-def sendTransactionalEmail(self, template_name, template_content, merge_vars, recipient_email):
+def sendTransactionalEmail(self, template_name, template_content, merge_vars, recipient_email, email_subject):
     mandrill_client = mandrill.Mandrill(config.MANDRILL_API_KEY)
     message = {
         'from_email': 'info@tradewave.co',
@@ -26,7 +26,7 @@ def sendTransactionalEmail(self, template_name, template_content, merge_vars, re
             'email': recipient_email,
             'type': 'to'
         }],
-        'subject': 'Join vendor %s on Tradewave' % merge_vars[0]['content'],
+        'subject': email_subject,
         'global_merge_vars': merge_vars
     }
 

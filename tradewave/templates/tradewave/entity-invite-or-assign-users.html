@@ -1,16 +1,16 @@
 {% extends "tradewave/base.html" %}
 
 {% block title %}
-  Assign users to {{ entity_vendor }}
+  Assign users to {{ entity_name }}
 {% endblock %}
 
 {% block content %}
 
   <!-- User Form -->
-  <form method="post" action="{% url 'tradewave:entity_assign_users' entity_id=vendor_id %}">
+  <form method="post" action="{% url 'tradewave:entity_invite_or_assign_users' entity_id=entity_id is_vendor=false %}">
     {% csrf_token %}
     <div class="row">
-      <p>Add emails of users who will have access to vendor {{ entity_vendor }}'s account:</p>
+      <p>Add emails of users who will have access to {{ entity_name }}'s account:</p>
     </div>
 
     <div id="assign-emails" class="row">
