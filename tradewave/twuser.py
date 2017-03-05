@@ -24,6 +24,9 @@ class TwUser(object):
         if self.entity:
             self.wallet_entity = Wallet(self.entity.id)
 
+    def get_user(self):
+        return self.tw_user.user
+
     def get_username(self):
         return self.tw_user.user.username
 

@@ -20,6 +20,7 @@ urlpatterns = [
 
     # template views
     url(r'^$', views.LoginView.as_view(), name='root'),
+    url(r'^login/$', views.LoginView.as_view(), name='login'),
     url(r'^login/(?P<status_msg>.*)/$', views.LoginView.as_view(), name='login'),
     url(r'^send/$', views.SendView.as_view(), name='send'),
     url(r'^confirm-send/$', views.ConfirmSendView.as_view(), name='confirm-send'),
@@ -48,7 +49,8 @@ urlpatterns = [
     url(r'^support/$', views.CustomerSupportView.as_view(), name='cust-support'),
     url(r'^transaction-confirmed/(?P<tr_amount>\d+\.\d{2})/(?P<amount>\d+\.\d{2})/(?P<sender_name>.*)/(?P<recipient_name>.*)/(?P<tr_type>\w+)$', views.TransactionConfirmedView.as_view(), name='transaction-confirmed'),
     url(r'^vendor-initial/$', views.VendorInitial.as_view(), name='vendor-initial'),
-    url(r'^vendor-cust-login/(?P<status_msg>.*)/$', views.VendorCustLogin.as_view(), name='vendor-cust-login'),
+    url(r'^vendor-cust-login/$', views.VendorCustomerLogin.as_view(), name='vendor-cust-login'),
+    url(r'^vendor-cust-login/(?P<status_msg>.*)/$', views.VendorCustomerLogin.as_view(), name='vendor-cust-login'),
     url(r'^vendor-choose-payment/$', views.VendorChoosePayment.as_view(), name='vendor-choose-payment'),
     url(r'^vendor-home/$', views.VendorHome.as_view(), name='vendor-home'),
     url(r'^vendor-home/(?P<status_msg>.*)/$', views.VendorHome.as_view(), name='vendor-home-status'),
@@ -69,6 +71,7 @@ urlpatterns = [
     url(r'^process_invite/(?P<token>[0-9a-f\-]{36})$', views.process_invite, name='process_invite'),
     url(r'^process_login/$', views.process_login, name='process_login'),
     url(r'^process_logout/$', views.process_logout, name='process_logout'),
+    url(r'^process_signup/$', views.process_signup, name='process_signup'),
     url(r'^process_vendor_payment/$', views.process_vendor_payment, name='process_vendor_payment'),
     url(r'^process_vendor_transaction/$', views.process_vendor_transaction, name='process_vendor_transaction'),
     url(r'^record_venue/(?P<venue_id>\d+)/$', views.record_venue, name='record_venue'),

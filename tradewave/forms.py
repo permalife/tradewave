@@ -3,13 +3,16 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
-from tradewave.models import Entity, \
+from tradewave.models import \
+    Credit, \
+    Entity, \
     Marketplace, \
     Product, \
     TradewaveUser, \
     Venue
 
 from datetime import datetime
+from decimal import Decimal
 
 import logging
 
@@ -63,6 +66,59 @@ class CreateUserForm(forms.Form):
         user_pin_confirm = cleaned_data.get('user_pin_confirm')
         if user_pin and user_pin_confirm and user_pin != user_pin_confirm:
             raise ValidationError(_('Pins don\'t match'))
+
+
+# Vendor transaction form
+class VendorTransactionForm(forms.Form):
+    # product categories
+    product_cats = [
+        item.id for item in Product.objects.all()
+    ]
+    product_categories = forms.MultipleChoiceField(
+        choices=[
+            (item_id, item_id) for item_id in product_cats
+        ]
+    )
+
+    # product amounts
+    product_amounts = NotValidatedMultipleChoiceField()
+
+    def clean_product_categories(self):
+        product_categories = self.cleaned_data['product_categories']
+        try:
+            return map(int, product_categories)
+        except ValueError:
+            raise ValidationError(_('Category id\'s must be integers'))
+
+    def clean_product_amounts(self):
+        product_amounts = self.cleaned_data['product_amounts']
+        try:
+            return map(float, product_amounts)
+        except ValueError:
+            raise ValidationError(_('Amounts must be decimals'))
+
+
+# Vendor transaction form
+class VendorPaymentForm(forms.Form):
+    # product categories
+    uuids = [
+        credit.uuid for credit in Credit.objects.all()
+    ]
+    credit_uuids = forms.MultipleChoiceField(
+        choices=[
+            (uuid, uuid) for uuid in uuids
+        ]
+    )
+
+    # product amounts
+    credit_amounts = NotValidatedMultipleChoiceField()
+
+    def clean_credit_amounts(self):
+        credit_amounts = self.cleaned_data['credit_amounts']
+        try:
+            return map(Decimal, credit_amounts)
+        except ValueError:
+            raise ValidationError(_('Amounts must be decimals'))
 
 
 # Redeem vendors form

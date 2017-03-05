@@ -9,6 +9,9 @@ class Wallet(object):
         self.entity = Entity.objects.get(id=entity_id)
         self.account = self.entity.account_set.first()
 
+    def get_entity_name(self):
+        return self.entity.name
+
     def get_account_id(self):
         return self.account.id
 
@@ -20,6 +23,14 @@ class Wallet(object):
         credits = OrderedDict([
             (entry.credit.name, float(entry.amount))
             for entry in sorted(self.get_wallet(), key=attrgetter('amount'), reverse=True)
+        ])
+        return credits
+
+    def get_credit_amounts_by_uuid_for_marketplaces(self, marketplace_ids):
+        credits = dict([
+            (entry.credit.uuid, float(entry.amount))
+            for entry in sorted(self.get_wallet(), key=attrgetter('amount'), reverse=True)
+            if entry.credit.issuer.id in marketplace_ids
         ])
         return credits
 

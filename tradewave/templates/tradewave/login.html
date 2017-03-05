@@ -26,9 +26,10 @@
     <div class="row center">
       <h3 class="one-margin-top two-margin-bottom">Sign up</h3>
     </div>
-    
+
     <div class="row center">
-      <form>
+      <form action="{% url "tradewave:process_signup" %}">
+        {% csrf_token %}        
         <div class="small-centered medium-10 columns">
           <div class="input-left small-6 columns">
             <input type="text" name="user_firstname" placeholder="First name" tabindex="1" />
@@ -49,7 +50,7 @@
           <div class="input-right small-6 columns">
             <input type="text" name="verify_password" placeholder="Verify password" tabindex="5" />
           </div>
-          
+
           <button type="submit" class="one-margin-top button">Create account</button>
           <p><a class="signup-box_close">Cancel</a></p>
         </div>
