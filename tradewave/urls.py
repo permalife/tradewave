@@ -53,8 +53,9 @@ urlpatterns = [
     url(r'^vendor-cust-login/(?P<status_msg>.*)/$', views.VendorCustomerLogin.as_view(), name='vendor-cust-login'),
     url(r'^vendor-choose-payment/$', views.VendorChoosePayment.as_view(), name='vendor-choose-payment'),
     url(r'^vendor-home/$', views.VendorHome.as_view(), name='vendor-home'),
-    url(r'^vendor-home/(?P<status_msg>.*)/$', views.VendorHome.as_view(), name='vendor-home-status'),
+    url(r'^vendor-home/$', views.VendorHome.as_view(), name='vendor-home-status'),
     url(r'^vendor-transaction/$', views.VendorTransaction.as_view(), name='vendor-transaction'),
+    url(r'^vendor-transaction/(?P<status_msg>.*)/$', views.VendorTransaction.as_view(), name='vendor-transaction'),
     url(r'^user-home/$', views.UserHomeView.as_view(), name='user-home'),
     url(r'^user-home/(?P<status_msg>.*)/$', views.UserHomeView.as_view(), name='user-home-status'),
     url(r'^500/$', views.ErrorView.as_view(), name='500'),
@@ -80,7 +81,7 @@ urlpatterns = [
     url(r'^redirect_to_marketplace/$', views.redirect_to_marketplace, name='redirect_to_marketplace'),
 ]
 
-handler404 = 'tradewave.views.return_404'
-handler500 = 'mysite.views.my_custom_error_view'
+handler404 = 'tradewave.views.handler404'
+handler500 = 'tradewave.views.handler500'
 #handler403 = 'mysite.views.my_custom_permission_denied_view'
 #handler400 = 'mysite.views.my_custom_bad_request_view'

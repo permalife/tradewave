@@ -93,9 +93,14 @@ class VendorTransactionForm(forms.Form):
     def clean_product_amounts(self):
         product_amounts = self.cleaned_data['product_amounts']
         try:
-            return map(float, product_amounts)
+            product_amounts = map(float, product_amounts)
         except ValueError:
             raise ValidationError(_('Amounts must be decimals'))
+
+        if sum(product_amounts) == 0:
+            raise ValidationError(_('Total amount must be greater than 0'))
+
+        return product_amounts
 
 
 # Vendor transaction form
@@ -116,9 +121,11 @@ class VendorPaymentForm(forms.Form):
     def clean_credit_amounts(self):
         credit_amounts = self.cleaned_data['credit_amounts']
         try:
-            return map(Decimal, credit_amounts)
+            credit_amounts = map(Decimal, credit_amounts)
         except ValueError:
             raise ValidationError(_('Amounts must be decimals'))
+
+        return credit_amounts
 
 
 # Redeem vendors form
