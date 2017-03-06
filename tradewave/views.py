@@ -705,12 +705,14 @@ def export_data(request):
 
 
 def login_username_or_qr(form_data):
+    user = None
     if form_data['login_qr']:
         try:
             user = TradewaveUser.objects.get(
                 qr_string = form_data['user_qr_string'],
                 pin = form_data['user_pin']
             )
+            user.is_active = True
         except:
             logger.warning(
                 'Invalid qr login attempt: %s',
@@ -726,10 +728,6 @@ def login_username_or_qr(form_data):
 
     # is existing active user?
     if user is not None and user.is_active:
-        logger.info(
-            'Successful authentication: %s',
-            user.username
-        )
         # return user object to the caller
         return user
     else:
