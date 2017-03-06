@@ -10,13 +10,13 @@
 
 {% block content %}
   <section id="intro">
-      <!-- Credit Form  This should Auto-populate with recommended credits-->
+      <!-- Credit Form -->
       <form method="post" action="{% url 'tradewave:process_vendor_payment' %}">
         {% csrf_token %}
-            {% for credit_uuid, credit_data in cust_credits.iteritems %}
+            {% for credit_uuid, credit_data in cust_transaction_credits.iteritems %}
               <div class="row">
                 <div class="left-input small-6 medium-5 medium-offset-1 columns">
-                  <select name="credits" readonly>
+                  <select name="credit_uuids" readonly>
                     <option
                       type="text"
                       class="text"
@@ -35,7 +35,7 @@
                     step="0.01"
                     max="{{ credit_data.amount|floatformat:2 }}"
                     class="text"
-                    name="amounts"
+                    name="credit_amounts"
                     id="credit-{{ credit_uuid }}-amount"
                     value="{{credit_data.amount|floatformat:2}}"
                     readonly>
@@ -50,9 +50,9 @@
             </div>
           {% endfor %}
 
-        {% if tr_amount > cust_total %}
+        {% if tr_amount > cust_transaction_total %}
           <div class="row">
-              <p class="attention"> <strong>The remainder of ${{ tr_amount|subtract:cust_total|floatformat:2 }} has to be paid in cash </strong></p>
+              <p class="attention"> <strong>The remainder of ${{ tr_amount|subtract:cust_transaction_total|floatformat:2 }} has to be paid in cash </strong></p>
           </div>
         {% endif %}
 

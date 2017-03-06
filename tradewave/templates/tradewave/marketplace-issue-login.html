@@ -4,7 +4,7 @@
 
 {% block content %}
   {% include "tradewave/script-qr.html" %}
-  
+
   <section id="intro">
 
     <!-- Login Form -->
@@ -15,12 +15,12 @@
 
         <div class="row">
           <div class="medium-8 small-centered columns">
-            <input type="text" class="text" name="cust_name" id="user-email" placeholder="Email" />
+            <input type="text" class="text" name="user_name" id="user-email" placeholder="Email" />
           </div>
         </div>
         <div class="row">
           <div class="medium-8 small-centered columns">
-            <input type="password" class="text" name="cust_password" id="user-password" placeholder="Password" />
+            <input type="password" class="text" name="user_password" id="user-password" placeholder="Password" />
           </div>
         </div>
         <div class="row center">
@@ -28,7 +28,7 @@
           <a id="btn_start" class="button">Scan Card</a>
         </div>
       </div>
-      
+
       <!-- QR Reader Wrapper -->
       <div class="row">
         <div class="small-centered columns">
@@ -51,7 +51,7 @@
 
       <div class="row">
         <div class="3u">
-          <input type="hidden" class="text" name="cust_qr_string" id="qr_string" value="" readonly>
+          <input type="hidden" class="text" name="user_qr_string" id="qr_string" value="" readonly>
         </div>
       </div>
 
@@ -61,7 +61,7 @@
 
       <div class="row">
         <div class="small-6 medium-4 small-centered columns">
-          <input type="password" class="text" name="cust_pin" id="qr_pin" value="" style="visibility:hidden" size=4 maxlength=4>
+          <input type="password" class="text" name="user_pin" id="qr_pin" value="" style="visibility:hidden" size=4 maxlength=4>
         </div>
       </div>
 

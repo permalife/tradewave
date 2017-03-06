@@ -1,4 +1,5 @@
 from tradewave.models import Account, Credit, CreditMap, Vendor
+from tradewave.wallet import Wallet
 from scipy.optimize import minimize
 from operator import attrgetter
 
@@ -8,7 +9,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 class CreditAllocations(object):
-    def __init__(self, transaction_data, cust_account_personal_id, vendor_id):
+    def __init__(self, transaction_data, vendor_id, customer_id):
         # TODO: give the variables more meaningful names
         # transaction_data is a dict mapping product_id's to product amounts
         self.A = transaction_data.values()
@@ -20,13 +21,10 @@ class CreditAllocations(object):
         marketplace_ids = [item.id for item in vendor.marketplace_set.all()]
 
         # generate the list of customer's credits for the marketplace
-        cust_account = Account.objects.get(id=cust_account_personal_id)
-        cust_wallet = CreditMap.objects.filter(account=cust_account)
-        self.cust_credits = dict([
-            (entry.credit.uuid, float(entry.amount))
-            for entry in sorted(cust_wallet, key=attrgetter('amount'), reverse=True)
-            if entry.credit.issuer.id in marketplace_ids
-        ])
+        cust_wallet = Wallet(customer_id)
+        self.cust_credits = cust_wallet.get_credit_amounts_by_uuid_for_marketplaces(
+            marketplace_ids
+        )
         logger.info('Customer credits: %s', self.cust_credits)
 
         self.C = self.cust_credits.values()
@@ -100,7 +98,7 @@ class CreditAllocations(object):
         for credit_id in self.cust_credits.keys():
             credit_amount = sum(res['x'][i : self.n * self.m : self.m])
             if credit_amount >= 1e-2:
-                logger.info('Paying %s in credit %d', credit_amount, credit_id)
+                logger.info('Paying %s in credit %s', credit_amount, credit_id)
                 credit_data[credit_id] = credit_amount
             i += 1
 

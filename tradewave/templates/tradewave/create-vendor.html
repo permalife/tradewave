@@ -7,7 +7,7 @@
 {% block content %}
 
   <!-- User Form -->
-  <form method="post" action="{% url 'tradewave:create_vendor' %}">
+  <form method="post" action="{% url 'tradewave:create_vendor' token=invite_token %}">
     {% csrf_token %}
 
     <div class="row">
@@ -58,10 +58,6 @@
           <option value="{{ 1 }}"> Yes </option>
           <option value="{{ 0 }}"> No </option>
       </select>
-    </div>
-
-    <div class="row hidden">
-      <input name="vendor_invite_code" type="text"/>
     </div>
 
     <!--  <p>Address</p>

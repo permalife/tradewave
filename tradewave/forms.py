@@ -3,15 +3,34 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
-from tradewave.models import Product, Venue, Entity, TradewaveUser
+from tradewave.models import \
+    Credit, \
+    Entity, \
+    Marketplace, \
+    Product, \
+    TradewaveUser, \
+    Venue
 
 from datetime import datetime
+from decimal import Decimal
 
 import logging
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+class NotValidatedMultipleChoiceField(forms.TypedMultipleChoiceField):
+    """Field that do not validate if the field values are in self.choices"""
+
+    def to_python(self, value):
+        """Override checking method"""
+        return map(self.coerce, value)
+
+    def validate(self, value):
+        """Nothing to do here"""
+        pass
 
 
 # Create new user form
@@ -47,6 +66,104 @@ class CreateUserForm(forms.Form):
         user_pin_confirm = cleaned_data.get('user_pin_confirm')
         if user_pin and user_pin_confirm and user_pin != user_pin_confirm:
             raise ValidationError(_('Pins don\'t match'))
+
+
+# Vendor transaction form
+class VendorTransactionForm(forms.Form):
+    # product categories
+    product_cats = [
+        item.id for item in Product.objects.all()
+    ]
+    product_categories = forms.MultipleChoiceField(
+        choices=[
+            (item_id, item_id) for item_id in product_cats
+        ]
+    )
+
+    # product amounts
+    product_amounts = NotValidatedMultipleChoiceField()
+
+    def clean_product_categories(self):
+        product_categories = self.cleaned_data['product_categories']
+        try:
+            return map(int, product_categories)
+        except ValueError:
+            raise ValidationError(_('Category id\'s must be integers'))
+
+    def clean_product_amounts(self):
+        product_amounts = self.cleaned_data['product_amounts']
+        try:
+            product_amounts = map(float, product_amounts)
+        except ValueError:
+            raise ValidationError(_('Amounts must be decimals'))
+
+        if sum(product_amounts) == 0:
+            raise ValidationError(_('Total amount must be greater than 0'))
+
+        return product_amounts
+
+
+# Vendor transaction form
+class VendorPaymentForm(forms.Form):
+    # product categories
+    uuids = [
+        credit.uuid for credit in Credit.objects.all()
+    ]
+    credit_uuids = forms.MultipleChoiceField(
+        choices=[
+            (uuid, uuid) for uuid in uuids
+        ]
+    )
+
+    # product amounts
+    credit_amounts = NotValidatedMultipleChoiceField()
+
+    def clean_credit_amounts(self):
+        credit_amounts = self.cleaned_data['credit_amounts']
+        try:
+            credit_amounts = map(Decimal, credit_amounts)
+        except ValueError:
+            raise ValidationError(_('Amounts must be decimals'))
+
+        return credit_amounts
+
+
+# Redeem vendors form
+class RedeemVendorsForm(forms.Form):
+    entity_marketplace_id = forms.IntegerField()
+    vendors = NotValidatedMultipleChoiceField()
+
+    def clean_entity_marketplace_id(self):
+        id = self.cleaned_data['entity_marketplace_id']
+        if not Marketplace.objects.filter(id=id):
+            logger.warning('Invalid marketplace entity: %s', id)
+            raise ValidationError(_('Invalid marketplace entity'))
+        return id
+
+    # TODO: think about whether its reasonable to do this check
+    # can one marketplace issue a for vendors belonging to another?
+    def clean_vendors(self):
+        vendors = map(
+            lambda x: int(x),
+            self.cleaned_data['vendors']
+        )
+        logger.info('vendors: %s', vendors)
+        if not vendors:
+            raise ValidationError(_('To redeem credits, pick at least one vendor'))
+
+        entity_marketplace_id = self.cleaned_data['entity_marketplace_id']
+        marketplace = Marketplace.objects.get(id=entity_marketplace_id)
+        marketplace_vendors = [
+            vendor.id for vendor in marketplace.vendors.all()
+        ]
+        logger.info('marketplace vendors: %s', marketplace_vendors)
+
+        # check that all vendors submitted belong the active marketplace
+        for vendor_id in vendors:
+            if not vendor_id in marketplace_vendors:
+                raise ValidationError(_('Vendor not a member of marketplace %s') % marketplace.name)
+
+        return vendors
 
 
 # Create new user form
@@ -98,10 +215,24 @@ class CreateVendorForm(forms.Form):
 
 # Login existing user form
 class LoginUserForm(forms.Form):
-    cust_name = forms.CharField()
-    cust_password = forms.CharField()
-    cust_qr_string = forms.CharField()
-    cust_pin = forms.IntegerField(min_value=1000, max_value=9999)
+    user_name = forms.CharField(required=False)
+    user_password = forms.CharField(required=False)
+    user_qr_string = forms.CharField(required=False)
+    user_pin = forms.IntegerField(min_value=1000, max_value=9999, required=False)
+
+    def clean(self):
+        cleaned_data = super(LoginUserForm, self).clean()
+        login_password = cleaned_data['user_name'] and cleaned_data['user_password']
+        login_qr = cleaned_data['user_qr_string'] and cleaned_data['user_pin']
+        if not (login_password or login_qr):
+            raise ValidationError(_('Either login or qr must be provided'))
+
+        if login_qr:
+            cleaned_data['login_qr'] = True
+        else:
+            cleaned_data['login_qr'] = False
+
+        return cleaned_data
 
 
 # Market venue and date
@@ -139,24 +270,12 @@ class AssignCreditToUserForm(forms.Form):
     credit_amount = forms.DecimalField(max_digits=12, decimal_places=2)
 
 
-class NotValidatedMultipleChoiceFiled(forms.TypedMultipleChoiceField):
-    """Field that do not validate if the field values are in self.choices"""
-
-    def to_python(self, value):
-        """Override checking method"""
-        return map(self.coerce, value)
-
-    def validate(self, value):
-        """Nothing to do here"""
-        pass
-
-
 # Assign Users to Vendor
-class AssignUsersToVendorForm(forms.Form):
-    user_emails = NotValidatedMultipleChoiceFiled()
+class EntityInviteOrAssignUsersForm(forms.Form):
+    user_emails = NotValidatedMultipleChoiceField()
 
     def clean(self):
-        cleaned_data = super(AssignUsersToVendorForm, self).clean()
+        cleaned_data = super(EntityInviteOrAssignUsersForm, self).clean()
 
         # check if user with given email exists
         user_emails = cleaned_data.get('user_emails')

@@ -112,6 +112,11 @@ class Vendor(Entity):
     # product categories
     products = models.ManyToManyField(Product, blank=True)
 
+    class Meta:
+        permissions = (
+            ('entity_vendor', 'Must be a vendor entity'),
+        )
+
     def __unicode__(self):
         return ' '.join([
             'Vendor',
@@ -132,6 +137,12 @@ class Marketplace(Entity):
 
     # vendors that operate at the marketplace
     vendors = models.ManyToManyField(Vendor, through='MarketplaceVendors')
+
+    class Meta:
+        permissions = (
+            ('entity_marketplace', 'Must be a marketplace entity'),
+            ('full_access', 'Marketplace has full access to all features')
+        )
 
     def __unicode__(self):
         return ' '.join([
@@ -189,7 +200,7 @@ class TradewaveUser(models.Model):
 
     class Meta:
         permissions = (
-            ('credit_transact', 'Is allowed to make transactions'),
+            ('can_transact', 'Is allowed to make transactions'),
         )
 
     def __unicode__(self):
@@ -403,10 +414,12 @@ def one_week_from_now():
 class Token(models.Model):
     email = models.EmailField()
     is_verified = models.BooleanField(default=False)
+    is_vendor = models.BooleanField(default=False)
+    is_marketplace = models.BooleanField(default=False)
     token = models.UUIDField(default=uuid4)
     token_type = models.CharField(max_length=20)
     vendor = models.ForeignKey(Vendor, null=True, blank=True)
-    marketplace=models.ForeignKey(Marketplace, null=True, blank=True)
+    marketplace = models.ForeignKey(Marketplace, null=True, blank=True)
     date_expires = models.DateTimeField(
         'date invite token expires',
         default=one_week_from_now
