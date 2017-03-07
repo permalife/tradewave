@@ -1,0 +1,20 @@
+{% extends "tradewave/base.html" %}
+
+{% block title %}
+  Customize theme 
+  <h5 class="half-margin-top">for {{ name }}</h5>
+{% endblock %}
+
+{% block content %}
+  <section id="intro">
+    <div class="row half-margin-bottom">
+      <div class="center medium-10 small-centered columns">
+        <p class="">Please upload an image that you would like to be displayed in your header. For best results, use an image at least 180px x 60px with a 3:1 aspect ratio.</p>
+
+        <input type="file" name="custom_logo" id="custom_logo" accept=".png .jpg" class="inputfile" />
+        <label for="custom_logo" class="button">Upload image</label>
+      </div>
+    </div>
+
+  </section>
+{% endblock %}
