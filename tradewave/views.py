@@ -410,6 +410,10 @@ class MarketplaceHome(LoginRequiredMixin, PermissionRequiredMixin, SessionContex
     permission_required = 'tradewave.entity_marketplace'
 
 
+class MarketplaceThemeView(SessionContextView, TemplateView):
+    template_name = 'tradewave/marketplace-theme.html'
+
+
 class MarketplaceIssue(LoginRequiredMixin, PermissionRequiredMixin, SessionContextView, TemplateView):
     template_name = 'tradewave/marketplace-issue.html'
     permission_required = 'tradewave.entity_marketplace'

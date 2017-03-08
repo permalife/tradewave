@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^marketplace-redeem/(?P<status_msg>.*)/$', views.MarketplaceRedeem.as_view(), name='marketplace-redeem'),
     url(r'^marketplace-home/$', views.MarketplaceHome.as_view(), name='marketplace-home'),
     url(r'^marketplace-home/(?P<status_msg>.*)/$', views.MarketplaceHome.as_view(), name='marketplace-home-status'),
+    url(r'^marketplace-theme/$', views.MarketplaceThemeView.as_view(), name='marketplace-theme'),
     url(r'^marketplace-send/$', views.MarketplaceSend.as_view(), name='marketplace-send'),
     url(r'^settings-user/$', views.SettingsUser.as_view(), name='settings-user'),
     url(r'^settings-vendor/$', views.SettingsVendor.as_view(), name='settings-vendor'),

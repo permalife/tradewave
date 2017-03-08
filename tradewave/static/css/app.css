@@ -290,3 +290,18 @@ a.list-group-item {
   width: 70px;
   margin-left: 0.5rem;
 }
+
+/* marketplace-theme */
+
+.inputfile {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+#color-input {
+  width: 111px;
+}
