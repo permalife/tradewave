@@ -301,3 +301,7 @@ a.list-group-item {
   position: absolute;
   z-index: -1;
 }
+
+#color-input {
+  width: 111px;
+}

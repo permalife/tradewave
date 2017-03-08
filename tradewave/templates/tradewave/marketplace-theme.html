@@ -1,5 +1,7 @@
 {% extends "tradewave/base.html" %}
 
+{% load staticfiles %}
+
 {% block title %}
   Customize theme 
   <h5 class="half-margin-top">for {{ name }}</h5>
@@ -9,10 +11,17 @@
   <section id="intro">
     <div class="row half-margin-bottom">
       <div class="center medium-10 small-centered columns">
-        <p class="">Please upload an image that you would like to be displayed in your header. For best results, use an image at least 180px x 60px with a 3:1 aspect ratio.</p>
+        <p class="">Please upload an image that you would like to be displayed in your header. For best results, use an image at least 180 x 60px with a 3:1 aspect ratio.</p>
 
         <input type="file" name="custom_logo" id="custom_logo" accept=".png .jpg" class="inputfile" />
-        <label for="custom_logo" class="button">Upload image</label>
+        <label for="custom_logo" class="button secondary">Upload image</label>
+
+        <p class="one-margin-top">Also, select a main color. This will look best if it matches the background color of your logo, or if your logo has a transparent background.</p>
+
+        <script src="{% static 'js/jscolor.min.js' %}"></script>
+        <input type="text" id="color-input" class="jscolor center" value="387a36"/>
+
+        <input type="submit" class="button three-halves-margin-top" value="Save"/>
       </div>
     </div>
 
