@@ -20,10 +20,19 @@
 
         <script src="{% static 'js/jscolor.min.js' %}"></script>
         <input type="text" id="color-input" class="jscolor center" value="387a36"/>
+        <p><button id="color-reset" class="one-margin-top button secondary small">Reset color</button></p>
 
-        <input type="submit" class="button three-halves-margin-top" value="Save"/>
+        <input type="submit" class="button" value="Save"/>
       </div>
     </div>
 
   </section>
+
+  <script type="text/javascript">
+
+    var reset_color = "387A36";
+    $('#color-reset').click(function(){
+      $('#color-input').val(reset_color).focus().blur();
+    });
+  </script>
 {% endblock %}
